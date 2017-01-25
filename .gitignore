@@ -5,13 +5,7 @@
 #   git config --global core.excludesfile '~/.gitignore_global'
 
 *~
-*.xml
-*.fasta
-*.rootree
-*.bed
-*.vcf
-*.gtf
-*.zip
-*.out
+/data
 .idea/
+*.out
 readme.txt
