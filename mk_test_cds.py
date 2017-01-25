@@ -118,7 +118,7 @@ hash_transcripts, not_confirmed_cds = build_hash_transcripts('Homo_sapiens_79_GR
 hash_snps = build_hash_snps('Homo_sapiens_79_polymorphism_in_cds.vcf')
 
 path = "om_79_cds_homo"
-txt_file = open("./data/" + '79_mk_test.out', 'w')
+txt_file = open('79_mk_test.out', 'w')
 txt_file.write("TrId\tSeqLength\tNbrExons\tPtot\tPn\tPs\tDtot\tDn\tDs\n")
 cds_total = 0
 errors_cds_nf = []
