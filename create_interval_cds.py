@@ -24,31 +24,46 @@ class Cds(object):
                          "\t" + self.name + "\t0\t" + self.strand + "\n")
         return lines
 
-hash_transcript = {}
-gtf_file = open('Homo_sapiens_79_GRCh37.gtf', 'r')
-hash_transcripts = {}
-for line in gtf_file:
-    line_split = line.split('\t')
-    if len(line_split) > 7:
-        info = line_split[8]
-        if line_split[2] == 'CDS':
-            transcript_find = info.find('transcript_id')
-            exon = info[transcript_find + 15:transcript_find + 30]
-            if not hash_transcripts.get(exon):
-                hash_transcripts[exon] = Cds(line_split[0], line_split[6], exon)
-            hash_transcripts[exon].add_exon(line_split[3], line_split[4])
-gtf_file.close()
 
-path = "om_79_cds_homo"
-bedfile = open('79_interval_cds.bed', 'w')
-for file in os.listdir("./" + path):
-    if file.endswith(".xml"):
-        root = etree.parse("./" + path + "/" + file).getroot()
-        for specie in root.find('CDS').findall("speciesCDS"):
-            if specie.attrib['species'] == 'Homo':
-                tr_id = specie.find('infoCDS').find('ensidTr').text
-                for line in hash_transcripts[tr_id].befile_lines():
-                    bedfile.write(line)
-                break
-bedfile.truncate()
-bedfile.close()
+def build_hash_transcripts(file_name):
+    gtf_file = open("./data/" + file_name, 'r')
+    hash_transcripts = {}
+    not_confirmed_cds = {}
+    for line in gtf_file:
+        line_split = line.split('\t')
+        if len(line_split) > 7:
+            info = line_split[8]
+            if line_split[2] == 'CDS':
+                transcript_find = info.find('transcript_id')
+                if transcript_find != -1:
+                    tr_id = info[transcript_find + 15:transcript_find + 30]
+                    if info.find('cds_start_NF') != -1 or info.find('cds_end_NF') != -1:
+                        if not not_confirmed_cds.get(tr_id):
+                            not_confirmed_cds[tr_id] = True
+                    if not hash_transcripts.get(tr_id):
+                        hash_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
+                    hash_transcripts[tr_id].add_exon(line_split[3], line_split[4])
+    gtf_file.close()
+    return hash_transcripts, not_confirmed_cds
+
+
+def build_bedfile(path, file_name, hash_transcripts):
+    bedfile = open("./data/" + file_name, 'w')
+    for file in os.listdir("./data/" + path):
+        if file.endswith(".xml"):
+            root = etree.parse("./data/" + path + "/" + file).getroot()
+            for specie in root.find('CDS').findall("speciesCDS"):
+                if specie.attrib['species'] == 'Homo':
+                    tr_id = specie.find('infoCDS').find('ensidTr').text
+                    if hash_transcripts[tr_id]:
+                        for line in hash_transcripts[tr_id].befile_lines():
+                            bedfile.write(line)
+                        break
+    bedfile.truncate()
+    bedfile.close()
+
+
+hash_transcripts, not_confirmed_cds = build_hash_transcripts('Homo_sapiens_79_GRCh37.gtf')
+build_bedfile("om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
+
+

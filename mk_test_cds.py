@@ -19,131 +19,237 @@ class Cds(object):
             for i in range(len(self.exons) - 1):
                 assert self.exons[i][1] < self.exons[i + 1][0], "At least one exon is overlapping with an other"
 
-    def nucleotide_position(self, position):
-        nucleotide = -1
+    def nt_position(self, position):
+        nt = -1
         running_sum = 0
         if self.strand == "+":
             for start, end in self.exons:
                 if start <= position <= end:
-                    nucleotide = position - start + running_sum
+                    nt = position - start + running_sum
                     break
                 running_sum += end - start + 1
         else:
             for start, end in reversed(self.exons):
                 if start <= position <= end:
-                    nucleotide = end - position + running_sum
+                    nt = end - position + running_sum
                     break
                 running_sum += end - start + 1
-        assert nucleotide > -1, "The position given is not inside the cds"
-        return nucleotide
+        assert nt > -1, "The position given is not inside the cds"
+        return nt
 
-    def amino_acid(self, seq, position, ref_nucleotide, alt_nucleotide):
-        nucleotide_position = self.nucleotide_position(position)
-        frame = nucleotide_position % 3
-        codon = str(seq[nucleotide_position - frame:nucleotide_position + 3 - frame])
-        ref_aa = codontable[codon]
+    def amino_acid(self, seq, position, nt_ref, nt_alt):
+        nt_position = self.nt_position(position)
+        frame = nt_position % 3
+        codon_ref = str(seq[nt_position - frame:nt_position + 3 - frame])
+        aa_ref = codontable[codon_ref]
         if self.strand == "-":
-            ref_nucleotide = complement[ref_nucleotide]
-            alt_nucleotide = complement[alt_nucleotide]
-        # assert codon[frame] == ref_nucleotide, 'Reference nucleotide and retrieved nucleotide ' \
-        #                                        'from the reference sequence are not the same'
-        alt_aa = codontable[codon[:frame] + alt_nucleotide + codon[frame + 1:]]
-        return ref_aa, alt_aa
+            nt_ref = complement[nt_ref]
+            nt_alt = complement[nt_alt]
+        codon_alt = codon_ref[:frame] + nt_alt + codon_ref[frame + 1:]
+        aa_alt = codontable[codon_alt]
+        if codon_ref[frame] != nt_ref:
+            return '!', codon_ref[frame], codon_ref, codon_alt
+        else:
+            return aa_ref, aa_alt, codon_ref, codon_alt
 
-    def sequence_length(self):
+    def seq_length(self):
         return sum([j - i + 1 for i, j in self.exons])
 
 
-start, end = 0, 0
-homo_sequence_ungap, homo_sequence, pan_sequence, tr_id = "", "", "", ""
+def build_hash_transcripts(file_name):
+    gtf_file = open("./data/" + file_name, 'r')
+    hash_transcripts = {}
+    not_confirmed_cds = {}
+    for line in gtf_file:
+        line_split = line.split('\t')
+        if len(line_split) > 7:
+            info = line_split[8]
+            if line_split[2] == 'CDS':
+                transcript_find = info.find('transcript_id')
+                if transcript_find != -1:
+                    tr_id = info[transcript_find + 15:transcript_find + 30]
+                    if info.find('cds_start_NF') != -1 or info.find('cds_end_NF') != -1:
+                        if not not_confirmed_cds.get(tr_id):
+                            not_confirmed_cds[tr_id] = True
+                    if not hash_transcripts.get(tr_id):
+                        hash_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
+                    hash_transcripts[tr_id].add_exon(line_split[3], line_split[4])
+    gtf_file.close()
+    return hash_transcripts, not_confirmed_cds
+
+
+def build_hash_snps(file_name):
+    vcf_file = open("./data/" + file_name, 'r')
+    hash_snps = {}
+    for line in vcf_file:
+        if line[0] != '#':
+            split_line = line.split("\t")
+            if len(split_line[3]) == 1 and len(split_line[4]) == 1 and split_line[4] != ".":
+                tr_id = split_line[11]
+                if not hash_snps.get(tr_id):
+                    hash_snps[tr_id] = []
+                hash_snps[tr_id].append((split_line[2], split_line[0], int(split_line[1]), split_line[3], split_line[4]))
+    vcf_file.close()
+    return hash_snps
+
+
+homo_seq_ungap, homo_seq, pan_seq, tr_id = "", "", "", ""
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 codontable = defaultdict(lambda: "-")
-codontable.update()
+codontable.update({
+    'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
+    'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
+    'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
+    'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
+    'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
+    'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
+    'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
+    'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
+    'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
+    'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
+    'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
+    'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
+    'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
+    'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
+    'TAC': 'Y', 'TAT': 'Y', 'TAA': 'stop', 'TAG': 'stop',
+    'TGC': 'C', 'TGT': 'C', 'TGA': 'stop', 'TGG': 'W'})
 
-os.chdir('/home/thibault/adaptapop')
-gtf_file = open('Homo_sapiens_79_GRCh37.gtf', 'r')
-hash_transcripts = {}
-for line in gtf_file:
-    line_split = line.split('\t')
-    if len(line_split) > 7:
-        info = line_split[8]
-        if line_split[2] == 'CDS':
-            transcript_find = info.find('transcript_id')
-            tr_id = info[transcript_find + 15:transcript_find + 30]
-            if not hash_transcripts.get(tr_id):
-                hash_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
-            hash_transcripts[tr_id].add_exon(line_split[3], line_split[4])
-gtf_file.close()
-
-os.chdir('/home/thibault/adaptapop')
-vcf_file = open('Homo_sapiens_79_polymorphism_in_cds.vcf', 'r')
-hash_variations = {}
-for line in vcf_file:
-    if line[0] != '#':
-        split_line = line.split("\t")
-        if len(split_line[3]) == 1 and len(split_line[4]) == 1 and split_line[4] != ".":
-            tr_id = split_line[11]
-            if not hash_variations.get(tr_id):
-                hash_variations[tr_id] = []
-            hash_variations[tr_id].append((int(split_line[1]), split_line[3], split_line[4]))
-vcf_file.close()
+hash_transcripts, not_confirmed_cds = build_hash_transcripts('Homo_sapiens_79_GRCh37.gtf')
+hash_snps = build_hash_snps('Homo_sapiens_79_polymorphism_in_cds.vcf')
 
 path = "om_79_cds_homo"
-txt_file = open('79_mk_test.out', 'w')
-for file in os.listdir("./" + path):
+txt_file = open("./data/" + '79_mk_test.out', 'w')
+txt_file.write("TrId\tSeqLength\tNbrExons\tPtot\tPn\tPs\tDtot\tDn\tDs\n")
+cds_total = 0
+errors_cds_nf = []
+errors_cds_length = []
+errors_cds_ungap_length = []
+errors_cds_unequal_length = []
+snp_total = 0
+errors_snp_ref = []
+errors_snp_stop = []
+errors_snp_alt_stop = []
+errors_snp_codon = []
+for file in os.listdir("./data/" + path):
     if file.endswith(".xml"):
+        cds_total += 1
         file_name = file[:-4]
-        txt_file.write("\nTranscript: " + file_name)
-        root = etree.parse("./" + path + "/" + file_name + ".xml").getroot()
+
+        root = etree.parse("./data/" + path + "/" + file_name + ".xml").getroot()
         for specie in root.find('CDS').findall("speciesCDS"):
             if specie.attrib['species'] == 'Homo':
                 tr_id = specie.find('infoCDS').find('ensidTr').text
                 break
 
-        fasta_sequences = SeqIO.parse(open("./" + path + "/" + file_name + "_raw_NT.fasta", 'r'), 'fasta')
-        for fasta in fasta_sequences:
-            if fasta.id == "Homo":
-                homo_sequence = fasta.seq
-                homo_sequence_ungap = homo_sequence.ungap('-')
-            elif fasta.id == "Pan":
-                pan_sequence = fasta.seq
+        if not_confirmed_cds.get(tr_id):
+            errors_cds_nf.append(tr_id)
+            continue
 
         cds = hash_transcripts[tr_id]
-        txt_file.write("\nSequence length:" + str(len(homo_sequence_ungap)))
-        txt_file.write("\nNumber of exons:" + str(len(cds.exons)))
+        cds_length = cds.seq_length()
+        if cds_length % 3 != 0:
+            errors_cds_length.append(tr_id)
+            continue
 
-        if hash_variations.get(tr_id):
+        fasta_seqs = SeqIO.parse(open("./data/" + path + "/" + file_name + "_raw_NT.fasta", 'r'), 'fasta')
+        for fasta in fasta_seqs:
+            if fasta.id == "Homo":
+                homo_seq = fasta.seq
+                homo_seq_ungap = homo_seq.ungap('-')
+            elif fasta.id == "Pan":
+                pan_seq = fasta.seq
+
+        ungap_length = len(homo_seq_ungap)
+        if ungap_length % 3 != 0:
+            errors_cds_ungap_length.append(tr_id)
+            continue
+
+        if cds_length != ungap_length - 3:
+            errors_cds_unequal_length.append(tr_id)
+            continue
+
+        if hash_snps.get(tr_id):
             list_aa_poly = []
-            for position, ref_nucleotide, alt_nucleotide in hash_variations[tr_id]:
-                list_aa_poly.append(cds.amino_acid(homo_sequence_ungap, position, ref_nucleotide, alt_nucleotide))
-
-            txt_file.write("\nNumber of polymorphic SNPs:" + str(len(list_aa_poly)))
-            txt_file.write("\nNumber of polymorphic synonymous SNPs:" + str(len([0 for i, j in list_aa_poly
-                                                                                 if i == j and i != '-' and j != '-'])))
-            txt_file.write("\nNumber of polymorphic non-synonymous SNPs:" + str(len([0 for i, j in list_aa_poly
-                                                                                     if i != j and i != '-' and j != '-'])))
-
-        list_div = []
-        for position, (homo_n, pan_n) in enumerate(zip(homo_sequence, pan_sequence)):
-            if homo_n != pan_n and homo_n != '-' and pan_n != '-':
-                list_div.append((position, homo_n, pan_n))
+            for snp_id, chromosome, pos, ref_nt, alt_nt in hash_snps[tr_id]:
+                snp_total += 1
+                ref_aa, alt_aa, ref_codon, alt_codon = cds.amino_acid(homo_seq_ungap, pos, ref_nt, alt_nt)
+                if ref_aa == '!':
+                    errors_snp_ref.append((tr_id, snp_id, chromosome, str(pos), alt_aa, ref_nt, alt_nt, ref_codon, alt_codon))
+                elif ref_aa == '-' or alt_aa == '-':
+                    errors_snp_codon.append((tr_id, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))
+                elif ref_aa == 'stop':
+                    errors_snp_stop.append((tr_id, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))
+                elif alt_aa == 'stop':
+                    errors_snp_alt_stop.append((tr_id, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))
+                else:
+                    list_aa_poly.append((ref_aa, alt_aa))
 
         list_aa_div = []
-        for position, homo_n, pan_n in list_div:
-            homo_nucleotide_position = len(homo_sequence[:position].ungap('-'))
-            homo_frame = homo_nucleotide_position % 3
-            homo_codon = str(
-                homo_sequence_ungap[homo_nucleotide_position - homo_frame:homo_nucleotide_position + 3 - homo_frame])
-            pan_nucleotide_position = len(pan_sequence[:position].ungap('-'))
-            pan_frame = pan_nucleotide_position % 3
-            pan_codon = str(
-                pan_sequence.ungap('-')[pan_nucleotide_position - pan_frame:pan_nucleotide_position + 3 - pan_frame])
-            list_aa_div.append((codontable[homo_codon], codontable[pan_codon]))
+        for pos, (homo_n, pan_n) in enumerate(zip(homo_seq, pan_seq)):
+            if homo_n != pan_n and homo_n != '-' and pan_n != '-':
+                homo_nt_pos = len(homo_seq[:pos].ungap('-'))
+                homo_frame = homo_nt_pos % 3
+                homo_codon = str(homo_seq_ungap[homo_nt_pos - homo_frame:homo_nt_pos + 3 - homo_frame])
+                pan_nt_pos = len(pan_seq[:pos].ungap('-'))
+                pan_frame = pan_nt_pos % 3
+                pan_codon = str(pan_seq.ungap('-')[pan_nt_pos - pan_frame:pan_nt_pos + 3 - pan_frame])
+                list_aa_div.append((codontable[homo_codon], codontable[pan_codon]))
 
-        txt_file.write("\nNumber of divergence:" + str(len(list_div)))
-        txt_file.write("\nNumber of synonymous divergence:" + str(len([0 for i, j in list_aa_div
-                                                                       if i == j and i != '-' and j != '-'])))
-        txt_file.write("\nNumber of non-synonymous divergence:" + str(len([0 for i, j in list_aa_div
-                                                                           if i != j and i != '-' and j != '-'])))
-        txt_file.write("\n")
+        pn = str(len([0 for i, j in list_aa_poly if i != j]))
+        ps = str(len([0 for i, j in list_aa_poly if i == j]))
+        dn = str(len([0 for i, j in list_aa_div if i != j and i != '-' and j != '-']))
+        ds = str(len([0 for i, j in list_aa_div if i == j and i != '-' and j != '-']))
+        txt_file.write(file_name + "\t" + str(len(homo_seq_ungap)) + "\t" + str(len(cds.exons)) + "\t"
+                       + str(len(list_aa_poly)) + "\t" + pn + "\t" + ps + "\t"
+                       + str(len(list_aa_div)) + "\t" + dn + "\t" + ds + "\n")
 txt_file.close()
+
+error_file = open('79_mk_test_errors.out', 'w')
+cds_errors = len(errors_cds_nf)+len(errors_cds_length)+len(errors_cds_ungap_length)+len(errors_cds_unequal_length)
+if cds_errors > 0:
+    error_file.write(str(cds_errors) + " errors out of " + str(cds_total) + " coding sequences ("
+                     + '%.3f' % (cds_errors*100./cds_total) + "%)")
+    if len(errors_cds_nf) > 0:
+        error_file.write("\n\nCoding region start or end could not be confirmed ("
+                         + str(len(errors_cds_nf)) + " cds):\n")
+        error_file.write(" ".join(errors_cds_nf))
+    if len(errors_cds_length) > 0:
+        error_file.write("\n\nThe computed sequence size from exons starts and ends is not a multiple of 3 ("
+                         + str(len(errors_cds_length)) + " cds):\n")
+        error_file.write(" ".join(errors_cds_length))
+    if len(errors_cds_ungap_length) > 0:
+        error_file.write("\n\nThe sequence size is not a multiple of 3 ("
+                         + str(len(errors_cds_ungap_length)) + " cds):\n")
+        error_file.write(" ".join(errors_cds_ungap_length))
+    if len(errors_cds_unequal_length) > 0:
+        error_file.write("\n\nThe computed sequence size from exons starts and ends doesn't match the sequence size ("
+                         + str(len(errors_cds_unequal_length)) + " cds):\n")
+        error_file.write(" ".join(errors_cds_unequal_length))
+
+snp_errors = len(errors_snp_ref)+len(errors_snp_codon)+len(errors_snp_stop)+len(errors_snp_alt_stop)
+if snp_errors > 0:
+    error_file.write("\n\n" + str(snp_errors) + " errors out of " + str(snp_total) + " SNPs ("
+                     + '%.3f' % (snp_errors*100./snp_total) + "%)")
+    if len(errors_snp_ref) > 0:
+        error_file.write("\n\nSNPs retrieved from the fasta are not equal to the reference ("
+                         + str(len(errors_snp_ref)) + " SNPs):\n")
+        error_file.write("TrId\tSNPId\tChr\tPosition\tSeqNt\tRefNt\tAltNt\tRefCodon\tAltCodon\n")
+        error_file.write("\n".join(["\t".join(er) for er in errors_snp_ref]))
+    if len(errors_snp_codon) > 0:
+        error_file.write("\n\n The reference or alternate amino-acid can't be identified ("
+                         + str(len(errors_snp_codon)) + " SNPs):\n")
+        error_file.write("TrId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\n")
+        error_file.write("\n".join(["\t".join(er) for er in errors_snp_codon]))
+    if len(errors_snp_stop) > 0:
+        error_file.write("\n\n The reference amino-acid is a stop codon ("
+                         + str(len(errors_snp_stop)) + " SNPs):\n")
+        error_file.write("TrId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\n")
+        error_file.write("\n".join(["\t".join(er) for er in errors_snp_stop]))
+    if len(errors_snp_alt_stop) > 0:
+        error_file.write("\n\n The alternate amino-acid is a stop codon ("
+                         + str(len(errors_snp_alt_stop)) + " SNPs):\n")
+        error_file.write("TrId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\n")
+        error_file.write("\n".join(["\t".join(er) for er in errors_snp_alt_stop]))
+error_file.close()
+
+print("Job completed")
