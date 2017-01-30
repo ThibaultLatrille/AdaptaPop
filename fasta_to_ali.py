@@ -10,7 +10,7 @@ data = "/pandata/tlatrill/AdaptaPop/data"
 species = [s.name for s in Phylo.read(data + "/" + tree, "newick").get_terminals()]
 
 
-for file in os.listdir("./data/" + path):
+for file in os.listdir(data + "/" + path):
     if file.endswith(".fasta"):
         file_name = file[:-6]
 
