@@ -8,7 +8,7 @@ data = "/pandata/tlatrill/AdaptaPop/data"
 for file in os.listdir(data + "/" + path):
     if file.endswith("filtered_NT.ali"):
         file_name = file[:-4]
-        qsub = open("./qsub/" + file_name + ".pbs", 'w')
+        qsub = open(data + "/qsub/" + file_name + ".pbs", 'w')
         qsub.writelines("#!/bin/bash\n")
         qsub.writelines("#\n")
         qsub.writelines("#PBS -q q1day\n")
