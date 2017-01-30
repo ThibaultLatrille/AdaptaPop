@@ -6,6 +6,7 @@
 
 *~
 /data
+/papers
+/qsub
 .idea/
 *.out
-readme.txt
