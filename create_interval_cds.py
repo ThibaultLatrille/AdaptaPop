@@ -25,8 +25,8 @@ class Cds(object):
         return lines
 
 
-def build_hash_transcripts(file_name):
-    gtf_file = open("./data/" + file_name, 'r')
+def build_hash_transcripts(data, file_name):
+    gtf_file = open(data + "/" + file_name, 'r')
     hash_transcripts = {}
     not_confirmed_cds = {}
     for line in gtf_file:
@@ -47,11 +47,11 @@ def build_hash_transcripts(file_name):
     return hash_transcripts, not_confirmed_cds
 
 
-def build_bedfile(path, file_name, hash_transcripts):
-    bedfile = open("./data/" + file_name, 'w')
-    for file in os.listdir("./data/" + path):
+def build_bedfile(data, path, file_name, hash_transcripts):
+    bedfile = open(data + "/" + file_name, 'w')
+    for file in os.listdir(data + "/" + path):
         if file.endswith(".xml"):
-            root = etree.parse("./data/" + path + "/" + file).getroot()
+            root = etree.parse(data + "/" + path + "/" + file).getroot()
             for specie in root.find('CDS').findall("speciesCDS"):
                 if specie.attrib['species'] == 'Homo':
                     tr_id = specie.find('infoCDS').find('ensidTr').text
@@ -63,7 +63,7 @@ def build_bedfile(path, file_name, hash_transcripts):
     bedfile.close()
 
 
-hash_transcripts, not_confirmed_cds = build_hash_transcripts('Homo_sapiens_79_GRCh37.gtf')
-build_bedfile("om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
+hash_transcripts, not_confirmed_cds = build_hash_transcripts("./data", 'Homo_sapiens_79_GRCh37.gtf')
+build_bedfile("./data", "om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
 
-
+print('Job completed')

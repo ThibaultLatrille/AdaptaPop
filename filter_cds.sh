@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # cd /panhome/tlatrill/AdaptaPop
 cd ~/AdaptaPop
 python3 ./create_interval_cds.py
