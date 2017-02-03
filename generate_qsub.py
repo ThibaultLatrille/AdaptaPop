@@ -26,7 +26,7 @@ for file in os.listdir(data + "/" + path):
             command += " -T ./" + tree + " -mutsel -dp ./" + file_name + chain + "\n"
             qsub.writelines(command)
         for chain in ["_1", "_2"]:
-            qsub.writelines("mv ./" + file_name + chain + ".* " + data + "/pb_output")
+            qsub.writelines("mv ./" + file_name + chain + ".* " + data + "/pb_output\n")
         qsub.close()
 
 print('Job completed')
