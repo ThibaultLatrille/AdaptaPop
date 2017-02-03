@@ -1,6 +1,9 @@
 from lxml import etree
 import os
 
+# data = "/pandata/tlatrill/AdaptaPop/data"
+data = "./data"
+
 
 class Cds(object):
     def __init__(self, chromosome, strand, name):
@@ -63,7 +66,7 @@ def build_bedfile(data, path, file_name, hash_transcripts):
     bedfile.close()
 
 
-hash_transcripts, not_confirmed_cds = build_hash_transcripts("./data", 'Homo_sapiens_79_GRCh37.gtf')
-build_bedfile("./data", "om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
+hash_transcripts, not_confirmed_cds = build_hash_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
+build_bedfile(data, "om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
 
 print('Job completed')

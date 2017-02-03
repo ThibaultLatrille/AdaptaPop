@@ -3,6 +3,9 @@ from Bio import SeqIO
 from lxml import etree
 from collections import defaultdict
 
+# data = "/pandata/tlatrill/AdaptaPop/data"
+data = "./data"
+
 
 class Cds(object):
     def __init__(self, chromosome, strand, name):
@@ -56,8 +59,8 @@ class Cds(object):
         return sum([j - i + 1 for i, j in self.exons])
 
 
-def build_hash_transcripts(file_name):
-    gtf_file = open("./data/" + file_name, 'r')
+def build_hash_transcripts(data, file_name):
+    gtf_file = open(data + "/" + file_name, 'r')
     hash_transcripts = {}
     not_confirmed_cds = {}
     for line in gtf_file:
@@ -78,8 +81,8 @@ def build_hash_transcripts(file_name):
     return hash_transcripts, not_confirmed_cds
 
 
-def build_hash_snps(file_name):
-    vcf_file = open("./data/" + file_name, 'r')
+def build_hash_snps(data, file_name):
+    vcf_file = open(data + "/" + file_name, 'r')
     hash_snps = {}
     for line in vcf_file:
         if line[0] != '#':
@@ -114,8 +117,8 @@ codontable.update({
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'stop', 'TAG': 'stop',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'stop', 'TGG': 'W'})
 
-hash_transcripts, not_confirmed_cds = build_hash_transcripts('Homo_sapiens_79_GRCh37.gtf')
-hash_snps = build_hash_snps('Homo_sapiens_79_polymorphism_in_cds.vcf')
+hash_transcripts, not_confirmed_cds = build_hash_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
+hash_snps = build_hash_snps(data, 'Homo_sapiens_79_polymorphism_in_cds.vcf')
 
 path = "om_79_cds_homo"
 txt_file = open('79_mk_test.out', 'w')
@@ -130,12 +133,12 @@ errors_snp_ref = []
 errors_snp_stop = []
 errors_snp_alt_stop = []
 errors_snp_codon = []
-for file in os.listdir("./data/" + path):
+for file in os.listdir(data + "/" + path):
     if file.endswith(".xml"):
         cds_total += 1
         file_name = file[:-4]
 
-        root = etree.parse("./data/" + path + "/" + file_name + ".xml").getroot()
+        root = etree.parse(data + "/" + path + "/" + file_name + ".xml").getroot()
         for specie in root.find('CDS').findall("speciesCDS"):
             if specie.attrib['species'] == 'Homo':
                 tr_id = specie.find('infoCDS').find('ensidTr').text
@@ -151,7 +154,7 @@ for file in os.listdir("./data/" + path):
             errors_cds_length.append(tr_id)
             continue
 
-        fasta_seqs = SeqIO.parse(open("./data/" + path + "/" + file_name + "_raw_NT.fasta", 'r'), 'fasta')
+        fasta_seqs = SeqIO.parse(open(data + "/" + path + "/" + file_name + "_raw_NT.fasta", 'r'), 'fasta')
         for fasta in fasta_seqs:
             if fasta.id == "Homo":
                 homo_seq = fasta.seq
