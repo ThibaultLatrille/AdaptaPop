@@ -28,10 +28,10 @@ class Cds(object):
         return lines
 
 
-def build_hash_transcripts(data, file_name):
-    gtf_file = open(data + "/" + file_name, 'r')
-    hash_transcripts = {}
-    not_confirmed_cds = {}
+def build_dict_transcripts(in_data, file_name):
+    gtf_file = open(in_data + "/" + file_name, 'r')
+    in_dict_transcripts = {}
+    in_not_confirmed_cds = {}
     for line in gtf_file:
         line_split = line.split('\t')
         if len(line_split) > 7:
@@ -41,32 +41,32 @@ def build_hash_transcripts(data, file_name):
                 if transcript_find != -1:
                     tr_id = info[transcript_find + 15:transcript_find + 30]
                     if info.find('cds_start_NF') != -1 or info.find('cds_end_NF') != -1:
-                        if not not_confirmed_cds.get(tr_id):
-                            not_confirmed_cds[tr_id] = True
-                    if not hash_transcripts.get(tr_id):
-                        hash_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
-                    hash_transcripts[tr_id].add_exon(line_split[3], line_split[4])
+                        if not in_not_confirmed_cds.get(tr_id):
+                            in_not_confirmed_cds[tr_id] = True
+                    if not in_dict_transcripts.get(tr_id):
+                        in_dict_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
+                        in_dict_transcripts[tr_id].add_exon(line_split[3], line_split[4])
     gtf_file.close()
-    return hash_transcripts, not_confirmed_cds
+    return in_dict_transcripts, in_not_confirmed_cds
 
 
-def build_bedfile(data, path, file_name, hash_transcripts):
-    bedfile = open(data + "/" + file_name, 'w')
-    for file in os.listdir(data + "/" + path):
+def build_bedfile(in_data, path, file_name, in_dict_transcripts):
+    in_bedfile = open(in_data + "/" + file_name, 'w')
+    for file in os.listdir(in_data + "/" + path):
         if file.endswith(".xml"):
-            root = etree.parse(data + "/" + path + "/" + file).getroot()
+            root = etree.parse(in_data + "/" + path + "/" + file).getroot()
             for specie in root.find('CDS').findall("speciesCDS"):
                 if specie.attrib['species'] == 'Homo':
                     tr_id = specie.find('infoCDS').find('ensidTr').text
-                    if hash_transcripts[tr_id]:
-                        for line in hash_transcripts[tr_id].befile_lines():
-                            bedfile.write(line)
+                    if in_dict_transcripts.get(tr_id):
+                        for line in in_dict_transcripts[tr_id].befile_lines():
+                            in_bedfile.write(line)
                         break
-    bedfile.truncate()
-    bedfile.close()
+    in_bedfile.truncate()
+    in_bedfile.close()
 
 
-hash_transcripts, not_confirmed_cds = build_hash_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
-build_bedfile(data, "om_79_cds_homo", '79_interval_cds.bed', hash_transcripts)
+dict_transcripts, not_confirmed_cds = build_dict_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
+build_bedfile(data, "om_79_cds_homo", '79_interval_cds.bed', dict_transcripts)
 
 print('Job completed')

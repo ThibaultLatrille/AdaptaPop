@@ -59,10 +59,10 @@ class Cds(object):
         return sum([j - i + 1 for i, j in self.exons])
 
 
-def build_hash_transcripts(data, file_name):
+def build_dict_transcripts(data, file_name):
     gtf_file = open(data + "/" + file_name, 'r')
-    hash_transcripts = {}
-    not_confirmed_cds = {}
+    in_dict_transcripts = {}
+    in_not_confirmed_cds = {}
     for line in gtf_file:
         line_split = line.split('\t')
         if len(line_split) > 7:
@@ -72,28 +72,28 @@ def build_hash_transcripts(data, file_name):
                 if transcript_find != -1:
                     tr_id = info[transcript_find + 15:transcript_find + 30]
                     if info.find('cds_start_NF') != -1 or info.find('cds_end_NF') != -1:
-                        if not not_confirmed_cds.get(tr_id):
-                            not_confirmed_cds[tr_id] = True
-                    if not hash_transcripts.get(tr_id):
-                        hash_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
-                    hash_transcripts[tr_id].add_exon(line_split[3], line_split[4])
+                        if not in_not_confirmed_cds.get(tr_id):
+                            in_not_confirmed_cds[tr_id] = True
+                    if not in_dict_transcripts.get(tr_id):
+                        in_dict_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
+                    in_dict_transcripts[tr_id].add_exon(line_split[3], line_split[4])
     gtf_file.close()
-    return hash_transcripts, not_confirmed_cds
+    return in_dict_transcripts, in_not_confirmed_cds
 
 
-def build_hash_snps(data, file_name):
+def build_dict_snps(data, file_name):
     vcf_file = open(data + "/" + file_name, 'r')
-    hash_snps = {}
+    in_dict_snps = {}
     for line in vcf_file:
         if line[0] != '#':
             split_line = line.split("\t")
             if len(split_line[3]) == 1 and len(split_line[4]) == 1 and split_line[4] != ".":
                 tr_id = split_line[11]
-                if not hash_snps.get(tr_id):
-                    hash_snps[tr_id] = []
-                hash_snps[tr_id].append((split_line[2], split_line[0], int(split_line[1]), split_line[3], split_line[4]))
+                if not in_dict_snps.get(tr_id):
+                    in_dict_snps[tr_id] = []
+                    in_dict_snps[tr_id].append((split_line[2], split_line[0], int(split_line[1]), split_line[3], split_line[4]))
     vcf_file.close()
-    return hash_snps
+    return in_dict_snps
 
 
 homo_seq_ungap, homo_seq, pan_seq, tr_id = "", "", "", ""
@@ -117,8 +117,8 @@ codontable.update({
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'stop', 'TAG': 'stop',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'stop', 'TGG': 'W'})
 
-hash_transcripts, not_confirmed_cds = build_hash_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
-hash_snps = build_hash_snps(data, 'Homo_sapiens_79_polymorphism_in_cds.vcf')
+dict_transcripts, not_confirmed_cds = build_dict_transcripts(data, 'Homo_sapiens_79_GRCh37.gtf')
+dict_snps = build_dict_snps(data, 'Homo_sapiens_79_polymorphism_in_cds.vcf')
 
 path = "om_79_cds_homo"
 txt_file = open('79_mk_test.out', 'w')
@@ -148,7 +148,7 @@ for file in os.listdir(data + "/" + path):
             errors_cds_nf.append(tr_id)
             continue
 
-        cds = hash_transcripts[tr_id]
+        cds = dict_transcripts[tr_id]
         cds_length = cds.seq_length()
         if cds_length % 3 != 0:
             errors_cds_length.append(tr_id)
@@ -171,9 +171,9 @@ for file in os.listdir(data + "/" + path):
             errors_cds_unequal_length.append(tr_id)
             continue
 
-        if hash_snps.get(tr_id):
+        if dict_snps.get(tr_id):
             list_aa_poly = []
-            for snp_id, chromosome, pos, ref_nt, alt_nt in hash_snps[tr_id]:
+            for snp_id, chromosome, pos, ref_nt, alt_nt in dict_snps[tr_id]:
                 snp_total += 1
                 ref_aa, alt_aa, ref_codon, alt_codon = cds.amino_acid(homo_seq_ungap, pos, ref_nt, alt_nt)
                 if ref_aa == '!':
