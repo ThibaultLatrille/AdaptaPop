@@ -29,12 +29,14 @@ for file in os.listdir(ali_path):
                 qsub.writelines("#PBS -r n\n")
                 qsub.writelines("TMP=/tmp/tlatrill$RANDOM\n")
                 qsub.writelines("export TMPDIR=$TMP\n")
-                qsub.writelines("rm -rf $TMP\n")
-                command = "mpirun -n 8 ~/pbmpi2/data/pb_mpi -f -s -x 1 400 {0}".format(option)
+                qsub.writelines("mkdir -p {0}/pb_{1}\n".format(data_path, opt_name))
+                command = "mpirun -n {0} ~/pbmpi2/data/pb_mpi -f -s -x 1 400 {1}".format(nbr_cpu, option)
                 command += " -d {0}/{1}".format(ali_path, file)
                 command += " -T {0}/{1}".format(data_path, tree)
-                command += " {0}/bp_{2}/{1}_{3}\n".format(data_path, file_name, opt_name, chain)
+                command += " {0}/pb_{1}/{2}_{3}\n".format(data_path, opt_name, file_name, chain)
                 qsub.writelines(command)
+                qsub.writelines("rm -rf $TMP\n")
+                qsub.writelines("rm {0}/qsub/{1}_{2}_{3}.pbs\n".format(data_path, file_name, opt_name, chain))
                 qsub.close()
 
 
