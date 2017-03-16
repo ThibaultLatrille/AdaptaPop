@@ -4,8 +4,8 @@ from Bio import Phylo
 import numpy as np
 
 ali_folder = "om_79_cds_mammals_no_pan_marsu"
-# data_path = "/pandata/tlatrill/AdaptaPop/data"
-data_path = "./data"
+data_path = "/pandata/tlatrill/AdaptaPop/data"
+# data_path = "./data"
 
 pbmpi_folder = "pb_output"
 concatenate_folder = "concatenate"
