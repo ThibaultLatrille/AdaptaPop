@@ -70,7 +70,7 @@ for file in os.listdir(concatenate_path):
             qsub.writelines("#!/bin/bash\n")
             qsub.writelines("#\n")
             qsub.writelines("#PBS -q q1day\n")
-            qsub.writelines("#PBS -l nodes=1:ppn={0},mem=4gb\n".format(nbr_cpu))
+            qsub.writelines("#PBS -l nodes=1:ppn={0},mem=24gb\n".format(nbr_cpu))
             qsub.writelines("#PBS -o /pandata/tlatrill/out_err/out_{0}_{1}\n".format(file_name, chain))
             qsub.writelines("#PBS -e /pandata/tlatrill/out_err/err_{1}_{1}\n".format(file_name, chain))
             qsub.writelines("#PBS -j oe\n")
