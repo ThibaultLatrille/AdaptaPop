@@ -25,8 +25,8 @@ for file in os.listdir(ali_path):
             qsub.writelines("export TMPDIR=$TMP\n")
             for opt_name in ["mutsel", "mutselfreeomega"]:
                 qsub.writelines("cd {}/pb_{}\n".format(data_path, opt_name))
-                qsub.writelines("~/pbmpi2/data/readpb_mpi -x 100 -ss {0}\n".format(file_name))
-                qsub.writelines("~/pbmpi2/data/readpb_mpi -x 100 -om {0}\n".format(file_name))
+                qsub.writelines("~/pbmpi2/data/readpb_mpi -x 100 -ss {0}_{1}\n".format(file_name, chain))
+                qsub.writelines("~/pbmpi2/data/readpb_mpi -x 100 -om {0}_{1}\n".format(file_name, chain))
             qsub.writelines("rm -rf $TMP\n")
             qsub.writelines("rm {0}/qsub/{1}_{2}.pbs\n".format(data_path, file_name, chain))
             qsub.close()
