@@ -3,8 +3,8 @@ import numpy as np
 
 folders = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
 
-# data = "/pandata/tlatrill/AdaptaPop/data"
-data_path = "./data"
+data_path = "/pandata/tlatrill/AdaptaPop/data"
+# data_path = "./data"
 
 cds_omega = {}
 header = set()
