@@ -16,18 +16,19 @@ dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in fold
 omega_table = np.loadtxt("{0}/79_omega_estimated.out".format(data_path), dtype=dtype, skiprows=1)
 
 if file_name == "adaptative":
+    params = [("mutselfreeomega", "$\\left< \\omega^* \\right>$", False),
+              ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
+              ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
+              ("predmutselfreeomega*mutselfreeomega-predmutselfreeomega",
+               "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
+else:
     params = [("globalomega", "$\\omega$", False),
               ("siteomega", "$\\left< \\omega \\right>$", False),
               ("predmutsel", "$\\left< \\omega_0 \\right>$", False),
               ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$", False),
               ("mutselfreeomega*predmutsel", "$\\left<  \\omega^* \\omega_0 \\right>$", False),
               ("mutselfreeomega*predmutselfreeomega", "$\\left<  \\omega^* \\omega_0^* \\right>$", False)]
-else:
-    params = [("mutselfreeomega", "$\\left< \\omega^* \\right>$", False),
-              ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
-              ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
-              ("predmutselfreeomega*mutselfreeomega-predmutselfreeomega",
-               "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
+
 
 my_dpi = 96
 plt.figure(figsize=(2 * 1920 / my_dpi, 2 * 1440 / my_dpi), dpi=my_dpi)
