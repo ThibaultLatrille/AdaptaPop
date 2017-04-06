@@ -80,7 +80,7 @@ for file in os.listdir(concatenate_path):
             qsub.writelines("TMP=/tmp/tlatrill$RANDOM\n")
             qsub.writelines("export TMPDIR=$TMP\n")
             qsub.writelines("mkdir -p {0}/pb_concatenate\n".format(data_path))
-            command = "mpirun -n {0} ~/pbmpi/data/pb_mpi -f -s -x 1 400 -mutsel -freeomega -dp".format(nbr_cpu)
+            command = "mpirun -n {0} ~/pbmpi/data/pb_mpi -f -s -x 1 1000 -mutsel -freeomega -dp".format(nbr_cpu)
             command += " -d {0}/{1}".format(concatenate_path, file)
             command += " -T {0}/{1}".format(data_path, tree)
             command += " {0}/pb_concatenate/{1}_{2}\n".format(data_path, file_name, chain)
