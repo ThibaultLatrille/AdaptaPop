@@ -1,3 +1,4 @@
+import os
 import matplotlib as mpl
 
 mpl.use('Agg')
@@ -6,32 +7,6 @@ import numpy as np
 import statsmodels.api as sm
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import scipy.stats as st
-
-folders = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
-data_path = "/pandata/tlatrill/AdaptaPop/data"
-# data_path = "./data"
-file_name = "adaptative"
-
-dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in folders])
-omega_table = np.loadtxt("{0}/79_omega_estimated.out".format(data_path), dtype=dtype, skiprows=1)
-
-if file_name == "adaptative":
-    params = [("mutselfreeomega", "$\\left< \\omega^* \\right>$", False),
-              ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
-              ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
-              ("predmutselfreeomega*mutselfreeomega-predmutselfreeomega",
-               "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
-else:
-    params = [("globalomega", "$\\omega$", False),
-              ("siteomega", "$\\left< \\omega \\right>$", False),
-              ("predmutsel", "$\\left< \\omega_0 \\right>$", False),
-              ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$", False),
-              ("mutselfreeomega*predmutsel", "$\\left<  \\omega^* \\omega_0 \\right>$", False),
-              ("mutselfreeomega*predmutselfreeomega", "$\\left<  \\omega^* \\omega_0^* \\right>$", False)]
-
-
-my_dpi = 96
-plt.figure(figsize=(2 * 1920 / my_dpi, 2 * 1440 / my_dpi), dpi=my_dpi)
 
 ops = {"+": (lambda x, y: x + y),
        "-": (lambda x, y: x - y),
@@ -55,7 +30,34 @@ def p_value(v, mean, std):
     else:
         return st.norm.cdf((mean - v) / std)
 
+cds_folder = "om_79_cds_mammals_no_pan_marsu"
+outlier_folder = "outliers"
+folders = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
+data_path = "/pandata/tlatrill/AdaptaPop/data"
+# data_path = "./data"
+cds_path = "{0}/{1}".format(data_path, cds_folder)
+file_name = "raw"
+outlier_path = "{0}/{1}_{2}".format(data_path, outlier_folder, file_name)
+os.system("rm -rf {0} && mkdir {0}".format(outlier_path))
+dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in folders])
+omega_table = np.loadtxt("{0}/79_omega_estimated.out".format(data_path), dtype=dtype, skiprows=1)
 
+if file_name == "adaptative":
+    params = [("mutselfreeomega", "$\\left< \\omega^* \\right>$", False),
+              ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
+              ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
+              ("predmutselfreeomega*mutselfreeomega-predmutselfreeomega",
+               "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
+else:
+    params = [("globalomega", "$\\omega$", False),
+              ("siteomega", "$\\left< \\omega \\right>$", False),
+              ("predmutsel", "$\\left< \\omega_0 \\right>$", False),
+              ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$", False),
+              ("mutselfreeomega*predmutsel", "$\\left<  \\omega^* \\omega_0 \\right>$", False),
+              ("mutselfreeomega*predmutselfreeomega", "$\\left<  \\omega^* \\omega_0^* \\right>$", False)]
+
+my_dpi = 96
+plt.figure(figsize=(2 * 1920 / my_dpi, 2 * 1440 / my_dpi), dpi=my_dpi)
 n_plot = 1
 txt_file = open('{0}/79_omega_outliers_{1}.out'.format(data_path, file_name), 'w')
 for x, x_label, x_inter in params:
@@ -90,16 +92,22 @@ for x, x_label, x_inter in params:
             plt.plot(sorted_x, sorted(iv_l), 'r--')
             tr_ids = [i for i, y in enumerate(table_y) if (y < iv_l[i] or y > iv_u[i])]
             txt_file.write("x={0}; y={1}".format(x, y))
-            txt_file.write("\ntr_id\tx_{0}\ty_{1}\ty_predicted\ty_lower_bound\ty_upper_bound\tp_value\n".format(x, y))
+            txt_file.write("\ntr_id\tx_{0}\ty_{1}\ty_predicted\ty_lower_bound\ty_upper_bound\tp_value\t".format(x, y) +
+                           "\t".join(folders) + "\n")
             txt_file.write("\n".join(["\t".join(
-                [str(j) for j in [omega_table["tr_id"][i][2:-1],
-                                  table_x[i],
-                                  table_y[i],
-                                  results.fittedvalues[i],
-                                  iv_l[i],
-                                  iv_u[i],
-                                  p_value(table_y[i], results.fittedvalues[i], prstd[i])]
+                [str(j) for j in ([omega_table["tr_id"][i][2:-1],
+                                   table_x[i],
+                                   table_y[i],
+                                   results.fittedvalues[i],
+                                   iv_l[i],
+                                   iv_u[i],
+                                   p_value(table_y[i], results.fittedvalues[i], prstd[i])] +
+                                  [omega_table[fold][i] for fold in folders])
                  ]) for i in tr_ids]) + "\n\n")
+            for tr_id in [omega_table["tr_id"][i][2:-1] for i in tr_ids]:
+                os.system("cp {0}/{1}_*.fasta {2}".format(cds_path, tr_id, outlier_path))
+                os.system("cp {0}/{1}_*.rootree {2}".format(cds_path, tr_id, outlier_path))
+                os.system("cp {0}/{1}.xml {2}".format(cds_path, tr_id, outlier_path))
         plt.legend()
 
 txt_file.close()
