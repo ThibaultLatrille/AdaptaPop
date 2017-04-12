@@ -8,20 +8,9 @@ import statsmodels.api as sm
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import scipy.stats as st
 
-ops = {"+": (lambda x, y: x + y),
-       "-": (lambda x, y: x - y),
-       "*": (lambda x, y: x * y),
-       "/": (lambda x, y: x / y)}
-
 
 def str_to_table(table, label):
-    i = max(label.find(op) for op in ops.keys())
-    if i > -1:
-        return ops[label[i]](str_to_table(table, label[:i]), str_to_table(table, label[i + 1:]))
-    elif label.isdigit():
-        return int(label)
-    else:
-        return table[label]
+    return eval(label, {f: table[f] for f in folders})
 
 
 def p_value(v, mean, std):
@@ -32,11 +21,11 @@ def p_value(v, mean, std):
 
 cds_folder = "om_79_cds_mammals_no_pan_marsu"
 outlier_folder = "outliers"
+file_name = "adaptative"
 folders = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
 data_path = "/pandata/tlatrill/AdaptaPop/data"
 # data_path = "./data"
 cds_path = "{0}/{1}".format(data_path, cds_folder)
-file_name = "raw"
 outlier_path = "{0}/{1}_{2}".format(data_path, outlier_folder, file_name)
 os.system("rm -rf {0} && mkdir {0}".format(outlier_path))
 dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in folders])
@@ -46,7 +35,7 @@ if file_name == "adaptative":
     params = [("mutselfreeomega", "$\\left< \\omega^* \\right>$", False),
               ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
               ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
-              ("predmutselfreeomega*mutselfreeomega-predmutselfreeomega",
+              ("predmutselfreeomega*(mutselfreeomega-1)",
                "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
 else:
     params = [("globalomega", "$\\omega$", False),
@@ -104,10 +93,12 @@ for x, x_label, x_inter in params:
                                    p_value(table_y[i], results.fittedvalues[i], prstd[i])] +
                                   [omega_table[fold][i] for fold in folders])
                  ]) for i in tr_ids]) + "\n\n")
-            for tr_id in [omega_table["tr_id"][i][2:-1] for i in tr_ids]:
-                os.system("cp {0}/{1}_*.fasta {2}".format(cds_path, tr_id, outlier_path))
-                os.system("cp {0}/{1}_*.rootree {2}".format(cds_path, tr_id, outlier_path))
-                os.system("cp {0}/{1}.xml {2}".format(cds_path, tr_id, outlier_path))
+            if (x == "mutselfreeomega" and y == "siteomega/predmutsel") or (x == "siteomega-predmutsel" and y == "predmutselfreeomega*(mutselfreeomega-1)"):
+                for tr_id in [omega_table["tr_id"][i][2:-1] for i in tr_ids]:
+                    os.system("cp {0}/{1}_filtered_NT.ali {2}".format(cds_path, tr_id, outlier_path))
+                    os.system("cp {0}/{1}_filtered_NT.fasta {2}".format(cds_path, tr_id, outlier_path))
+                    os.system("cp {0}/{1}_*.rootree {2}".format(cds_path, tr_id, outlier_path))
+                    os.system("cp {0}/{1}.xml {2}".format(cds_path, tr_id, outlier_path))
         plt.legend()
 
 txt_file.close()
