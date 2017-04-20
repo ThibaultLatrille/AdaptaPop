@@ -21,7 +21,7 @@ count = 0
 nbr_cpu = 4
 minimum_nbr_species = 16
 for file in os.listdir(homo_path):
-    if file.endswith(".fasta") and ('NT' in file):
+    if file.endswith(".fasta") and ('raw_NT' in file):
         cds_name = file.split("_")[0]
         file_path = "{0}/allSpp_{1}_macse_NT_codon_gapClean40_Hmm5.fasta".format(cleaned_path, cds_name)
         if os.path.isfile(file_path):

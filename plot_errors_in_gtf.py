@@ -1,16 +1,13 @@
 import pickle as pickle
 import matplotlib.pyplot as plt
-# data = "/pandata/tlatrill/AdaptaPop/data"
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 
-data = "./data"
-f = open(data + "/" + 'gtf_errors.p', "rb")
+f = open("{0}/gtf_errors.p".format(data_path), "rb")
 data_frame = pickle.load(f)
 f.close()
 
 mk_file = "79_mk_test.out"
-pbmpi_path = "pb_output"
-# data = "/pandata/tlatrill/AdaptaPop/data"
-data = "./data"
 
 RED = "#EB6231"
 YELLOW = "#E29D26"

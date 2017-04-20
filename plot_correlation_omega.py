@@ -10,7 +10,7 @@ import scipy.stats as st
 
 
 def str_to_table(table, label):
-    return eval(label, {f: table[f] for f in folders})
+    return eval(label, {f: table[f] for f in columns})
 
 
 def p_value(v, mean, std):
@@ -22,13 +22,13 @@ def p_value(v, mean, std):
 cds_folder = "om_79_cds_mammals_no_pan_marsu"
 outlier_folder = "outliers"
 file_name = "adaptative"
-folders = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
-data_path = "/pandata/tlatrill/AdaptaPop/data"
-# data_path = "./data"
+columns = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 cds_path = "{0}/{1}".format(data_path, cds_folder)
 outlier_path = "{0}/{1}_{2}".format(data_path, outlier_folder, file_name)
 os.system("rm -rf {0} && mkdir {0}".format(outlier_path))
-dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in folders])
+dtype = np.dtype([("CdsId", 'str', 32)] + [(name, 'float64', 1) for name in columns])
 omega_table = np.loadtxt("{0}/79_omega_estimated.out".format(data_path), dtype=dtype, skiprows=1)
 
 if file_name == "adaptative":
@@ -36,14 +36,14 @@ if file_name == "adaptative":
               ("siteomega/predmutsel", "$\\left< \\omega / \\omega_0 \\right>$", False),
               ("siteomega-predmutsel", "$\\left< \\omega - \\omega_0 \\right>$", True),
               ("predmutselfreeomega*(mutselfreeomega-1)",
-               "$\\left< \\omega^*_0 (\\omega^* - 1) \\right>$", True)]
+               "$\\omega^*_0 \\left< \\omega^* - 1 \\right>$", True)]
 else:
     params = [("globalomega", "$\\omega$", False),
               ("siteomega", "$\\left< \\omega \\right>$", False),
               ("predmutsel", "$\\left< \\omega_0 \\right>$", False),
               ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$", False),
-              ("mutselfreeomega*predmutsel", "$\\left<  \\omega^* \\omega_0 \\right>$", False),
-              ("mutselfreeomega*predmutselfreeomega", "$\\left<  \\omega^* \\omega_0^* \\right>$", False)]
+              ("mutselfreeomega*predmutsel", "$\\omega^* \\left< \\omega_0 \\right>$", False),
+              ("mutselfreeomega*predmutselfreeomega", "$\\omega^* \\left<   \\omega_0^* \\right>$", False)]
 
 my_dpi = 96
 plt.figure(figsize=(2 * 1920 / my_dpi, 2 * 1440 / my_dpi), dpi=my_dpi)
@@ -66,14 +66,14 @@ for x, x_label, x_inter in params:
             results = model.fit()
             b, a = results.params[0:2]
             plt.plot(idf, a * idf + b, 'r-',
-                     label=r"$y={0:.3g}x + {1:.3g}$ ($r^2={2:.3g})$".format(float(a), float(b), results.rsquared_adj))
+                     label=r"$y={0:.3g}x + {1:.3g}$ ($r^2={2:.3g})$".format(float(a), float(b), results.rsquared))
         else:
             model = sm.OLS(table_y, table_x)
             results = model.fit()
             a = results.params[0]
             plt.plot(idf, idf)
             plt.plot(idf, a * idf, 'r-',
-                     label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared_adj))
+                     label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared))
         if x != y:
             prstd, iv_l, iv_u = wls_prediction_std(results)
             sorted_x = sorted(table_x)
@@ -82,19 +82,19 @@ for x, x_label, x_inter in params:
             tr_ids = [i for i, y in enumerate(table_y) if (y < iv_l[i] or y > iv_u[i])]
             txt_file.write("x={0}; y={1}".format(x, y))
             txt_file.write("\ntr_id\tx_{0}\ty_{1}\ty_predicted\ty_lower_bound\ty_upper_bound\tp_value\t".format(x, y) +
-                           "\t".join(folders) + "\n")
+                           "\t".join(columns) + "\n")
             txt_file.write("\n".join(["\t".join(
-                [str(j) for j in ([omega_table["tr_id"][i][2:-1],
+                [str(j) for j in ([omega_table["CdsId"][i][2:-1],
                                    table_x[i],
                                    table_y[i],
                                    results.fittedvalues[i],
                                    iv_l[i],
                                    iv_u[i],
                                    p_value(table_y[i], results.fittedvalues[i], prstd[i])] +
-                                  [omega_table[fold][i] for fold in folders])
+                                  [omega_table[fold][i] for fold in columns])
                  ]) for i in tr_ids]) + "\n\n")
             if (x == "mutselfreeomega" and y == "siteomega/predmutsel") or (x == "siteomega-predmutsel" and y == "predmutselfreeomega*(mutselfreeomega-1)"):
-                for tr_id in [omega_table["tr_id"][i][2:-1] for i in tr_ids]:
+                for tr_id in [omega_table["CdsId"][i][2:-1] for i in tr_ids]:
                     os.system("cp {0}/{1}_filtered_NT.ali {2}".format(cds_path, tr_id, outlier_path))
                     os.system("cp {0}/{1}_filtered_NT.fasta {2}".format(cds_path, tr_id, outlier_path))
                     os.system("cp {0}/{1}_*.rootree {2}".format(cds_path, tr_id, outlier_path))
@@ -102,6 +102,7 @@ for x, x_label, x_inter in params:
         plt.legend()
 
 txt_file.close()
+plt.tight_layout()
 plt.savefig("{0}/correlation_omega_{1}.svg".format(data_path, file_name), format="svg")
 # plt.show()
 print('Plot completed')

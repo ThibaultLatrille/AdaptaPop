@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import statsmodels.api as sm
 
-data_path = "/pandata/tlatrill/AdaptaPop/data"
-# data_path = "./data"
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 
 pbmpi_folder = "pb_output"
 pbmpi_path = "{0}/{1}".format(data_path, pbmpi_folder)
@@ -53,12 +53,13 @@ for nbr_bins in bins:
     plt.figure(figsize=(1920 / my_dpi, 1440 / my_dpi), dpi=my_dpi)
     plt.scatter(x_axis, y_axis, linewidth=3)
     plt.plot(idf, idf)
-    plt.plot(idf, a * idf, 'r-', label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared_adj))
+    plt.plot(idf, a * idf, 'r-', label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared))
     plt.legend()
     plt.xlabel('$\\omega_{bin}$')
     plt.xlabel('$\\omega$')
     plt.xlim((0, max(x_axis)))
     plt.ylim((0, max(y_axis)))
+    plt.tight_layout()
     plt.savefig("correlation_concatenate_{0}.svg".format(nbr_bins), format="svg")
     idf = np.linspace(0, max(y_axis), 30)
     model = sm.OLS(x_axis, y_axis)
@@ -68,12 +69,13 @@ for nbr_bins in bins:
     plt.figure(figsize=(1920 / my_dpi, 1440 / my_dpi), dpi=my_dpi)
     plt.scatter(y_axis, x_axis, linewidth=3)
     plt.plot(idf, idf)
-    plt.plot(idf, a * idf, 'r-', label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared_adj))
+    plt.plot(idf, a * idf, 'r-', label=r"$y={0:.3g}x$ ($r^2={1:.3g})$".format(float(a), results.rsquared))
     plt.legend()
     plt.xlabel('$\\omega_{bin}$')
     plt.xlabel('$\\omega$')
     plt.xlim((0, max(y_axis)))
     plt.ylim((0, max(x_axis)))
+    plt.tight_layout()
     plt.savefig("correlation_concatenate_{0}_inv.svg".format(nbr_bins), format="svg")
 
 print('Plot completed')

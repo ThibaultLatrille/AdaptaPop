@@ -1,15 +1,15 @@
 import os
 import numpy as np
 
-folders = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
+columns = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
 
-data_path = "/pandata/tlatrill/AdaptaPop/data"
-# data_path = "./data"
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 
 cds_omega = {}
 header = set()
-for folder in folders:
-    folder_path = "{0}/pb_{1}".format(data_path, folder)
+for column in columns:
+    folder_path = "{0}/pb_{1}".format(data_path, column)
     for file in os.listdir(folder_path):
         if file.endswith(".predsiteomega") or file.endswith(".trace"):
             if file.endswith(".predsiteomega"):
@@ -24,9 +24,9 @@ for folder in folders:
             if cds_name not in cds_omega:
                 cds_omega[cds_name] = {}
             if file.endswith(".predsiteomega"):
-                omega_name = "pred" + folder
+                omega_name = "pred" + column
             else:
-                omega_name = folder
+                omega_name = column
             if omega_name not in cds_omega[cds_name]:
                     cds_omega[cds_name][omega_name] = []
             header.add(omega_name)
@@ -37,7 +37,7 @@ for folder in folders:
 
 header = sorted(header)
 txt_file = open(data_path + '/79_omega_estimated.out', 'w')
-txt_file.write("tr_id\t"+"\t".join(header)+"\n")
+txt_file.write("CdsId\t"+"\t".join(header)+"\n")
 for tr_id, omega_dico in cds_omega.items():
     line = tr_id
     for omega_name in header:

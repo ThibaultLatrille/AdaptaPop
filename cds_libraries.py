@@ -53,12 +53,18 @@ class Cds(object):
     def seq_length(self):
         return sum([j - i + 1 for i, j in self.exons])
 
+    def befile_lines(self):
+        lines = []
+        for start, end in self.exons:
+            lines.append("{0}\t{1}\t{2}\t{3}\t0\t[4}\n".format(self.chromosome, start, end, self.name, self.strand))
+        return lines
 
-def build_dict_transcripts(data, file_name):
-    gtf_file = open(data + "/" + file_name, 'r')
-    in_dict_transcripts = {}
-    in_not_confirmed_cds = {}
-    in_full_transcripts = {}
+
+def build_dict_transcripts(_data_path, file_name):
+    gtf_file = open("{0}/{1}".format(_data_path, file_name), 'r')
+    _dict_transcripts = {}
+    _not_confirmed_cds = {}
+    _full_transcripts = {}
     for line in gtf_file:
         line_split = line.split('\t')
         if len(line_split) > 7:
@@ -68,32 +74,32 @@ def build_dict_transcripts(data, file_name):
                 if transcript_find != -1:
                     tr_id = info[transcript_find + 15:transcript_find + 30]
                     if info.find('cds_start_NF') != -1 or info.find('cds_end_NF') != -1:
-                        if not in_not_confirmed_cds.get(tr_id):
-                            in_not_confirmed_cds[tr_id] = True
-                    if not in_dict_transcripts.get(tr_id):
-                        in_dict_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
-                        in_full_transcripts[tr_id] = [line]
+                        if tr_id not in _not_confirmed_cds:
+                            _not_confirmed_cds[tr_id] = True
+                    if tr_id not in _dict_transcripts:
+                        _dict_transcripts[tr_id] = Cds(line_split[0], line_split[6], tr_id)
+                        _full_transcripts[tr_id] = [line]
                     else:
-                        in_full_transcripts[tr_id].append(line)
-                    in_dict_transcripts[tr_id].add_exon(line_split[3], line_split[4])
+                        _full_transcripts[tr_id].append(line)
+                    _dict_transcripts[tr_id].add_exon(line_split[3], line_split[4])
 
     gtf_file.close()
-    return in_dict_transcripts, in_not_confirmed_cds, in_full_transcripts
+    return _dict_transcripts, _not_confirmed_cds, _full_transcripts
 
 
-def build_dict_snps(data, file_name):
-    vcf_file = open(data + "/" + file_name, 'r')
-    in_dict_snps = {}
+def build_dict_snps(_data_path, file_name):
+    vcf_file = open("{0}/{1}".format(_data_path, file_name), 'r')
+    _dict_snps = {}
     for line in vcf_file:
         if line[0] != '#':
             split_line = line.split("\t")
             if len(split_line[3]) == 1 and len(split_line[4]) == 1 and split_line[4] != ".":
                 tr_id = split_line[11]
-                if not in_dict_snps.get(tr_id):
-                    in_dict_snps[tr_id] = []
-                    in_dict_snps[tr_id].append((split_line[2], split_line[0], int(split_line[1]), split_line[3], split_line[4]))
+                if tr_id not in _dict_snps:
+                    _dict_snps[tr_id] = []
+                _dict_snps[tr_id].append((split_line[2], split_line[0], int(split_line[1]), split_line[3], split_line[4], split_line[7]))
     vcf_file.close()
-    return in_dict_snps
+    return _dict_snps
 
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 codontable = defaultdict(lambda: "-")

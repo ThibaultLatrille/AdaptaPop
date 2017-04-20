@@ -1,15 +1,16 @@
 import os
 from cds_libraries import build_dict_transcripts
 import pickle as pickle
-# data = "/pandata/tlatrill/AdaptaPop/data"
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 
-data = "./data"
-path = "archives_gtf"
+gtf_folder = "archives_gtf"
+gtf_path = "{0}/{1}".format(data_path, gtf_folder)
 data_frame = []
-error_file = open(data + "/" + 'gtf_errors.out', 'w')
-error_full_file = open(data + "/" + 'gtf_errors_full.out', 'w')
+error_file = open("{0}/gtf_errors.out".format(data_path), 'w')
+error_full_file = open("{0}/gtf_errors_full.out".format(data_path), 'w')
 
-for file in sorted(os.listdir(data + "/" + path), key=lambda x: int(x.split('.')[-2])):
+for file in sorted(os.listdir(gtf_path), key=lambda x: int(x.split('.')[-2])):
     if file.endswith(".gtf"):
         error_file.write("\n\n" + file + "\n")
         error_full_file.write("\n\n" + file + "\n")
@@ -17,7 +18,7 @@ for file in sorted(os.listdir(data + "/" + path), key=lambda x: int(x.split('.')
         errors_cds_nf = []
         errors_cds_length = []
 
-        dict_transcripts, not_confirmed_cds, full_transcripts = build_dict_transcripts(data + "/" + path, file)
+        dict_transcripts, not_confirmed_cds, full_transcripts = build_dict_transcripts(gtf_path, file)
 
         for tr_id, cds in dict_transcripts.items():
             cds_total += 1
@@ -44,7 +45,7 @@ for file in sorted(os.listdir(data + "/" + path), key=lambda x: int(x.split('.')
 
         data_frame.append([file, len(errors_cds_nf), len(errors_cds_length), cds_total])
 
-pickle.dump(data_frame, open(data + "/" + 'gtf_errors.p', "wb"))
+pickle.dump(data_frame, open("{0}/gtf_errors.p".format(data_path), "wb"))
 error_file.close()
 error_full_file.close()
 print("Job completed")

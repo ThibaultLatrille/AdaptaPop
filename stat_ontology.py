@@ -6,8 +6,8 @@ import scipy.stats as st
 
 cds_folder = "om_79_cds_mammals_no_pan_marsu"
 omega_estimated = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
-data_path = "/pandata/tlatrill/AdaptaPop/data"
-# data_path = "./data"
+# data_path = "/pandata/tlatrill/AdaptaPop/data"
+data_path = "/mnt/sda1/AdaptaPop/data"
 cds_path = "{0}/{1}".format(data_path, cds_folder)
 
 dtype = np.dtype([("tr_id", 'str', 32)] + [(name, 'float64', 1) for name in omega_estimated])
