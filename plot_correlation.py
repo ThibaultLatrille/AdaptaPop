@@ -87,7 +87,7 @@ params = [("(siteomega-predmutsel)/siteomega", "$\\left< \\omega - \\omega_0 \\r
 # data_path = "/pandata/tlatrill/AdaptaPop/data"
 data_path = "/mnt/sda1/AdaptaPop/data"
 
-columns = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
+columns = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega", "pos"])
 dtype = np.dtype([("CdsId", 'str', 32)] + [(name, 'float64', 1) for name in columns])
 omega_table = np.loadtxt("{0}/79_omega_estimated.out".format(data_path), dtype=dtype, skiprows=1)
 

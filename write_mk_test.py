@@ -98,6 +98,7 @@ for file in os.listdir(homo_path):
                             snp_filtered += 1
                             list_aa_poly.append((ref_aa, alt_aa))
                         else:
+                            list_aa_poly.append((ref_aa, alt_aa))
                             errors_snp_low_freq.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa, freq))
                     else:
                         errors_snp_no_freq.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))

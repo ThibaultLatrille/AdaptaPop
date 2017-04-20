@@ -10,7 +10,7 @@ def str_to_table(table, label):
 
 
 cds_folder = "om_79_cds_mammals_no_pan_marsu"
-columns = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega"])
+columns = sorted(["globalomega", "siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega", "pos"])
 # data_path = "/pandata/tlatrill/AdaptaPop/data"
 data_path = "/mnt/sda1/AdaptaPop/data"
 cds_path = "{0}/{1}".format(data_path, cds_folder)

@@ -1,20 +1,24 @@
 import os
 import numpy as np
 
-columns = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
+folders = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
 
 # data_path = "/pandata/tlatrill/AdaptaPop/data"
 data_path = "/mnt/sda1/AdaptaPop/data"
 
 cds_omega = {}
 header = set()
-for column in columns:
-    folder_path = "{0}/pb_{1}".format(data_path, column)
+header.add("pos")
+for folder in folders:
+    folder_path = "{0}/pb_{1}".format(data_path, folder)
     for file in os.listdir(folder_path):
         if file.endswith(".predsiteomega") or file.endswith(".trace"):
             if file.endswith(".predsiteomega"):
                 dtype = np.dtype([('#iter', 'str'), ('omega', 'float')])
                 cols = [0, 1]
+            elif folder == "siteomega":
+                dtype = np.dtype([('#iter', 'int'), ('omega', 'float'), ('pos', 'float')])
+                cols = [0, 6, 8]
             else:
                 dtype = np.dtype([('#iter', 'int'), ('omega', 'float')])
                 cols = [0, 6]
@@ -24,9 +28,9 @@ for column in columns:
             if cds_name not in cds_omega:
                 cds_omega[cds_name] = {}
             if file.endswith(".predsiteomega"):
-                omega_name = "pred" + column
+                omega_name = "pred" + folder
             else:
-                omega_name = column
+                omega_name = folder
             if omega_name not in cds_omega[cds_name]:
                     cds_omega[cds_name][omega_name] = []
             header.add(omega_name)
@@ -34,6 +38,10 @@ for column in columns:
                 cds_omega[cds_name][omega_name].append(np.mean(table['omega']))
             else:
                 cds_omega[cds_name][omega_name].append(np.mean(table['omega'][table['#iter'] > 100]))
+                if folder == "siteomega":
+                    if "pos" not in cds_omega[cds_name]:
+                        cds_omega[cds_name]["pos"] = []
+                    cds_omega[cds_name]["pos"].append(np.mean(table['pos'][table['#iter'] > 100]))
 
 header = sorted(header)
 txt_file = open(data_path + '/79_omega_estimated.out', 'w')
