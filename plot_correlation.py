@@ -128,7 +128,7 @@ def dfe_alpha(group, version):
         est_alpha_config_filename = "config-est_alpha_omega"
         est_alpha_config_str = "data_path_1\t{0}/data/\n" \
                                "divergence_file\t{0}/{3}\n" \
-                               "est_alpha_omega_results_file\t{0}/{3}\n" \
+                               "est_alpha_omega_results_file\t{0}/{4}\n" \
                                "est_dfe_results_file\t{0}/{1}/est_dfe.out\n" \
                                "neut_egf_file\t{0}/{2}/neut_egf.out\n" \
                                "sel_egf_file\t{0}/{1}/sel_egf.out\n" \
