@@ -9,14 +9,14 @@ homo_folder = "om_79_cds_homo"
 homo_path = "{0}/{1}".format(data_path, homo_folder)
 tr_id = ""
 
-cut_off = 0.01
+cut_off = 0
 
 dict_transcripts, not_confirmed_cds, full_transcripts = build_dict_transcripts(data_path, 'Homo_sapiens_79_GRCh37.gtf')
 dict_snps = build_dict_snps(data_path, 'Homo_sapiens_79_polymorphism_in_cds.vcf')
-dict_freq = {}
+dict_mac = {}
 
 txt_file = open('{0}/79_mk_test.out'.format(data_path), 'w')
-txt_file.write("CdsId\tSeqLength\tNbrExons\tPtot\tPn\tPs\tDtot\tDn\tDs\tSFSnbr\tSFSn\tSFSs\n")
+txt_file.write("CdsId\tSeqLength\tNbrExons\tPtot\tPn\tPs\tDtot\tDn\tDs\tSitesN\tSitesS\tSFSnLength\tSFSsLength\tSFSn\tSFSs\n")
 cds_total = 0
 errors_cds_nf = []
 errors_cds_length = []
@@ -30,6 +30,23 @@ errors_snp_alt_stop = []
 errors_snp_codon = []
 errors_snp_low_freq = []
 errors_snp_no_freq = []
+
+
+def count_site(triplet):
+    sum_s = 0
+    sum_n = 0
+    for i, letter in enumerate(triplet):
+        for alt_letter in ["A", "T", "G", "C"]:
+            if alt_letter != letter:
+                alt_triplet = triplet[:i] + alt_letter + triplet[i+1:]
+                if codontable[alt_triplet] != "stop":
+                    if codontable[triplet] == codontable[alt_triplet]:
+                        sum_s += 1
+                    else:
+                        sum_n += 1
+
+    return 3 * sum_n / (sum_n + sum_s), 3 * sum_s / (sum_n + sum_s)
+
 
 for file in os.listdir(homo_path):
     if file.endswith(".xml"):
@@ -73,7 +90,13 @@ for file in os.listdir(homo_path):
             errors_cds_unequal_length.append(file_name)
             continue
 
-        dict_freq[tr_id] = {"NS": [], "S": []}
+        triplets = [count_site(str(triplet)) for triplet in [homo_seq_ungap[i*3:i*3+3] for i in range((ungap_length//3)-1)]]
+        nbr_sites_n = sum([sum_n for sum_n, sum_s in triplets])
+        nbr_sites_s = sum([sum_s for sum_n, sum_s in triplets])
+
+        assert round(nbr_sites_n + nbr_sites_s) == ungap_length - 3
+
+        dict_mac[tr_id] = {"NS": [], "S": []}
         list_aa_poly = []
         if tr_id in dict_snps:
             for snp_id, chromosome, pos, ref_nt, alt_nt, meta_data in dict_snps[tr_id]:
@@ -88,18 +111,16 @@ for file in os.listdir(homo_path):
                 elif alt_aa == 'stop':
                     errors_snp_alt_stop.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))
                 else:
-                    if ("MA" in meta_data) and ("MAF" in meta_data) and ("AA" in meta_data):
-                        meta_ma = meta_data[meta_data.index("MA")+3]
-                        meta_aa = meta_data[meta_data.index("AA")+3]
-                        meta_maf = meta_data[meta_data.index("MAF")+4:].split(";")[0]
-                        freq = str(1-float(meta_maf)) if meta_ma == meta_aa else meta_maf
-                        if float(freq) > cut_off:
-                            dict_freq[tr_id]["S" if ref_aa == alt_aa else "NS"].append(freq)
+                    if ("MAC" in meta_data) and ("MAF" in meta_data):
+                        meta_mac = meta_data[meta_data.index("MAC")+4:].split(";")[0]
+                        meta_maf = meta_data[meta_data.index("MAF") + 4:].split(";")[0]
+                        e_number = round(int(meta_mac) / float(meta_maf))
+                        if 2178 == e_number:
+                            dict_mac[tr_id]["S" if ref_aa == alt_aa else "NS"].append(meta_mac)
                             snp_filtered += 1
                             list_aa_poly.append((ref_aa, alt_aa))
                         else:
-                            list_aa_poly.append((ref_aa, alt_aa))
-                            errors_snp_low_freq.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa, freq))
+                            errors_snp_low_freq.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa, str(e_number)))
                     else:
                         errors_snp_no_freq.append((file_name, snp_id, chromosome, str(pos), ref_codon, alt_codon, ref_aa, alt_aa))
         list_aa_div = []
@@ -117,11 +138,12 @@ for file in os.listdir(homo_path):
         ps = str(len([0 for i, j in list_aa_poly if i == j]))
         dn = str(len([0 for i, j in list_aa_div if i != j and i != '-' and j != '-']))
         ds = str(len([0 for i, j in list_aa_div if i == j and i != '-' and j != '-']))
-        txt_file.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\n".format(
-            file_name, len(homo_seq_ungap), len(cds.exons), len(list_aa_poly),
+        txt_file.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n".format(
+            file_name, len(homo_seq_ungap) - 3, len(cds.exons), len(list_aa_poly),
             pn, ps, len(list_aa_div), dn, ds,
-            len(dict_freq[tr_id]["NS"]) + len(dict_freq[tr_id]["S"]),
-            ";".join(dict_freq[tr_id]["NS"]), ";".join(dict_freq[tr_id]["S"])))
+            int(round(nbr_sites_n)), int(round(nbr_sites_s)),
+            len(dict_mac[tr_id]["NS"]), len(dict_mac[tr_id]["S"]),
+            ";".join(dict_mac[tr_id]["NS"]), ";".join(dict_mac[tr_id]["S"])))
 txt_file.close()
 
 error_file = open('{0}/79_mk_test_errors.out'.format(data_path), 'w')
@@ -183,16 +205,16 @@ if snp_errors > 0:
         error_file.write("CdsId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\n")
         error_file.write("\n".join(["\t".join(er) for er in errors_snp_alt_stop]))
     if len(errors_snp_no_freq) > 0:
-        tmp = "\n\n{0} SNPS have no frequency available ({1:.3f}%):\n".format(len(errors_snp_no_freq), 100*len(errors_snp_no_freq)/snp_total)
+        tmp = "\n\n{0} SNPS have no alleles count available ({1:.3f}%):\n".format(len(errors_snp_no_freq), 100*len(errors_snp_no_freq)/snp_total)
         error_file.write(tmp)
         error_light_file.write(tmp)
         error_file.write("CdsId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\n")
         error_file.write("\n".join(["\t".join(er) for er in errors_snp_no_freq]))
     if len(errors_snp_low_freq) > 0:
-        tmp = "\n\n{0} SNPS have the mutated allele at low frequency ({1:.3f}%):\n".format(len(errors_snp_low_freq), 100*len(errors_snp_low_freq)/snp_total)
+        tmp = "\n\n{0} SNPS are not from 1000G project ({1:.3f}%):\n".format(len(errors_snp_low_freq), 100*len(errors_snp_low_freq)/snp_total)
         error_file.write(tmp)
         error_light_file.write(tmp)
-        error_file.write("CdsId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\tFrequency\n")
+        error_file.write("CdsId\tSNPId\tChr\tPosition\tRefCodon\tAltCodon\tRefAA\tAltAA\tNbrAlleles\n")
         error_file.write("\n".join(["\t".join(er) for er in errors_snp_low_freq]))
 error_file.close()
 error_light_file.close()
