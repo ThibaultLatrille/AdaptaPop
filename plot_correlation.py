@@ -96,27 +96,18 @@ def dfe_alpha(group, version):
             sfs_file.write(" ".join(sfs_list) + "\n")
         sfs_file.close()
 
-        neut_config_filename = "config-est_dfe-site_class-0"
         base_config_str = "data_path_1\t{0}/data/\n" \
                           "data_path_2\tdata-three-epoch/\n" \
-                          "sfs_input_file\t{0}/{2}\n" \
-                          "est_dfe_results_dir\t{0}/{1}/\n"
-        neut_folder_str = "results_dir_neut"
-        neut_opt_str = "site_class\t0\nfold\t1\nepochs\t1"
-        neut_config = open("{0}/{1}.txt".format(dfe_path, neut_config_filename), 'w')
-        neut_config.write(base_config_str.format(dfe_path, neut_folder_str, sfs_filename) + neut_opt_str)
-        neut_config.close()
-        os.system("{0}/est_dfe -c {0}/{1}.txt".format(dfe_path, neut_config_filename))
-
-        sel_config_filename = "config-est_dfe-site_class-1"
-        sel_folder_str = "results_dir_sel"
-        demography_str = "est_dfe_demography_results_file\t{0}/{1}/est_dfe.out\n".format(dfe_path, neut_folder_str)
-        sel_opt_str = demography_str + \
-                      "site_class\t1\nfold\t1\nepochs\t1\nmean_s_variable\t1\nmean_s\t-0.1\nbeta_variable\t1\nbeta\t0.5"
-        sel_config = open("{0}/{1}.txt".format(dfe_path, sel_config_filename), 'w')
-        sel_config.write(base_config_str.format(dfe_path, sel_folder_str, sfs_filename) + sel_opt_str)
+                          "sfs_input_file\t{0}/{1}\n" \
+                          "est_dfe_results_dir\t{0}/{2}/\n"
+        result_folder_str = "results_dir"
+        config_filename = "config-est_dfe"
+        opt_str = "site_class\t2\nfold\t1\nepochs\t1\nmean_s_variable\t1\nmean_s\t-0.1\nbeta_variable\t1\nbeta\t0.5"
+        sel_config = open("{0}/{1}.txt".format(dfe_path, config_filename), 'w')
+        sel_config.write(base_config_str.format(dfe_path, sfs_filename, result_folder_str) + opt_str)
         sel_config.close()
-        os.system("{0}/est_dfe -c {0}/{1}.txt".format(dfe_path, sel_config_filename))
+
+        os.system("{0}/est_dfe -c {0}/{1}.txt".format(dfe_path, config_filename))
 
         divergence_filename = "divergence.txt"
         divergence_file = open("{0}/{1}".format(dfe_path, divergence_filename), 'w')
@@ -127,17 +118,18 @@ def dfe_alpha(group, version):
         out_filename = "est_alpha_omega.out"
         est_alpha_config_filename = "config-est_alpha_omega"
         est_alpha_config_str = "data_path_1\t{0}/data/\n" \
-                               "divergence_file\t{0}/{3}\n" \
-                               "est_alpha_omega_results_file\t{0}/{4}\n" \
+                               "divergence_file\t{0}/{2}\n" \
+                               "est_alpha_omega_results_file\t{0}/{3}\n" \
                                "est_dfe_results_file\t{0}/{1}/est_dfe.out\n" \
-                               "neut_egf_file\t{0}/{2}/neut_egf.out\n" \
+                               "neut_egf_file\t{0}/{1}/neut_egf.out\n" \
                                "sel_egf_file\t{0}/{1}/sel_egf.out\n" \
                                "do_jukes_cantor\t1\n" \
-                               "remove_poly\t1".format(dfe_path, sel_folder_str, neut_folder_str,
+                               "remove_poly\t0".format(dfe_path, result_folder_str,
                                                        divergence_filename, out_filename)
         est_alpha_config = open("{0}/{1}.txt".format(dfe_path, est_alpha_config_filename), 'w')
         est_alpha_config.write(est_alpha_config_str)
         est_alpha_config.close()
+
         os.system("{0}/est_alpha_omega -c {0}/{1}.txt".format(dfe_path, est_alpha_config_filename))
 
         out_file = open("{0}/{1}".format(dfe_path, out_filename), 'r')
