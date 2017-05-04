@@ -1,16 +1,15 @@
 import os
 import numpy as np
 
-folders = ["globalomega", "siteomega", "mutsel", "mutselfreeomega"]
+folders = ["siteomega", "mutsel", "mutselfreeomega"]
 
-# data_path = "/pandata/tlatrill/AdaptaPop/data"
 data_path = "/mnt/sda1/AdaptaPop/data"
 
 cds_omega = {}
 header = set()
 header.add("pos")
 for folder in folders:
-    folder_path = "{0}/pb_{1}".format(data_path, folder)
+    folder_path = "{0}/pb_cleaned_{1}".format(data_path, folder)
     for file in os.listdir(folder_path):
         if file.endswith(".predsiteomega") or file.endswith(".trace"):
             if file.endswith(".predsiteomega"):
@@ -44,15 +43,21 @@ for folder in folders:
                     cds_omega[cds_name]["pos"].append(np.mean(table['pos'][table['#iter'] > 100]))
 
 header = sorted(header)
-txt_file = open(data_path + '/79_omega_estimated.out', 'w')
+txt_file = open(data_path + '/79_GRCh38_estimates_pb.out', 'w')
 txt_file.write("CdsId\t"+"\t".join(header)+"\n")
 for tr_id, omega_dico in cds_omega.items():
     line = tr_id
+    flag = True
     for omega_name in header:
         if omega_name in omega_dico:
-            line += "\t{0}".format(np.mean(omega_dico[omega_name]))
+            mean = np.mean(omega_dico[omega_name])
+            if np.isnan(mean):
+                flag = False
+            line += "\t{0}".format(mean)
         else:
-            line += "\tnan"
-    txt_file.write(line+"\n")
+            flag = False
+            line += "\tNaN"
+    if flag:
+        txt_file.write(line+"\n")
 txt_file.close()
 print("Job completed")

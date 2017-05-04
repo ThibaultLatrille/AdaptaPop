@@ -1,4 +1,5 @@
 from collections import defaultdict
+import numpy as np
 
 
 class Cds(object):
@@ -15,7 +16,8 @@ class Cds(object):
         else:
             self.exons.insert(0, (int(start_exon), int(end_exon)))
         for i in range(len(self.exons) - 1):
-            assert self.exons[i][1] < self.exons[i + 1][0], "At least one exon is overlapping with an other"
+            if not self.exons[i][1] < self.exons[i + 1][0]:
+                print("At least one exon is overlapping with an other")
 
     def nt_position(self, position):
         nt = -1
@@ -56,7 +58,7 @@ class Cds(object):
     def befile_lines(self):
         lines = []
         for start, end in self.exons:
-            lines.append("{0}\t{1}\t{2}\t{3}\t0\t[4}\n".format(self.chromosome, start, end, self.name, self.strand))
+            lines.append("{0}\t{1}\t{2}\t{3}\t0\t{4}\n".format(self.chromosome, start, end, self.name, self.strand))
         return lines
 
 
@@ -101,6 +103,25 @@ def build_dict_snps(_data_path, file_name):
     vcf_file.close()
     return _dict_snps
 
+
+def load_snp_table(data_path, version, GRCh, split=-1):
+    snp_table = {}
+    mk_data = open('{0}/{1}_{2}_estimates_snp{3}.out'.format(data_path, version, GRCh, "" if split == -1 else "_{0}".format(split)), 'r')
+    mk_header = mk_data.readline().replace('\n', '').split('\t')
+    for line in mk_data:
+        line_split = line.replace('\n', '').split('\t')
+        cds_id = line_split[0].split("_")[0]
+        snp_table[cds_id] = dict(zip(mk_header[2:-2], [int(i) for i in line_split[2:-2]]))
+        snp_table[cds_id][mk_header[1]] = line_split[1]
+        assert len(line_split[1:-2]) == len(mk_header[1:-2])
+        for index in [-1, -2]:
+            if line_split[index] != "":
+                snp_table[cds_id][mk_header[index]] = [int(i) for i in line_split[index].split(";")]
+            else:
+                snp_table[cds_id][mk_header[index]] = []
+    mk_data.close()
+    return snp_table
+
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 codontable = defaultdict(lambda: "-")
 codontable.update({
@@ -120,3 +141,25 @@ codontable.update({
     'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'stop', 'TAG': 'stop',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'stop', 'TGG': 'W'})
+
+params_pb = [
+    ("siteomega-predmutsel", "$\\omega_A = \\left< \\omega - \\omega_0 \\right>$"),
+    ("predmutselfreeomega*(mutselfreeomega-1)", "$\\omega_A^* = \\left< \\omega_0^*  \\right>(\\omega^* - 1)$"),
+    ("(siteomega-predmutsel)/siteomega", "$\\alpha = \\left< \\omega - \\omega_0 \\right> / \\left< \\omega \\right>$"),
+    ("(mutselfreeomega-1)/mutselfreeomega", "$\\alpha^* = (\\omega^* - 1) / \\omega^* $"),
+    ("predmutsel", "$\\left< \\omega_0 \\right>$"),
+    ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$"),
+    ("siteomega", "$\\left< \\omega \\right>$"),
+    ("pos", "$\\left< P(\\omega > 1 ) \\right>$")]
+
+columns = sorted(["siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega", "pos"])
+
+
+def str_to_table(table, label):
+    return eval(label, {f: table[f] for f in columns})
+
+
+def load_pb_table(data_path):
+    dtype = np.dtype([("CdsId", 'str', 32)] + [(name, 'float64', 1) for name in columns])
+    return np.loadtxt("{0}/79_GRCh38_estimates_pb.out".format(data_path), dtype=dtype, skiprows=1)
+

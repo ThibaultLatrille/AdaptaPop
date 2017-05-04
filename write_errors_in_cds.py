@@ -1,7 +1,6 @@
 import os
 from cds_libraries import build_dict_transcripts
 import pickle as pickle
-# data_path = "/pandata/tlatrill/AdaptaPop/data"
 data_path = "/mnt/sda1/AdaptaPop/data"
 
 gtf_folder = "archives_gtf"
