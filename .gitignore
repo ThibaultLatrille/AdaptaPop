@@ -10,3 +10,14 @@
 /qsub
 .idea/
 *.out
+*.dN
+*.dS
+*.t
+*.ctl
+rst
+rst1
+rub
+*.aux
+*.log
+*.synctex.gz
+*.pdf
