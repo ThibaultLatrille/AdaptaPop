@@ -142,15 +142,17 @@ codontable.update({
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'stop', 'TAG': 'stop',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'stop', 'TGG': 'W'})
 
+params_pb_star = [
+    ("predmutselfreeomega*(mutselfreeomega-1)", "$\\omega_A^* = \\left< \\omega_0^*  \\right>(\\omega^* - 1)$"),
+    ("(mutselfreeomega-1)/mutselfreeomega", "$\\alpha^* = (\\omega^* - 1) / \\omega^* $"),
+    ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$"),
+    ("pos", "$\\left< P(\\omega > 1 ) \\right>$")]
+
 params_pb = [
     ("siteomega-predmutsel", "$\\omega_A = \\left< \\omega - \\omega_0 \\right>$"),
-    ("predmutselfreeomega*(mutselfreeomega-1)", "$\\omega_A^* = \\left< \\omega_0^*  \\right>(\\omega^* - 1)$"),
-    ("(siteomega-predmutsel)/siteomega", "$\\alpha = \\left< \\omega - \\omega_0 \\right> / \\left< \\omega \\right>$"),
-    ("(mutselfreeomega-1)/mutselfreeomega", "$\\alpha^* = (\\omega^* - 1) / \\omega^* $"),
+    # ("(siteomega-predmutsel)/siteomega", "$\\alpha = \\left< \\omega - \\omega_0 \\right> / \\left< \\omega \\right>$"),
     ("predmutsel", "$\\left< \\omega_0 \\right>$"),
-    ("predmutselfreeomega", "$\\left< \\omega_0^* \\right>$"),
-    ("siteomega", "$\\left< \\omega \\right>$"),
-    ("pos", "$\\left< P(\\omega > 1 ) \\right>$")]
+    ("siteomega", "$\\left< \\omega \\right>$")]
 
 columns = sorted(["siteomega", "mutsel", "mutselfreeomega", "predmutsel", "predmutselfreeomega", "pos"])
 
