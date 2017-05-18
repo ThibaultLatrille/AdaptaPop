@@ -5,7 +5,7 @@ import matplotlib.mlab as mlab
 import numpy as np
 from cds_libraries import params_pb, load_pb_table, str_to_table
 
-data_path = "/mnt/sda1/AdaptaPop/data"
+data_path = "./data"
 pb_table = load_pb_table(data_path)
 
 for negative in [True, False]:
@@ -26,8 +26,8 @@ for negative in [True, False]:
         plt.xlim((min(table_x), max(table_x)))
     plt.legend()
     plt.tight_layout()
-    plt.savefig("{0}/79_GRCh38_distribution_pb_{1}{2}.svg".format(data_path, num_bins, "" if negative else "_only_pos"), format="svg")
-    plt.savefig("{0}/79_GRCh38_distribution_pb_{1}{2}.png".format(data_path, num_bins, "" if negative else "_only_pos"), format="png")
+    plt.savefig("{0}/distribution_pb_{1}{2}.svg".format(data_path, num_bins, "" if negative else "_only_pos"), format="svg")
+    plt.savefig("{0}/distribution_pb_{1}{2}.png".format(data_path, num_bins, "" if negative else "_only_pos"), format="png")
 
 # plt.show()
 print('Plot completed')

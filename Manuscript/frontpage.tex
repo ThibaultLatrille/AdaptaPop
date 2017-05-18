@@ -1,0 +1,77 @@
+\documentclass[a4paper]{report}
+\usepackage{eso-pic}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{fullpage}
+\usepackage{graphicx}
+
+\definecolor{orange}{rgb}{0.99,0.69,0.07}
+\definecolor{lightgray}{gray}{0.85}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\blap}[1]{\vbox to 0pt{#1\vss}}
+\newcommand\AtUpperLeftCorner[3]{%
+	\put(\LenToUnit{#1},\LenToUnit{\dimexpr\paperheight-#2}){\blap{#3}}%
+}
+\newcommand\AtUpperRightCorner[3]{%
+	\put(\LenToUnit{\dimexpr\paperwidth-#1},\LenToUnit{\dimexpr\paperheight-#2}){\blap{\llap{#3}}}%
+}
+
+\author{\huge{\textsc{Latrille} Thibault\\
+		\vskip 1cm
+		M2 Internship Report}}
+\title{\Huge{\textcolor{orange}{Detecting adaptive evolution in coding sequences from inter- and intra-specific data}}}
+
+\makeatletter
+ 
+\begin{document}
+ 
+\begin{titlepage}
+	\enlargethispage{2cm}
+	
+	\AddToShipoutPicture{
+		\AtUpperLeftCorner{1.5cm}{1cm}{\includegraphics[width=4cm]{ens-lyon.png}}
+		\AtUpperRightCorner{1.5cm}{1cm}{\includegraphics[width=6.5cm]{logoMasterBiologie.png}}
+	}
+	
+	\begin{center}
+		\vspace*{5cm}
+		
+		\textsc{\@title \\}
+		\HRule
+		\vspace*{0.5cm}
+		
+		\large{\@author} 
+		
+		
+	\end{center}
+	
+	\vskip 2cm
+	\large{\begin{itemize}
+			\item Internship dates: 11/01/2017 - 31/05/2017
+			\item Laboratory: UMR CNRS 5558 Laboratoire de Biométrie et Biologie Évolutive
+			\item Supervisor: Nicolas Lartillot
+			\item Word count (abstract excluded): 3500
+	\end{itemize}}
+	
+	\vskip 1cm
+	
+	\textcolor{gray}{Previous Interships : \\
+		\begin{tabular}{|p{0.05\textwidth}|p{0.25\textwidth}|p{0.15\textwidth}|p{0.55\textwidth}|}
+			\hline Year & Laboratory & Supervisor & Title or Subject \\
+			\hline L3 & École normale supérieure de Lyon & Bertrand Mollereau &  Junior Lab: 3D mapping of the drosophila’s composed eye. \\ 
+			\hline M1 & Institut des Sciences de l'Evolution de Montpellier (ISEM) & François Rousset & Phenotypic variation, relatedness and inclusive fitness in \textit{Xenorhabdus}
+			and \textit{Photorhabdus} bacteria.  \\ 
+			\hline
+	\end{tabular}}
+	
+	
+	
+	\begin{center}
+		\makebox[\textwidth]{\includegraphics[width=\paperwidth]{pied-de-page-ok2.png}}
+	\end{center}
+	
+\end{titlepage}
+\ClearShipoutPicture
+ 
+\end{document}

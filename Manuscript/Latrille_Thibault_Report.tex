@@ -22,493 +22,183 @@
 %\usepgfplotslibrary{colormaps}
 \pgfplotsset{every axis/.append style={line width=1pt}}
 
-\newcommand{\ud}{{\mathrm{d}}}
-\newcommand{\pr}{{\mathbb{P}}}
-\newcommand{\nN}{{n_\textrm{H}}}
-\newcommand{\nI}{{n_\textrm{I}}}
-\newcommand{\Xnema}{\textit{X. nematophila} }
-\newcommand{\Scarpo}{\textit{S. carpocapsae} }
-\newcommand{\Xenonema}{\textit{Xenorhabdus nematophila} }
-\newcommand{\Steincarpo}{\textit{Steinernema carpocapsae} }
-\newcommand{\Xeno}{\textit{Xenorhabdus} }
-\newcommand{\Stein}{\textit{Steinernema} }
-\newcommand{\Photo}{\textit{Photorhabdus} }
-\newcommand{\Hetero}{\textit{Heterorhabditis} }
-\newcommand{\IBD}{IBD}
-\newcommand{\qw}{Q_\mathrm{w}}
-\newcommand{\qb}{Q_\mathrm{b}}
-\newcommand{\psis}{\psi}
-\newcommand{\psic}{\psi}
+\usepackage{adjustbox}
+\newcommand{\specialcell}[2][c]{%
+	\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
 
-\author{Latrille Thibault\\
-\small thibault.latrille@ens-lyon.fr\\[-0.8ex]}
-\title{Phenotypic variation as a cooperative strategy in \Xeno and \Photo}
+\newcommand{\avg}[1]{\left< #1 \right>} % for average
+\newcommand{\Ne}{N_\mathrm{e}}
+
 \begin{document}
-\begin{abstract}
-Bacteria of the genera \Xeno and \Photo both colonize and influence the behavior of nematodes, \Stein and \Hetero respectively.
-The nematodes infect, colonize and ultimately kill off an insect host, with the help of the bacteria.
-Thus the bacteria are symbiotic of two hosts, as mutualistic symbiotes they help the nematode to reproduce optimally, as pathogenic symbiotes they are virulent toward the insect.
-Many studies focused on the symbiotic association between the bacteria and their respective hosts, but they scarcely focused on cooperation among bacteria.
-We will show that the life cycle of the bacteria is favorable to bacterial cooperation, as the life cycle allows for high relatedness among bacteria.
-We here specifically investigated a trait of these bacteria observed experimentally: phenotypic variation. 
-Isogenic bacteria are found in two phenotypic states that exhibits dramatically different physiologies. 
-Phenotypic variation is here regarded as an evolutionary strategy.
-We provide equations relating phenotypic variation frequencies in bacteria to demographic and migration parameters of the bacteria and their hosts. 
-Our framework can be largely adapted to study manifold aspects of inclusive fitness of bacteria in the tripartite system bacteria-nematode-insect.
+\includepdf[pages={1}]{frontpage.pdf}
+	\begin{abstract}
+		Adaptation in protein-coding sequences can be detected, and quantified, using two different types of methods: using either multiple sequence alignment across species (and phylogenetic codon models), or by combining divergence and polymorphism data (McDonald-Kreitman tests).
+		Phylogenetic codon models are classically formulated in terms of the relative synonymous and non-synonymous substitution rates. However, because of the background of purifying selection, these models are limited in their sensitivity.	
+		Recent developments, conducted in the host lab, have led to more sophisticated mechanistic codon models aiming at making a more detailed quantitative assessment of the interplay between mutation, purifying and positive selection, leading to potentially more powerful detection of adaptation.
+		These models however, have not yet been tested on a broad scale.
+		Similarly, McDonald-Kreitman tests can be sensitive to the exact interplay between adaption and purifying selection, and more elaborate version of these tests, using models derived from population genetic theory, have been developed over the last years.
+		The aim of this project is to conduct a large scale analysis on mammalian protein-coding sequences, using a combination of inter- and intra-specific data across the entire exome.
+		A detailed comparison between the two types of approaches will be conducted, using classical and mechanistic codon models, as well as MK tests.
+		This will allow for a general assessment of the congruence between these methods, and will also give a broad-scale picture of the patterns of adaptation in mammalian exomes.
+		
+		
+		\smallskip
+		\noindent \textbf{Keywords.} Evolution, Adaptation, Coding Sequences, Codon models, Synonymous/Non-synonymous substitution.
+	\end{abstract}
+	\begin{multicols}{2}
+	\section*{Introduction}
 
-\smallskip
-\noindent \textbf{Keywords.} Inclusive fitness, relatedness, phenotypic variation, \textit{Xenorhabdus}, \textit{Photorhabdus}.
-\end{abstract}
-\begin{multicols}{2}
-\section*{Introduction}
+	Molecular sequences are shaped over time by different evolutionary forces such as mutation, selection and random drift \cite{ohta_nearly_1992}. Selection takes a variety of forms since a mutation in a molecular sequence can either be neutral, positively or negatively selected. More globally, different proteins might be in different selection regimes. Some, mostly under strong purifying selection, are expected to be stable trough time.
+	Other proteins, involved in a arm race as for example against pathogens, are under recurrent positive selection and tend to evolve faster \cite{enard_viruses_2016}. One main goal of molecular evolution is to quantify the intensity of evolutionary forces acting on sequences, and to detect the signature in present-day sequences left by recurrent events of positive selection. \\
+	
+	Theoretically, in order to detect positive selection, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model. In the case of protein-coding DNA sequences, a mutation will either be synonymous (not changing the translated amino-acid), or non-synonymous (such that the translated amino-acid will be different). Synonymous sites are usually taken as proxies for neutral sites, although they may be under weak selection. Non-synonymous mutations, on the other hand, are under a mixture of adaptation, purifying selection and random drift, depending on the selection coefficient associated with the new amino-acid. The synonymous sites are used to quantify the neutral process, and the deviation to this neutral process on non-synonymous sites gives insight on the strength of both positive and purifying selection. \\
+	
+	Contrasting synonymous and non-synonymous changes, two different types of methods have emerged to quantify both positive and purifying selection acting on protein-coding sequences.
+	One method, stemming from population genetics, contrasts polymorphism inside a population and divergence to a close species. In the following, this method will be called population-based inference. Another method, stemming from phylogeny, uses multiple sequence alignment in different species to quantify adaptation. This method will be called phylogeny-based inference. One goal of the present work is to confound these two types of approaches.\\
+	
+	In population-based inference, one of the most widely used test for adaptation was proposed by McDonald and Kreitman \cite{McDonald1991}. This method uses the substitutions (mutations that reach fixation) between two close species and polymorphism (sites with at least two alleles) inside on population. Under a neutral regime, deleterious mutations are assumed to occur, but are quickly removed by selection, and the ratio of non-synonymous substitutions over synonymous substitutions ($d_N/d_S$) is expected to be lower than one, since none of non-synonymous deleterious mutations will reach fixation. Also the ratio of non-synonymous polymorphism over synonymous polymorphism ($p_N/p_S$) is also expected to be lower than one, since the non-synonymous deleterious mutations will be removed quickly from the population. Most importantly, in the absence of advantageous mutations, these two ratio are expected to be the same ($d_N/d_S=p_N/p_S$). If advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to an overall $d_N/d_S$ greater than $p_N/p_S$ \cite{smith_adaptive_2002, kimura_neutral_1983}. In the end, the method can therefore leads to a decomposition in the total rate rate of evolution ($d_N/d_S$) into two components: respectively neutral ($p_N/p_S$) and adaptive ($d_N/d_S-p_N/p_S$). This method is however plagued by the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an under-estimation of the rate of adaptive evolution \cite{eyre-walker_quantifying_2002}. Subsequent developments have tried to correct for this effect be relying on an explicit \textit{nearly-neutral model}, so as to derive the expected value of $d_N/d_S$ and $p_N/p_S$ in the absence of adaptation, the observed deviation of $d_N/d_S$ compared to this null expectation then provides estimates of the rate of adaptation \cite{eyre-walker_estimating_2009, galtier_adaptive_2016}.
+	
+	Phylogeny-based inference models the substitution rate at the codon level. Synonymous and non-synonymous mutations are treated differently. The rate of non-synonymous substitutions over the rate of synonymous substitutions (denoted $\omega=d_N/d_S$) is estimated as a parameter of the model \cite{Muse1994,Goldman1994}. Assuming synonymous mutations are neutral, an $\omega>1$ signals an excess in the rate of non-synonymous substitutions, indicating that the protein is under adaptive evolution. Conversely, a default of non-synonymous substitutions, leading to $\omega<1$, means the protein is under purifying selection. However, in practice, protein are typically under a mix of adaptation and purifying selection, thus typically leading to an $\omega<1$ even in the presence of positive selection. More sophisticated methods have been proposed. In particular, site-model trying to detect specific site of the sequence with an $\omega>1$, has been applied \cite{Yang2001, kosiol_patterns_2008}. However they potentially misses a substantial fraction of adaptation and does not quantify the rate of adaptation. An alternative approach to phylogenetic codon models would be to do as in the case of population-based inference mentioned above, to rely on an explicit \textit{nearly-neutral model} as the null model against which to detect deviation of $\omega=d_N/d_S$. In this direction, mutation-selection models provides a null model by estimating fitness of amino-acids \cite{Yang2008, Halpern1998, Rodrigue2010}. By modeling the fitness landscape of amino-acids, at equilibrium the codons will bounce between amino-acids with high fitnesses, and mutation from a high fitness amino-acid towards a low fitness amino-acid will have a small probability of fixation, and the model genuinely takes into account purifying selection. By contrasting $\omega$ estimated by the classical codon models and the $\omega$ predicted by the mutation-selection model, one can hope to extract the rate of adaption, but this has not yet been conducted on a large scale \cite{Rodrigue2016}.
+	
+	Using protein-coding sequences, 
+	Although population- and phylogeny-based inference both estimate the rate of adaptation, the congruence between the two methods has not yet been asserted. In this study, we analyzed 1355 protein-coding (CDS) orthologs in mammals, and conducted two separate analysis on these CDS. First, alignments in mammals (except \textit{Homo sapiens} and \textit{Pan troglodytes}) were used to run site-model and mutation-selection site-model. We estimated the rate of adaptation in each CDS, and extracted CDS with a rate of adaptation significantly high. Secondly, population-based inference was conducted using polymorphism available in \textit{Homo sapiens} and divergence to \textit{Pan troglodytes}. We tested if the group of sequences detected with a high rate of adaption in the phylogeny-based inference also display a high rate of adaptation in population-based inference.
 
-Studies of \Photo and \textit{Xenorhabdus} bacteria have significant potential to reveal both common and distinct aspects of pathogenesis and mutualism, as each of these bacteria naturally enter into both types of relationships during their life cycle: they are pathogens of insects and are mutualists of nematodes from the genus \Hetero and \Stein respectively.
-Most studies have been conducted on the species \Xenonema and \textit{Photorhabdus luminescens}, and their respective host \Steincarpo and \textit{Heterorhabditis bacteriophora}. For simplicity, we refer to these bacteria as \Xeno and \textit{Photorhabdus}.
-%, although other species in these two genus may differ in various respects.
+	\section*{Materials and methods}
+	\begin{figure*}[ht!]
+	\begin{mdframed}
+		\centering
+		\includegraphics[width=\textwidth]{../Figures/codon_model.pdf}\\
+		\caption{ \textbf{Phylogeny-based inference of $\omega_A$}. On the left panel, codon site-model estimates $\omega$ as the average of $\omega^{(i)}$. On the right panel, mutation-selection (mut-sel) model estimates the fitness of each amino-acid on each site. From the profile of amino-acid, one can compute $\omega_{0}$ which is the predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance and genuinely taking into account purifying selection. Both methods runs independently from the same alignment data. From these two independent runs,  $\omega_A$ is computed as the difference $\omega - \omega_{0}$\label{fig:codon_model}}
+	\end{mdframed}
+	\end{figure*}
+	\subsection*{Rate of adaption in phylogeny-based inference }
+	Codon models estimate a single parameter $\omega$, namely the ratio of the non-synonymous over the synonymous substitution rates, capturing any deviation from neutrality over the entire sequence and along all branches of the phylogenetic tree \cite{Muse1994,Goldman1994}. In codon site-models, the codons are separated into a finite number of different categories, with each category $i$ having its own $\omega^{(i)}$ \cite{Yang2001}. More flexible, in infinite mixture models, the number of categories is not fixed in advance and is estimated during the computation. More specifically, $\omega^{(i)}$ are drawn from an infinite mixture using a Dirichlet process \cite{Huelsenbeck2006}. In codon site-models, the global $\omega$ is computed as the average of the $\omega^{(i)}$ (see figure \ref{fig:codon_model}, left panel). 
+	
+	In mutation-selection site-models \cite{Yang2008, Halpern1998, Rodrigue2010}, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}$) is equal to the rate of mutation ($\mu$) multiplied by the probability of fixation of the mutation ($p_{a \mapsto b}$) \cite{kimura_neutral_1983}. Crucially, the probability of fixation depends on the difference of fitness between the amino-acid encoded by the mutated codon ($f_b$) and the fitness of the amino-acid encoded by the original codon ($f_a$) \cite{wright_evolution_1931, fisher_genetical_1930}. Altogether, the rate of substitution from codon $a$ to $b$ is:
+	\begin{equation*}
+		q_{a \mapsto b} = \mu \dfrac{\mathrm{ln}(f_b / f_a)}{1 - f_b / f_a}.
+	\end{equation*}
+	
+	Once the amino-acid fitness are estimated, one can compute $\omega_{0}$, the predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance (see figure \ref{fig:codon_model}, right panel): 
+	\begin{align*}
+	\omega_{0} &= \sum_a \dfrac{1}{61} \sum_b \dfrac{1}{61} q_{a \mapsto b} \\ &= \mu \sum_a \dfrac{1}{61} \sum_b \dfrac{1}{61} \dfrac{\mathrm{ln}(f_b / f_a)}{1 - f_b / f_a}, 
+	\end{align*}
+	where $a$ and $b$ are all the possible codons ($61$ by discarding stop codons) \cite{Spielman2015}.
+	Under the assumption that the fitness profile is stable in time, then the predicted $\omega_0$ (mutation-selection site-model) and the estimated $\omega$ (site-model) should be the same. But if the assumption that fitness landscape are stable in time is broken, then $\omega > \omega_0$ since the predicted $\omega_{0}$ at the mutation-selection balance is always over-estimating the fitness of current the amino-acid and the codon will stay longer on the current amino-acid than it should, thus under-estimating the probability of fixation of non-synonymous mutations.
+	From these consideration, we estimate $\omega_A$, namely the rate of adaptive substitution over neutral substitution as the deviation of $\omega$ from the quasi-neutral model $\omega_0$ (see figure \ref{fig:codon_model}):
+	\begin{equation*}
+		\omega_A = \omega - \omega_0.
+	\end{equation*}
+	
+	With this protocol, a two steps procedure is needed and one needs to run independently site-model and mutation-selection site-model. It has also been suggested to run the mutation-selection model with one additional global parameter ($\omega^*$) \cite{Rodrigue2016}. It this model, each non-substitution mutation has a probability of fixation determined by amino-acid fitness profile, but overall multiplied by the parameter $\omega^*$. In a one run,  $\omega_0$ is estimated as well as $\omega^*$, which capture deviation from the mutation-selection model. The rate of adaptive evolution is:
+	\begin{equation}
+		\omega_A^* = \omega_0 (\omega^* - 1 ).
+	\end{equation}
+	
+			\begin{figure*}[hb!]
+			\begin{mdframed}
+				\centering
+				\includegraphics[width=\textwidth]{../Figures/pipeline.pdf}\\
+				\caption{ \textbf{The pipeline for data analysis}. In blue are the input data necessary to run the analysis. In black solid arrows are python custom scripts.  \label{fig:pipeline}}
+			\end{mdframed}
+		\end{figure*}
+	\subsection*{PhyloBayesMPI on alignments in mammals}
+	The alignment in mammals where extracted from the \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database \cite{ranwez_orthomam:_2007, douzery_orthomam_2014}. A first analysis on $500$ CDS (protein coding sequences) gave inconsistent results since some alignment where seemingly paralogs and some sequences not properly aligned. Thus we used a dataset cleaned by Fidel Botero-Castro, where CDS were filtered by HmmCleaner with a threshold of $5$ \cite{di_franco_detecting_2017}. All the CDS with more than $50\%$ of masked nucleotides were discarded, and all the sites (codons) masked in more than $40\%$ of the species where also discarded. Finally, each of the $11256$ CDS of the dataset is at least $500$ bp and includes at least $34$ mammalian species. \\
+	
+	We ran the Bayesian software \href{https://github.com/bayesiancook/pbmpi2}{PhyloBayes MPI} on $1355$ CDS chosen randomly from the dataset of Fidel Botero-Castro using the site-model \cite{lartillot_phylobayes_2013} and the mutation-selection model \cite{rodrigue_site-heterogeneous_2014}. Each Monte-Carlo Markov-Chain was ran during $600$ points, with a burn-in of 100 points. The convergence of the chain during the burn-in was assessed by running independent chains.  The whole computation took approximately $254$ $000$ hours of CPU on the LBBE/PRABI cluster. For the analysis, we used script written in python v3.5.
+	
+	\subsection*{Rate of adaption in population-based inference}
+	In the method proposed by McDonald and Kreitman \cite{McDonald1991}, The ratio of non-synonymous over synonymous polymorphism ($\omega_{0}=P_n/P_s$) only contains non-adaptive polymorphisms. On the other hand, divergence data with regard to a close specie allows one to estimated the ratio of non-synonymous substitutions over synonymous ($\omega=D_n/D_s$) between these species. All the non-synonymous substitutions in the sequence are supposed to be a mixture of only advantageous mutation and non-adaptive substitution. Thus the difference $D_n/D_s - P_n/P_s$ is the rate of adaptive evolution:
+	\begin{equation*}
+	\omega_A^{MK}=\dfrac{D_n}{D_s} - \dfrac{P_n}{P_s}.
+	\end{equation*}
+	
 
-The mutualistic relationship between the bacteria and the nematode is not obligate, as both partners can survive in the absence of the other.
-Thus, aposymbiotic \Stein nematodes can be obtained and assessed for responses to diverse bacterial and environmental stimuli.
-However, symbiotic bacteria are required for nematodes to reproduce efficiently.
-
-Nematodes are either found in insect hosts or in the soil (Figure).
-The soil-dwelling vector stage, called the infective juvenile (IJ), is encased in a double cuticle, and is non-feeding owing to its closed mouth and anus.
-Prior to the IJ stage, ingested bacteria colonize the nematode.
-\Xeno colonize a discrete intestinal location known as the vesicle , which is the lumen between nematode epithelial cells at the anterior end of the intestine.
-The \Xeno population within an IJ \Stein nematode is founded by one or two individual bacterial cells that grow to fill the vesicle.
-The mature population contains between 50 and 100 colony-forming unit .
-The specificity is stringent since other \Xeno species do not colonize \Scarpo IJs.
-Conversely, \Photo bacteria occupy a substantial fraction of the lumen of the nematode gut.
-The population is also founded by one or two individuals.
-Subsequently to colonization, the IJ nematode then serves as a vector, carrying bacteria into a susceptible insect, in which it is released from its nematode vector and rapidly kills the insect.
-The bacteria are capable of killing insects in the absence of nematodes.
-
-Haemolymph supports vigorous exponential growth \cite{Somvanshi2012} of bacteria, immediately upon release from the nematode.
-By contrast, the nematode vesicle or gut is comparatively nutrient limiting.
-The insect carcass thus provides nutrients for the propagation of both nematodes and bacteria.
-In response to a signal, possibly nutrient deprivation or space limitation, bacteria re-associates with the nematode, and the pair leaves in search of a new insect host to repeat the cycle.
-Nematodes are easily propagated; several hundred thousand IJs can be generated from the infection of a single insect host.
-
-Although \Xnema and \Photo models are emerging as an invaluable tool for elucidating microorganism–host interactions,
-many studies focused on the symbiotic association between the bacteria and their hosts, but they scarcely focused on interactions between bacteria.
-We here seek to evaluate the potential for cooperation among bacteria.
-We will show that the life cycle of the bacteria is favorable to bacterial cooperation.
-To that aim we will formulate a condition for cooperation under simple scenarios consistent with knowledge of nematode-bacterial mutualism.
-Our analysis uses well-established formalism to break down the condition for cooperation into the effect of different partners and their genetic relatedness.
-We provide new results for relatedness, derived as a function of demographic parameters, experimentally accessible.
-The relatedness in computed under a bacterial exponential stochastic growth process in the insect.
-Although this framework can be adapted to study manifold aspects of inclusive fitness of bacteria, we have focused on a particular evolutionary strategy.
-The bacteria can be found in two distinct phenotypic variant, whereas each variant exhibits dramatically different physiologies, required for initiating mutualistic or pathogenic life-styles \cite{Akhurst1982a,Forst1997}. 
-In \textit{Photorhabdus0}, a stochastic promoter inversion causes the switch between the two variants \cite{Somvanshi2012}. The mecanism is yet unknown for \textit{Xenorhabdus}. 
-We will formulate conditions for a candidate evolutionarily stable strategy \cite{lehmann2014fitness}, where the evolutionary strategy under investigation is the frequency at which the switch occurs.
-This study is inspired by the tripartite symbiosis bacteria-nematode-insect, our aim is also to provide results more widely applicable.
-The student derived the mathematical equations presented in this report, he also wrote C++ codes to validate the equations.
-\section*{Phenotypic variation and inclusive fitness}
-
-Both \Xeno and \Photo are found in the insect in two phenotypic variants \cite{Akhurst1982a,Forst1997}, denoted type I and II, controlled by a stochastic promoter inversion switch \cite{Somvanshi2012}.
-Type I are known to be more virulent toward the insect than type II \cite{Volgyi,Givaudan2000}.
-Type I are also known to produce crystal proteins \cite{Ciche2006,bintrim1998insertional} that supposedly nourish the nematode and support nematode growth and development \cite{Somvanshi2012}.
-The nematodes also feed off and exploit the growing bacteria \cite{Waterfield2009}.
-Furthermore, subsequently to the post-exponential phase of growth \cite{clarke1995virulence}, type I also produces bactericides \cite{Ji2004,Gualtieri2009} or fungicides that eliminate unwanted guests, thus increasing the foraging of the insect by the nematodes.
-On the other hand, type II \Photo bacteria are known to better associate with the nematode, by producing proteins involved in recognition by the nematode \cite{Somvanshi2010,Heungens2002}.
-Moreover, studies have shown that nematodes did not emerge from insect when infected by type II solely \cite{Sugar2012,Somvanshi2012}, suggesting the type I are required for nematode growth.
-
-We hereby intend to model this phenomenon, using simplifying assumptions in order to produce analytic prediction. %\ref{fig:fitness}.
-We assume that type I does not colonize any nematodes, but instead increase the number of nematodes that make it to the next cycle, or equivalently increase the survival of nematodes in the soil.
-On the other hand type II are the ones that can colonize the nematodes.
-This phenotype is only expressed after the exponential growth of bacteria, which holds experimental grounds \cite{Somvanshi2012}.
-All bacteria switch back from type II to I during the soil dwelling stage of nematodes.
-
-We seek to model the phenotypic variation as an evolutionary strategy acting upon fitness.
-The phenotype under investigation is not expressed by a single bacteria, but instead should be seen as a phenotype expressed by a lineage of bacteria.
-The resulting outcome on the bacteria at the end of the lineage is its type (I or II). $z$ is the probability that a lineage has not switched to type II by the time of colonization of a nematode by a bacterium.
-The fitness of a focal lineage is a function of its own phenotype ($z_\bullet$), of the average phenotype of all lineages of bacteria in the same insect ($z_0^{\mathrm{R}}$), and the average phenotype of the total population over all insect hosts ($\bar{z}$).
-By definition, $z_0^{\mathrm{R}}$ is thus the proportion of type I in the insect by the time of colonization of nematodes by bacteria, and $1-z_0^{\mathrm{R}}$ is the proportion of type II.
-Similarly, $\bar{z}$ is the proportion of type I over all insects by the time of colonization of nematodes by bacteria, and $1-\bar{z}$ is the proportion of type II.
-
-For a focal lineage, the probability that it ends colonizing a nematode is $1-z_\bullet$, and this lineage is competing with lineages that colonize nematodes with probability $1-z_0^{\mathrm{R}}$. Thus by solely taking into account colonization of the nematode, the fitness of a focal lineage is $(1- z_\bullet)/(1-z_0^{\mathrm{R}})$
-
-However, the fitness of a focal lineage depends also on the survival of the nematodes migrating out the same insect.
-While in turn, the survival of the nematode depends of the average phenotype of the lineages. 
-We define a function $f$, which is the survival of nematodes as a function of the proportion of type I.
-Upon colonization, the focal lineage is then carried over by nematodes from the same insect, thus with survival $f(z_0^{\mathrm{R}})$, competing with nematodes of average survival $f( \bar{z} )$. Thus by solely taking into account survival of the nematodes, the fitness of a focal lineage is $f(z_0^{\mathrm{R}})/f(\bar{z})$
-
-  Taking into account the effect of both colonization and survival of the nematode, and under the model of infinite number of insects, the fitness $w(z_\bullet ,z_0^{\mathrm{R}} , \bar{z} )$ of a focal lineage is:
-  \begin{equation}
-  w(z_\bullet ,z_0^{\mathrm{R}} , \bar{z} ) = \dfrac{1- z_\bullet}{1-z_0^{\mathrm{R}}}\dfrac{f(z_0^{\mathrm{R}}) }{f(\bar{z})}
-  \end{equation}
-   We assume the success of nematodes $f$ is an increasing linear mapping of the proportion of type I: $f (x)=\alpha (x+\gamma)$, $\alpha>0$, $\gamma \geq 0$ thus leading to:
-  \begin{equation}
-  w(z_\bullet ,z_0^{\mathrm{R}} , \bar{z} ) = \dfrac{1- z_\bullet}{1-z_0^{\mathrm{R}}}\dfrac{ z_0^{\mathrm{R}} + \gamma }{ \bar{z} + \gamma}
-  \end{equation}
-  A framework to study evolutionary strategies is to look upon change in frequency of alleles over a life cycle \cite{Rousset2010Thegeneticaltheory,lehmann2014fitness}.
-The change in frequency $\Delta p$ of a mutant allele (frequency $p$) with phenotype $z+\delta$ in a wild-type
-population with phenotype $z$ is then given for a mutant with small phenotypic deviation $\delta$ by Lehmann \& Rousset (2014) \cite{lehmann2014fitness}:
-  \begin{equation}
-  \Delta p = p (1-p) \delta \left[ \left. \dfrac{\partial w}{\partial z_\bullet} \right\vert_{z^*} +  \dfrac{\mathrm{Cov}(z_\bullet,z_0^{\mathrm{R}})}{\mathrm{V}(\bar{z})} \left. \dfrac{\partial w}{\partial z_0^{\mathrm{R}}} \right\vert_{z^*} \right] + o ( \delta ).  \label{invasion}
-  \end{equation}
-  The regression coefficient $\dfrac{\mathrm{Cov}(z_\bullet,z_0^{\mathrm{R}})}{\mathrm{V}(\bar{z})}$ is also known as the relatedness ($R$), introduced initially by Hamilton \cite{Hamilton1964} and refined subsequently \cite{Lehmann2010a}. Statistically, the relatedness is the covariance between the mutant allele frequency in a focal individual and that in a recipient relative to the variance in mutant allele frequency in the population. 
-The inclusive fitness thus take into account relatedness to break down change in frequency into the part due to the focal phenotype and the part due to phenotype of neighbors.
-
-    A condition for a candidate evolutionarily stable strategy ($z^*$) is that no deviant mutant should invade the resident population. At equilibrium, the change of frequency of the mutant is null ($\Delta p=0$) and the equation \eqref{invasion} leads to:
-    \begin{equation}
-    \left. \dfrac{\partial w}{\partial z_\bullet} \right\vert_{z^*} +  R \left. \dfrac{\partial w}{\partial z_0^{\mathrm{R}}} \right\vert_{z^*} =0 \label{eqn:fit}\\
-  \end{equation}
-  We then need to compute the partial derivative of the fitness with respect to $z_\bullet$ and $z_0^{\mathrm{R}}$ and evaluate them at $z$:
-  \begin{align}
-   \left. \dfrac{\partial w(z_\bullet ,z_0^{\mathrm{R}} , \bar{z} )}{\partial z_\bullet} \right\vert_{z_\bullet = z_0^{\mathrm{R}} = \bar{z}=z} &= \dfrac{1}{ z-1 } \\
-   \left. \dfrac{\partial w(z_\bullet ,z_0^{\mathrm{R}} , \bar{z} )}{\partial z_0^{\mathrm{R}}} \right\vert_{z_\bullet = z_0^{\mathrm{R}} = \bar{z}=z} &= \frac{1+\gamma}{(1-z)(z+\gamma )}.
-  \end{align}
-  Condition \eqref{eqn:fit} then implies:
-    \begin{gather}
-  \dfrac{1}{ z^*-1 } + R \frac{1+\gamma}{(1-z^*)(z^*+\gamma )} =0 \\
-    \Rightarrow \nonumber \\
-  z^*=R(1+ \gamma) - \gamma.
-  \end{gather}
-  In the special case $\gamma=0$ the phenotype is equal to the relatedness:
-  \begin{equation}
-  z^*=R.
-  \end{equation}
-  It is worth noting that if $R<\dfrac{\gamma}{\gamma+1}$, then the candidate evolutionarily stable strategy for a lineage is to switch necessarily to type II by the time of infection $(z^*=0)$.
-  The next section is dedicated to derive the relatedness $R$ under various models of migration and infection.
-\section*{Relatedness as a function of demographic and migration parameters}
-\begin{figure*}[hbt!]
-\begin{mdframed}
-\begin{multicols}{2}
-\textbf{Box 1: Proof of the equation \eqref{R_psi_phi_nI}\\}
-\label{box:life_cycle_relatedness}
-Let $Q_i$ be the probability of identity (PI) of genes from different bacteria. Within the same insect ($\qw$) and in different insect ($\qb$).
-$\phi$ is the probability that two nematode infecting the same insect come from the same insect. $\phi$ is the correlation coefficient of migration. During the soil dwelling stage of nematodes and upon infection of the same insect, the PI within the same nematode is $Q_\mathrm{1}$ and the PI in different nematodes is $Q_\mathrm{2}$.
-$\psi$ is the probability that two randomly chosen bacteria in the same insect originate from the same nematode, whenever nematodes arrive consecutively ($\psic$) or simultaneously ($\psis$).
-We write the next generation identities $\qw '$ and $\qb '$ as.
-\begin{subnumcases}{}
-Q_\mathrm{1}=1 \label{sys:1}\\
-Q_\mathrm{2}=\phi \qw +(1-\phi) \qb \label{sys:2} \\
-\qw' = \psi Q_\mathrm{1} + (1- \psi) Q_\mathrm{2} \label{sys:3} \\
-\qb' = \dfrac{ \qw }{\nI}+\dfrac{\nI-1}{\nI} \qb  \label{sys:4}
-\end{subnumcases}
-\begin{itemize}
-	\item Upon infecting the same insect, bacteria in the same nematode \eqref{sys:1} are all clonal, originating from one bacterium that colonize the nematode.
-	\item Upon infecting the same insect, bacteria in different nematodes \eqref{sys:2} come from the same insect with probability $\phi$ and thus have PI $\qw$, or come from different insect with probability $1-\phi$ and thus have PI $\qb $.
-	\item In the same insect \eqref{sys:3}, bacteria come from the same nematodes with probability $ \psi $ and thus have PI $ Q_\mathrm{1} $, or come from different nematodes with probability $1- \psi $ and thus have PI $Q_\mathrm{2} $.
-  \item In different insect \eqref{sys:4}, bacteria come from the same insect with probability $1/ \nI$ and thus have PI $\qw$,
-  or come from different insects with probability $1- 1/ \nI$ and thus have PI $\qb$.
-\end{itemize}
-Putting together all the parts, in the infinite allele model with mutation rate $\mu$, the recursion equations for $\qw '$ and $\qb '$ are thus:
-   \begin{subnumcases}{\hspace*{-1.cm}
-   \label{sys2}}
-      		 \qw ' = (1-\mu)^2[\psi + (1 -\psi) ( \phi \qw + (1-\phi) \qb ]  \\
-    		 \qb ' = (1-\mu)^2 \left[ \dfrac{ \qw }{\nI}+\dfrac{\nI-1}{\nI} \qb \right].
-  \end{subnumcases}
-  At equilibrium, $\qw ' = \qw$ and $\qb ' =\qb$ and the recursion equations \eqref{sys2} can be solved explicitly and we have:
-  \begin{equation}
-\dfrac{\qw - \qb }{ 1- \qb } = \dfrac{ \psi (1-\mu)^2 }{ 1 - (1-\mu)^2 \phi (1- \psi )+(1-\mu)^2 / \nI } .
- \end{equation}
-And thus by taking the limit for low mutation rate ($u \rightarrow 0$), the relatedness is \cite{rousset2004genetic}:
- \begin{align}
- R & = \lim_{\mu \rightarrow 0 }\dfrac{\qw - \qb }{ 1- \qb } \\
- &= \dfrac{ \psi  }{ 1 - \phi (1- \psi )+1 / \nI }.
- \end{align}
- \end{multicols}
- \end{mdframed}
+	However, $\omega_A^{MK}$ can be biased by slightly deleterious mutations \cite{eyre-walker_quantifying_2002} and by the change in population size through time \cite{eyre-walker_changing_2002}. To overcome this biases, we also used the method of Galtier \cite{galtier_adaptive_2016}, which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modelled as a continuous distribution. The method use a maximum likelihood approach. We used The GammaExpo model, in which the fitness effect of weakly deleterious non-synonymous mutations is distributed according to a negative Gamma. The fitness effect of weakly advantageous mutations is distributed exponentially.  This method is an extension of the method introduced by Eyre-Walker and collaborators \cite{eyre-walker_estimating_2009}. To model the distortion of the SFS by the change in population size there is one parameter per allele frequency class, which multiplies both the synonymous and the non-synonymous expected number of single-nucleotide polymorphisms (SNPs) \cite{eyre-walker_distribution_2006}. $D_n$ and $D_s$ are also necessary to compute the rate of adaptive evolution $\omega_A^{DFEM}$ from the method of Galtier.
+	
+	\subsection*{Population based-inference in \textit{Hominini}}
+		\begin{figure*}[hb!]
+	\begin{mdframed}
+		\centering
+		\includegraphics[width=\textwidth]{../Figures/figure_1.pdf}\\
+		\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation}. Left panel: scatter plot of 1355 protein-coding sequences, estimation of $\omega$ (y-axis) by the site-model on PhyloBayesMPI and $\omega_{0}$ (x-axis) by the mutation-selection site-model on PhyloBayesMPI. The linear correlation shows a good empirical fit but outliers (in red) are CDS with significantly high $\omega_A = \omega - \omega_{0}$. Right panel: scatter plot of 27 outliers CDS, estimation of $\omega_A$ (y-axis) and $\omega_{0}$ (x-axis). The linear correlation is very poor suggesting that $\omega_A$ effectively extract the adaption regardless of the background of purifying selection ($\omega_0$)  \label{fig:omega_pb}}
+	\end{mdframed}
 \end{figure*}
-\begin{figure*}[hbtp!]
-\begin{mdframed}
-\begin{multicols}{2}
-\textbf{Box 2. Proof of the equation \eqref{eqn:star}}
-\label{box:psi_simultaneous}
-An insect is infected by $d$ nematodes.
-Each nematode $i$ ($ 1 \leq i \ d$) releases his bacteria inside the insect.
-The $d$ colonies of bacteria enter a stochastic growth process at time $t=0$.
-In this context, $N_i(t)$ denotes the discrete random variable describing the population size of bacteria originating from the $i$th nematode, at time $t$.
-$N_+(t)=\sum_{i=0}^d N_i(t)$ denotes the discrete random variable describing the size of the whole population of bacteria at time $t$.
-The random variable $Z_i$ describes the frequency that two randomly chosen bacteria at time $t$ are originating from the $i$th nematode.
-By definition we have:
-\begin{equation}
-Z_i=\dfrac{N_i(t)(N_i(t)-1)}{N_+(t)( N_+(t)-1 ) }.
-\end{equation}
-The expectation of the sum of $Z_i$ over all nematodes is thus $\psi (t)$, the probability
-that two randomly chosen bacteria originate from the same nematode.
-\begin{equation}
-\psi(t) = \mathbb{E} \left[ \sum_{i=1}^d Z_i(t) \right] = \sum_{i=1}^d \mathbb{E}[ Z_i(t)]
-\end{equation}
-Thus we need to evaluate $\mathbb{E}[ Z_i(t)]$.
-The growth process is modeled as a discrete space, continuous time Markov process. Each bacterium has an constant division rate $\lambda$ and they never die. Thus all bacteria is independent of one another. This model depicts an exponential growth.
-$k_i$ denotes the number of bacteria initially contained in the $i$th nematode. The random variable $X_i(t)=N_i(t)-k_i$ is thus the number of births in the $i$th lineage. Under our model,
-$X_i(t)$ is a negative binomial\cite[p. 158]{cox1977theory}:
-\begin{equation}
-X_i(t) \sim \mathrm{NB} \left( k_i, e^{-\lambda t} \right) \iff
-\end{equation}
-\begin{equation}
-\pr(X_i(t)=x)=\binom{x+k_i -1}{x} \left( e^{-\lambda t} \right)^{k_i} \left( 1-e^{-\lambda t} \right)^{x}.
-\end{equation}
-Consistently with previous notations, $k_+=\sum_{i=0}^d k_i$ is the total number of bacteria released initially by the $d$ nematodes.
-Equivalently $X_+(t)=N_+(t)-k_+$ is the total number of bacteria born. Since all $X_i(t)$ are independent of one another, $X_+(t)$ is also a negative binomial \cite{johnson2005univariate}:
-\begin{equation}
- X_+(t)  \sim \mathrm{NB} \left( k_+, e^{-\lambda t} \right).
-\end{equation}
-Basic calculus leads to the distribution of $X_i(t)$ conditional on $ X_+(t)=x_+ $; this is a negative hypergeometric and independent of $e^{-\lambda t}$:
-\begin{align}
-\pr( X_i & (t) =x \vert X_+(t)=x_+ )  \nonumber \\
-& = \dfrac{\displaystyle \binom{x+k_i-1}{x} \binom{x_+-x+k_+-k_i-1}{x_+-x}}{\displaystyle \binom{x_+ +k_+ -1}{x_+}}.
-\end{align}
-Leading to expectation for $X_i(t)(X_i(t)-1)$ conditional on $X_+(t)$:
-\begin{align}
- \mathbb{E} [ X_i(t)& (X_i(t)-1) \vert X_+(t) ]  \nonumber \\
- &=\dfrac{k_i(k_i+1)}{k_+ (k_+ +1 )}X_+(t) ( X_+(t) -1 ).
-\end{align}
-And the expectation of $N_i(t)(N_i(t)-1)$ conditional on $N_+(t)$ is:
-\begin{align}
- \mathbb{E} & [ N_i(t) (N_i(t)-1) \vert N_+(t) ]   \nonumber \\
- &=\dfrac{k_i(k_i+1) }{k_+ (k_+ +1)}N_+(t) ( N_+(t) -1 ) -\dfrac{2 k_i (k_+ - k_i) }{k_+ (k_+ +1)} N_+(t) .
-\end{align}
-Leading in turn to the expectation of $Z_i(t)$ conditional on $N_+(t)$.
-\begin{align}
-  \mathbb{E} [  Z_i(t)  & \vert N_+(t) ]  \nonumber \\
- &= \dfrac{k_i(k_i+1)}{k_+ (k_+ +1)}- \dfrac{2 k_i (k_+ -k_i)}{k_+ (k_+ +1)} \dfrac{1}{ N_+(t) -1  }.
-\end{align}
-By the law of conditional expectation:
-\begin{align}
-\mathbb{E}\left[ Z_i(t) \right] &=
- \mathbb{E}\left[ \mathbb{E}\left[ \left. Z_i(t) \right\vert N_+(t) \right] \right]\\
- &=\dfrac{k_i(k_i+1)}{k_+ (k_+ +1 )}-\dfrac{2 k_i (k_+ -k_i)}{k_+ (k_+ +1 )}\mathbb{E}\left[\dfrac{1}{N_+(t)-1} \right] \\
- & =\dfrac{k_i(k_i+1)}{k_+ (k_+ +1 )}-2e^{-\lambda t}\dfrac{ k_i (k_+ -k_i)}{k_+ (k_+^2 -1 )}.
-\end{align}
-By summing $\mathbb{E}\left[ Z_i(t) \right]$ over all $i$, we evaluate the probability of identity $\psi(t)$:
-\begin{equation}
-\psi(t) =\dfrac{ k_+ + \sum_{i=1}^d k_i^2}{k_+ (k_+ +1)}  -2 e^{-\lambda t} \dfrac{ k_+^2-\sum_{i=1}^d k_i^2}{k_+ (k_+^2 -1) }.
-\end{equation}
-Under the assumption that the number of bacteria carried by each nematode is large enough ($k_i \gg 1$), $\psi(t)$ becomes independent of $t$ and does not depend anymore on
- the bacteria growth rate:
- \begin{equation}
-\psi \simeq \displaystyle \sum_{i=1}^d \left( \dfrac{ k_i}{\sum_{i=1}^d k_i} \right)^2.
- \end{equation}
- This approximation can be understood intuitively.
- If the initial number of bacteria if large enough, the probability that two randomly chosen bacteria originate from the same nematode is independent of time, and equals the sum over all nematodes of their squared initial proportions.
- \end{multicols}
- \end{mdframed}
-\end{figure*}
- \begin{figure*}[hbt!]
+
+	Polymorphism in \textit{Homo sapiens} was downloaded from \href{http://www.ensembl.org/index.html}{ensembl.org}, we used the GRCh38 assembly and mutations from the phase 3 of the 1000 genomes projects \cite{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}. Mutations not in inside CDS we discarded at the beginning of the analysis. Insertion and deletion were not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele were kept. Stop codon as the mutant allele were also discarded. Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} were extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database \cite{ranwez_orthomam:_2007, douzery_orthomam_2014}. The pipeline (figure \ref{fig:pipeline}) for assembling and analyzing the data is written in python 3.5, the code under GNU license and available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop}. \\
+	
+	One proposed correction for slightly deleterious polymorphism is to drop “rare” polymorphisms, but this method has no clear cut. Dropping singletons provides a simple correction \cite{templeton_contingency_1996}, while other authors (Fay et al. 2002, Smith and Eyre-Walker 2002, Gojobori et al. 2007) have suggested only including polymorphisms with minor allele frequencies above $10\%$ \cite{smith_adaptive_2002, fay_testing_2002, gojobori_adaptive_2007}. We applied this correction to compute $\omega_A^{MK}$. On the contrary, the method of Galtier to compute $\omega_A^{DFEM}$ allow us to keep all polymorphisms, but since the folded site-frequency spectra (SFS) had $2504$ categories (The 1000G project sequenced 2504 diploid individuals) the model was then over-parametrized, and we sub-sampled the folded SFS down to 12 categories using hyper-geometric distribution (sampling without replacement). The effect of sub-sampling is shown in figure \ref{fig:omega_snp}, panel B.
+	
+
+	\section*{Results}
+	\begin{figure*}[hbt!]
+		\begin{mdframed}
+			\centering
+			\includegraphics[width=\textwidth]{../Figures/figure_3.pdf}\\
+			\caption{ \textbf{Empirical distribution of $\omega_A^{MK}$}
+				We computed $\omega_A^{MK}$ on the concatenate of the $27$ CDS having a high rate of adaptation, detected in phylogeny-based inference. We compared the result to the empirical distribution of $\omega_A^{MK}$ in the set of all CDS by sampling $27$ random CDS from the $1453$ CDS $1000000$ times (panel A).
+				We observed a $p_{\mathrm{value}}=0.119$, meaning that focusing the group of CDS evolving faster than expected in mammals, the rate of adaption measured in population-based inference, in \textit{Homo sapiens} and \textit{Pan troglodytes} is not significantly different from a random sample of sequences.
+				Using the site-frequency spectra of SNPs, we computed $\omega_A^{DFEM}$ in the same set of outliers by concatenating the $27$ site-frequency-spectrum (panel C). We compared the result to the empirical distribution of $\omega_A^{DFEM}$ in the set of all CDS by sampling $27$ random CDS from the $1453$ CDS $10000$ times (panel D). Modeling change in population size and the distribution of fitness effects of mutations using the GammaExpo model was not sufficient to observe a significant difference between outliers and the the set of all CDS ($p_{\mathrm{value}}=0.058$). \label{fig:omega_snp}}
+		\end{mdframed}
+	\end{figure*}
+	
+	\subsection*{Detecting protein-coding sequences under adaptation}
+	$\omega$ estimated by the site-model and $\omega_{0}$ estimated by the mutation-selection site-model shows a good linear correlation ($r^2=0.898$) meaning the mutation-selection site-model effectively predict the rate of non-synonymous substitutions over the rate synonymous substitutions. The assumption that fitness profile of amino-acids are stable in time seems not to be broken (see figure \ref{fig:omega_pb}, left panel).
+	Also, for each value of $\omega_{0}$ we computed the $99.5\%$ confidence interval around the predicted value $\omega$.  We detected $27$ CDS (protein coding sequences) having a value of $\omega$ above the upper bound of the confidence interval, meaning the value of their $\omega$ is too high regarding to their $\omega_{0}$. In such outliers, the assumption that fitness landscape are stable in time is broken, and these CDS are considered under adaptive process.  
+	To note, we detected no CDS with $\omega$ below the lower bound of the confidence interval. 
+	In the outliers, we computed  $\omega_A = \omega - \omega_0$, and asserted that $\omega_A$ correlates poorly with $ \omega_0$ ($r^2=0.002$), suggesting that $\omega_A$ effectively extract the adaption regardless of the background of purifying selection (see figure \ref{fig:omega_pb}). \\
+	
+	
+	On the set of outliers, we performed Fisher's exact to estimates ontology enrichment by contrasting with the set of all CDS (see figure \ref{fig:ontology}). We observed $10$ ontologies with an $e_{\mathrm{value}} <1$, while in expectation we should have observed only $1$ ontology if they were assigned randomly, and the false discovery rate is $10 \%$. In these $10$ ontologies, $60 \%$ were related to immune process, which is similar to results found in large scale analysis (16,529 CDS, Kosiol \textit{et al} \cite{kosiol_patterns_2008}). We conclude that our method for detecting adaptation effectively extract adaptation regardless of the background of purifying selection, and extracted primarily sequences related to immune process. \\
+	
+			\end{multicols}
+\begin{table}[ht!]
 \centering
-\begin{tikzpicture}
-\begin{axis}[
-ylabel={Relatedness ($R$)},
-xlabel={Correlated migration coefficient ($\phi$)},
-domain=0:1,
-samples=201,
-%legend entries={$d=20$,$d=5$,$d=3$, $d=2$,$d=1 $},
-legend cell align=left,
-minor tick num=2,
-axis x line=bottom,
-axis y line=left,
-%legend style={at={(0.97,0.1)},anchor=south east}
-]
-\addplot[blue]{1 /(20 - (20-1)* x)};
-\addplot[green]{1 /(5 - (5-1)* x)};
-\addplot[yellow]{1 /(3 - (3-1)* x)};
-\addplot[orange]{1 /(2 - (2-1)* x)};
-\addplot[red]{1 /(1 - (1-1)* x)};
-\node at (axis cs:0.1,0.06) [anchor=south west, blue] {$d=20$};
-\node at (axis cs:0.1,0.24) [anchor=south west, green] {$d=5$};
-\node at (axis cs:0.1,0.39) [anchor=south west, yellow] {$d=3$};
-\node at (axis cs:0.1,0.57) [anchor=south west, orange] {$d=2$};
-\node at (axis cs:0.1,0.9) [anchor=south west, red] {$d=1$};
-
-\end{axis}
-\end{tikzpicture}
-\caption{\textbf{Relatedness as a function of demographic parameters. Left panel:} Model of simultaneous infection.
-Plot of the relatedness against $\phi$ \eqref{eqn:R_d_phi} for several values of $d$ ranging from $1$ to $20$. 
-$\phi$ is the probability that two infecting nematodes come from the same insect.
-$d$ is the number of nematodes infecting the insect.
-If either the number of nematode is smalls or $\phi$ close to one, the relatedness is close to one. \textbf{Right panel:} 
-The nematodes arrive consecutively, the time between two arrivals is $\mathrm{Exp}(\tau)$. The bacteria growth is exponential, with divisions at rate $\lambda$.
-Estimated relatedness for $3$ and $4$ of nematodes (blue and purple solid lines) are plotted against the parameter $\omega=\tau \lambda^{-1}$.
-For the case $d=2$, and under the assumption of a deterministic growth of bacteria, the relatedness is analytically derived (black solid line).
-Red solid lines are the confidence bounds estimated from 1000 replicate simulations of growth within an insect.
-If either the number of nematode is small or the arrival rate of nematodes is small or the growth rate of bacteria is large, the relatedness is close to one.\label{fig:R}}
-\end{figure*}
-\begin{figure*}[hbt!]
-\begin{mdframed}
+\begin{adjustbox}{width = 1\textwidth}
+	\small\begin{tabular}{|c|c|c|c|c|c|}
+		\hline
+		Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$\\
+		\hline
+		plasma membrane & $12$ & $3.48$ & $3.45$ & $0.00232$ & $0.195$\\
+		protein heterodimerization activity & $4$ & $0.459$ & $8.71$ & $0.00241$ & $0.202$\\
+		regulation of immune response & $2$ & $0.0566$ & $35.3$ & $0.00369$ & $0.31$\\
+		T cell differentiation & $2$ & $0.0755$ & $26.5$ & $0.00546$ & $0.459$\\
+		immune system process & $6$ & $1.36$ & $4.4$ & $0.00584$ & $0.49$\\
+		response to stress & $8$ & $2.24$ & $3.57$ & $0.00608$ & $0.511$\\
+		innate immune response & $4$ & $0.659$ & $6.07$ & $0.00765$ & $0.643$\\
+		receptor activity & $3$ & $0.348$ & $8.61$ & $0.00845$ & $0.71$\\
+		metabolic process & $6$ & $1.51$ & $3.98$ & $0.00899$ & $0.755$\\
+		leukocyte migration & $2$ & $0.113$ & $17.6$ & $0.00995$ & $0.836$\\
+		\hline
+	\end{tabular}
+\end{adjustbox}
+\caption{\textbf{Ontology enrichment in the outliers}. 84 Fisher's exact test performed with 27 CDS detected as adaptive and 1328 as non-adaptive. In the table is solely shown the tests with an  $e_{\mathrm{value}}$ lower than $1$. In terms of false positive discovery rate, it means that on the $10$ ontologies observed we expected $1$ on average, and the posteriori rate of false discoveries is $10\%$.  \label{fig:ontology}}
+\end{table}
 \begin{multicols}{2}
-\textbf{Box 3. Proof of  the formula \eqref{eqn:star2}\\}
-\label{box:psi_consecutive}
-We derive an analytic formula for $\psic$ for two nematodes arriving successively.
-We assume the first nematode arrive at time $T$ before the second (and last) nematode, where $T\sim \exp ( \tau)$.
-Each nematode carries the same number of bacteria, $k \gg 1$.
-The bacteria carried by the nematodes grew in a deterministic fashion at rate $\lambda$.
-Under all these assumptions, the number of bacteria in the insect when the second nematode arrives is the random variable $k e^{\lambda  T}+k$.
-Where $k e^{\lambda  T}$ bacteria are from the first one arrived and $k$ are from the second one.\\
-  Since $k \gg 1$, the random variable $k e^{\lambda  T} $ is always far greater than $1$.
-  Thus we can make use of the equation \eqref{eqn:star} to derive $\psic$:
-  \begin{align}
-  \psic  &=\mathbb{E} \left[ \left( \dfrac{ k e^{\lambda T}}{k+ke^{\lambda T}} \right)^2+\left( \dfrac{k}{k+ke^{\lambda T}} \right)^2 \right] \\
-  &=\mathbb{E} \left[ \left( \dfrac{ e^{\lambda T}}{1+e^{\lambda T}} \right)^2+\left( \dfrac{1}{1+e^{\lambda T}} \right)^2 \right] \\
-  &=\int_0^\infty \left( \left( \dfrac{ e^{\lambda t}}{1+e^{\lambda t}} \right)^2 + \left( \dfrac{1}{1+e^{\lambda t}} \right)^2 \right) \tau e^{ -\tau t } \ud t.
-  \end{align}
-  The evaluation of this integral is not straightforward.
-  Instead we derive the cumulative distribution function $F_1(p)$ and $F_2(p)$ of $\dfrac{ e^{\lambda T}}{1+e^{\lambda T}}$ and $\dfrac{ 1}{1+e^{\lambda T}}$ respectively.
-  \begin{align}
-  F_1(p) &= \pr \left(\dfrac{e^{\lambda T}}{1+e^{\lambda T}} \leq p\right)= \pr \left(T \leq \lambda^{-1} \mathrm{ln}\left( \dfrac{p}{1-p} \right) \right) \nonumber \\
-  &= 1-(1-p)^{\omega} p^{-\omega} \text{ for } 1/2 \leq p \leq 1,
-  \end{align}
-  where $\omega=\tau / \lambda$.
-  \begin{align}
-  F_2(p) &= \pr \left(\dfrac{1}{1+e^{\lambda T}} \leq p\right) = \pr \left(T \geq \lambda^{-1} \mathrm{ln}\left( \dfrac{1-p}{p} \right) \right) \nonumber \\
-  &= (1-p)^{-\omega} p^\omega \text{ for } 0 \leq p \leq 1/2.
-  \end{align}
-  Hence the the probability density function $f_1(p)$ and $f_2(p)$ are:
-  \begin{align}
-  f_1(p) &= \dfrac{ \ud F_1(p) }{ \ud p} =  \omega (1-p)^{\omega-1} p^{-\omega-1}  \text{ for } 1/2 \leq p \leq 1,\\
-  f_2(p) &= \dfrac{ \ud F_2(p) }{ \ud p} =  \omega (1-p)^{-\omega-1} p^{\omega-1} \text{ for } 0 \leq p \leq 1/2.
-  \end{align}
-  And
-  \begin{align}
-  \psic &= \int_{1/2}^{1} p^2 f_1(p) \ud p + \int_{0}^{1/2} p^2 f_2(p) \ud p \\
-  &= 1 -2  \omega \int_{0}^{1/2}  (1-x)^{-\omega} x^{\omega}  \ud x \\
-  &= 1- 2 \omega \mathrm{B}_{1/2}(1+\omega,1-\omega),
-  \end{align}
-  where $\mathrm{B}_x(a,b)$ is the incomplete beta function:
-\begin{align}
-\mathrm{B}_x(a,b) = \int_0^x t^{a-1}(1-t)^{b-1} \ud t.
-\end{align}
-  Thus the probability of identity is solely dependent on one parameter, $\omega$, the ratio between arrival rate of nematodes and growth rate of bacteria.
- \end{multicols}
-\end{mdframed}
-\end{figure*}
-We seek to derive relatedness as a function of demographic and migration parameters.
-The framework is largely inspired from Rousset \cite{rousset2004genetic}.
-We developed two models.
-In the first model, the insect is infected by nematodes arriving simultaneously. 
-Moreover, the migration of nematodes is correlated, meaning the nematodes disperse in an aggregated pattern \cite{shapiro2013aggregative}.
-% The group movement may have been continuous from the point of origin, or it may have been triggered by a propensity to aggregate after a short period of random movement.
-In the second model, the insect is infected by nematodes arriving consecutively, but the migration is uncorrelated, meaning dispersal resulted in a random or uniform distribution.
-\subsection*{Simultaneous infections, correlated migration}
-The relatedness ($R$) is a regression coefficient, but $R$ can also be computed in terms of probability of identity \cite{rousset2004genetic}.
-Let $Q_i$ be the probability of identity of genes from different bacteria, within the same insect ($\qw$) and in different insect ($\qb$).
-Here we consider the probability of identity in the infinite allele model so that any mutation would lead to a different allele.
-Let $\mu$ be the mutation rate.
-The regression coefficient $R$ can be computed as \cite{rousset2004genetic}:
-  \begin{equation}
- R = \lim_{\mu \rightarrow 0}\dfrac{\qw - \qb }{ 1- \qb }
- \end{equation}
- The $\qw$ and $\qb$ are obtained by solving recursions describing their change over successive life cycle, where parameters of these equations are relevant demographic and migration parameters (see Box \hyperref[box:life_cycle_relatedness]{1}).
- Thus the relatedness can be expressed as:
-  \begin{equation}
- R \simeq \dfrac{ \psis  }{ 1 - \phi (1- \psis )+1 / \nI }.  \label{R_psi_phi_nI}
- \end{equation}
-$\nI$ denotes the total number of insects.
-$\phi$ is the probability that two infecting nematodes come from the same insect in the previous cycle.
-The dispersal of nematodes is correlated, meaning nematodes preferentially follow other nematodes migrating out of the same insect.
- $\psis$ is the probability that two randomly chosen bacteria in the same insect originate from the same nematode.
-Under the assumption of a large number of insects ($\nI \gg 1$), the relatedness $R$ is:
- \begin{equation}
- R  \simeq \dfrac{ \psis  }{ 1 - \phi (1- \psis ) }
- \end{equation}
-Moreover $\psis$ can be derived explicitly (see Box \hyperref[box:psi_simultaneous]{2}) under assumption of a simultaneous infection by the nematodes.
-The insect is infected by $d$ nematodes initially.
-Each nematode $i$ ($ 1 \leq i \leq d$) releases $k_i$ bacteria inside the insect.
-Then all $d$ lineages of bacteria enter a stochastic exponential growth process (at rate $\lambda$) simultaneously.
-For a large number of bacteria carried by the nematode ($k_i \gg 1$), we have proved (see Box \hyperref[box:psi_simultaneous]{2}) that the stochastic part of the growth process is negligible. Thus $\psis$ is nearly independent of the time at which the growth is stopped in first approximation.
-Moreover, $\psis$ is nearly independent of $\lambda$, and solely depends on the number of nematodes infecting the insect and their carrying capacities:
- \begin{equation}
-\psis \simeq \displaystyle \sum_{i=1}^d \left( \dfrac{ k_i}{\sum_{i=1}^d k_i} \right)^2. \label{eqn:star}
- \end{equation}
-If each nematode carries the same number of bacteria, $\psis$ reduces to:
-\begin{equation}
-\psis \simeq \dfrac{1}{d}
-\end{equation}
-The relatedness finally simplifies:
- \begin{align}
-  R \simeq \dfrac{ 1  }{ d - \phi (d- 1 ) } \label{eqn:R_d_phi}
- \end{align}
- If either the number of nematodes infecting the insect ($d$) is small or $\phi$ close to one, the relatedness is close to one (see figure \ref{fig:R}).
-\subsection*{Consecutive infections, uncorrelated migration}
-The assumption of consecutive infections mainly affects the computation of $\psic$. The analysis of this scenario is otherwise similar to the previous one. R shall be given by equation \eqref{R_psi_phi_nI}.
- However, $\psic$ differs from the previous case. $\psic$ is the probability that two randomly chosen bacteria in the same insect originate from the same nematode, whenever nematodes arrive consecutively.
- In the case of uncorrelated migration, $\phi=1/ \nI$. Thus we have:
- \begin{equation}
- R \simeq \dfrac{\psic}{1+ \dfrac{\psic}{\nI}}.
- \end{equation}
-Under the assumption of an important number of insects ($\nI \gg 1$), the relatedness is:
- \begin{equation}
- R \simeq \psic
- \end{equation}
- We seek to derive $\psic$ under assumption of a consecutive infections by the nematodes.
- The insect is infected by nematodes arriving successively.
-We assume that the time elapsed between two nematode arrivals is exponentially distributed, with parameter $ \tau$.
-$\tau$ is a rate measured per unit of time.
-We assume a stochastic growth process for the bacteria, the division rate is $\lambda$, $\lambda$ is also measured per unit of time.
-We could not derive an analytic formula of $\psic$ for this general case, instead we estimated it by simulating this process.
-The results of these estimates are depicted in figure \ref{fig:R}. the C++ code is publicly available at \url{https://github.com/ThibaultLatrille/ISEM_M1_cpp_simulation}.
-An analytical approximation in terms of the parameter $ \omega =\tau  \lambda^{-1}$ can be derived in the case $d=2$ (Box \hyperref[box:psi_consecutive]{3}), $\psis$ is a decreasing function of $ \omega $:
-\begin{equation}
-   \psic \simeq 1- 2 \omega \mathrm{B}_{1/2}(1+\omega,1-\omega) \label{eqn:star2},
-\end{equation}
-where $\mathrm{B}_x(a,b)$ is the incomplete beta function:
-\begin{equation}
-\mathrm{B}_x(a,b) = \int_0^x t^{a-1}(1-t)^{b-1} \ud t.
-\end{equation}
-This approximation, derived under the assumption that bacterial growth is deterministic matches well the simulation results (Figure \ref{fig:R}).
+	
+	We also tried the one step procedure to estimate $\omega_A^*$ but it was not conclusive since $\omega^*$ captured also part the purifying process, and thus it was not not possible to untie the purifying process from adaptation. 
+	
 
-The relatedness increases with decreasing number of infecting nematodes, as in the previous model.
-The relatedness also increases with decreasing arrival rate of nematodes or equivalently with increasing growth rate of bacteria.
-Increasing growth rate or decreasing arrival rate leads to a population dominated by bacteria from the first nematode arrived.
+	\subsection*{Congruence between phylogeny- and population-based inference}
+	We computed $\omega_A^{MK}$ on the concatenate of the $27$ CDS having a high rate of adaptation, detected in phylogeny-based inference. We compared the result to the empirical distribution of $\omega_A^{MK}$ in the set of all CDS by sampling $27$ random CDS from the $1453$ CDS $1000000$ times (see figure \ref{fig:omega_snp}, panel A).
+	We observed a $p_{\mathrm{value}}=0.119$, meaning that focusing the group of CDS evolving faster than expected in mammals, the rate of adaption measured in population-based inference, in \textit{Homo sapiens} and \textit{Pan troglodytes} is not significantly different from a random sample of sequences.
+	
+	Using the site-frequency spectra of SNPs, we computed $\omega_A^{DFEM}$ in the same set of outliers by concatenating the $27$ site-frequency-spectrum (see figure \ref{fig:omega_snp}, panel C). We compared the result to the empirical distribution of $\omega_A^{DFEM}$ in the set of all CDS by sampling $27$ random CDS from the $1453$ CDS $10000$ times (see figure \ref{fig:omega_snp}, panel D). Modeling change in population size and the distribution of fitness effects of mutations using the GammaExpo model was not sufficient to observe a significant difference between outliers and the the set of all CDS ($p_{\mathrm{value}}=0.058$).
+	
+	\section*{Discussion}
+	Using phylogeny-based inference, we can discover protein coding sequences (CDS) under adaptation when the $\omega$ estimated by the site-model deviates significantly from the mutation-selection null model ($\omega_0$). We observed $27$ CDS from $1355$ ($2\%$) as outliers, and they showed significant increase in ontology related to immune process. Moreover the deviation from quasi-neutrality is not depend of the strength of the purifying process. At the level of a CDS, we can tease out adaptation and purifying selection with the help of mutation-selection models. Theoretically, the rate of adaptation can be estimated in one run ($\omega_A^*$), but it the computation was not stable.\\
+	
+	A first limitation of the results is that we restricted our analysis to $1355$ CDS because of time and computation constrains. However we can run the procedure on the whole dataset of $11256$ CDS to give more statistical power to the results. Phylogeny-based inference is computationally intensive, and require a well resolved species tree, hence our limitations to mammals. Moreover it crucially depends on the quality of the alignments, and paralogs identified as orthologs can easily falsify the results. Practically, we could also extend our analysis by using population data widely available for the mouse instead of restricting to \textit{Homo sapiens}. More broadly, we can extend our analysis to numerous clades where both population and phylogenetic data are widely available, such as drosophila. \\
+	
+	On the other hand, population-based inference is more coarse grained and the polymorphism available for each CDS is not enough to estimate $\omega_A$ reliably for each sequence and one need to concatenate sequences. The set of CDS having a high rate of adaptive evolution detected by phylogeny-based inference did not show a significant increase in the rate of adaptation inferred by population-based method. This result raise biological questions and methodological issues. If we assume that both methods are performing well to detect adaptation, this result means that the CDS evolving fast in mammals are not necessarily the sequences evolving fast in the \textit{Hominini}. In the other hand, this result could be a methodological issue, meaning phylogeny- and population-based inference are inherently testing for different adaptive rate, and that they should have no theoretical reason to be the same. Indeed if sequences are evolving very rapidly, sequences will not aligned and be discarded by the analysis altogether and not detected (false negative). On the other hand, population-based inference can not detect long term changes of the evolutionary process. Especially since the purifying process is stronger on longer timescale, the frontier between neutral and mildly deleterious mutation is blurred on short timescale. 
+	
+	Altogether, this preliminary study suggest that the integration between population and phylogeny-based inference raises theoretical and practical issues. We suggest that further investigating these methodological integration will provide biological insight on the evolutionary constrain of protein-coding sequences. \\
+	
+	\section*{Author contributions and acknowledgments}
+	I thank Nicolas Lartillot for his help, support and advises all along the internship and concerning this report, as well as for insightful discussions. I thank the team for the great atmosphere at the lab, and Fidel Botero-Castro for providing cleaned mammalian alignment data. The personal equipment was provided by ANR Dasire. This work was performed using the computing  facilities of the CC LBBE/PRABI. I wrote all the python code of the pipeline \ref{fig:pipeline}, and I designed the statistical tests and analyze the data. The repository for the pipeline and this report is available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop}.
 
-The previous models could be combined to take into account both consecutive infections and correlated dispersal.
-Nematodes move in aggregate, the aggregates arrive consecutively. The number of nematodes per aggregate is $d$.
-In an aggregate, $\phi$ is the probability that two nematodes come from the same insect.
-$\psis$ is the probability that two randomly chosen bacteria in the same insect originate from the same aggregate.
-Thus $\psi$ shall be computed in terms of the number of aggregate, the time elapsed between two aggregate arrivals and the bacterial growth rate.
-Using a similar framework as previously, we have:
-\begin{equation}
-   R = \dfrac{\psi}{d(1-\phi \psi)+\phi \psi}
-\end{equation}
-\section*{Discussion}
-The parasitic life cycle of \Xeno and \Photo has an influence on their relatedness, and thus on the potential for cooperation among bacteria.
-Under simplifying assumptions, we derive the candidate evolutionarily stable strategy for phenotypic variation probability switch.
-This strategy is derived as a function of relatedness. The relatedness is subsequently derived as a function of a few demographic parameters, experimentally accessible.
-
-Our model of simultaneous infection can be compared to outcomes of evolutionary experiments \cite{Vigneux2008}. Indeed, there is no experimental barrier to manipulate parameters such as $d$ or $\phi$ in the laboratory, thus the relatedness can be controlled and manipulated \cite{Vigneux2008}.
-However, estimation of these parameters in the field seems complicated under this model of migration.
-In the case of consecutive infection, if the division rate ($\lambda$) of bacteria can be hardly controlled but can be measured, the infection rate by nematodes ($\tau$) can be controlled in laboratory experiments.
-The number of nematodes infecting the insects can also be controlled.
-Moreover, estimating the arrival rate of nematodes is accessible in field experiments, assuming one can lure nematodes to a trap containing the insect and measure the arrival times.
-Thus all demographic parameters can be estimated. 
-Moreover, the relatedness can be estimated independently by various methods \cite{pamilo1982measuring}, and the results can be confronted to the prediction of demographic model to assess the validity of our model.
-
-We focused on phenotypic variation since it holds experimental grounds, but experiments show contradictory results on many aspects \cite{Somvanshi2012}.
-It is still unknown whether type I also colonize the nematode and to what extend which type contributes to the survival of nematodes \cite{Waterfield2009}. 
-We investigated a plausible simple scenario in order to give insight on the relation between phenotypic traits and relatedness in both \Photo and \textit{Xenorhabdus}.
-However, our model of phenotypic variation fits well with molecular and physiological data obtained on \textit{Photorhabdus} \cite{Somvanshi2012}, but the validity of this model need to further investigated for \Xeno bacteria. 
-
-Our work is designed to encompass both \Photo and \Xeno similar life cycles.  
-However, the molecular components of the regulatory networks controlling pathogenicity and mutualism in \Photo and \Xeno are different \cite{Goodrich-Blair2007}. 
-Thus our prediction must be assessed on both models independently.
-
-Our model can be incremented and adapted easily to take into account for known and future results.
-The fitness function can be adapted to study other aspects of helping behaviors, not solely phenotypic variation.
-By taking into account cooperation at the bacterial level, we hope this work will serve and drive new experiments on the tripartite system bacteria-nematode-insect.
-\section*{Acknowledgments}
-I thank François Rousset and Jean-Baptiste Ferdy for their help, support and advises all along the internship and concerning this report, as well as for insightful discussions.
-I am grateful to my laptop who coped my relentless bashing.
-\end{multicols}
+	\bibliographystyle{unsrt}
+	\bibliography{codon_models,adaptapop}
+	
+	\end{multicols}
 \end{document}
-% \begin{tikzpicture}
-%\begin{axis}[
-%view={-45}{45},
-%colorbar horizontal,
-%colormap/temp,
-%title={$R \simeq \dfrac{ \psi  }{ 1 - \phi (1- \psi )}$},
-%xlabel={$\psi$},
-%ylabel={$\phi$},
-%]
-%\addplot3[
-%surf,
-%domain=0:1,
-%domain y=0:1,
-%shader=faceted interp,
-%draw=black,
-%]
-%{x /(1 - (1 - x)* y)};
-%\end{axis}
-%\end{tikzpicture}
-

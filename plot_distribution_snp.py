@@ -5,7 +5,7 @@ import matplotlib.mlab as mlab
 import numpy as np
 from cds_libraries import load_snp_table, load_pb_table
 
-data_path = "/mnt/sda1/AdaptaPop/data"
+data_path = "./data"
 version = "88"
 GRCh = "GRCh38"
 
@@ -31,8 +31,8 @@ for x_label in header:
     plt.ylabel('Probability')
 plt.legend()
 plt.tight_layout()
-plt.savefig("{0}/{1}_{2}_distribution_cds_{3}.svg".format(data_path, version, GRCh, num_bins), format="svg")
-plt.savefig("{0}/{1}_{2}_distribution_cds_{3}.png".format(data_path, version, GRCh, num_bins), format="png")
+plt.savefig("{0}/distribution_snp_{1}.svg".format(data_path, num_bins), format="svg")
+plt.savefig("{0}/distribution_snp_{1}.png".format(data_path, num_bins), format="png")
 
 # plt.show()
 print('Plot completed')
