@@ -8,7 +8,6 @@
 /papers
 /qsub
 .idea/
-*.out
 *.dN
 *.dS
 *.t
