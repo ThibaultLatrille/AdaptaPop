@@ -57,6 +57,18 @@ Nick Goldman and Ziheng Yang.
   DNA sequences}.
 \newblock {\em Molecular biology and evolution}, 11(5):725--736, 1994.
 
+\bibitem{Yang2001}
+Ziheng Yang.
+\newblock {Codon-substitution models for detecting molecular adaptation at
+  individual sites along specific lineages}.
+\newblock {\em Molecular biology and evolution}, 19(6):908--917, 2002.
+
+\bibitem{kosiol_patterns_2008}
+Carolin Kosiol, Tomáš Vinař, Rute R.~da Fonseca, Melissa~J. Hubisz,
+  Carlos~D. Bustamante, Rasmus Nielsen, and Adam Siepel.
+\newblock Patterns of {Positive} {Selection} in {Six} {Mammalian} {Genomes}.
+\newblock {\em PLOS Genetics}, 4(8):e1000144, August 2008.
+
 \bibitem{Yang2008}
 Ziheng Yang and Rasmus Nielsen.
 \newblock {Mutation-selection models of codon substitution and their use to
@@ -82,18 +94,18 @@ Nicolas Rodrigue and Nicolas Lartillot.
   heterogeneous mutation-selection codon substitution model}.
 \newblock {\em Molecular biology and evolution}, 2016.
 
-\bibitem{Yang2001}
-Ziheng Yang.
-\newblock {Codon-substitution models for detecting molecular adaptation at
-  individual sites along specific lineages}.
-\newblock {\em Molecular biology and evolution}, 19(6):908--917, 2002.
-
 \bibitem{Huelsenbeck2006}
 John~P Huelsenbeck, Sonia Jain, Simon W~D Frost, and Sergei L~Kosakovsky Pond.
 \newblock {A Dirichlet process model for detecting positive selection in
   protein-coding DNA sequences}.
 \newblock {\em Proceedings of the National Academy of Sciences},
   103(16):6263--6268, 2006.
+
+\bibitem{lartillot_phylobayes_2013}
+Nicolas Lartillot, Nicolas Rodrigue, Daniel Stubbs, and Jacques Richer.
+\newblock {PhyloBayes} {MPI}: {Phylogenetic} {Reconstruction} with {Infinite}
+  {Mixtures} of {Profiles} in a {Parallel} {Environment}.
+\newblock {\em Systematic Biology}, 62(4):611--615, July 2013.
 
 \bibitem{wright_evolution_1931}
 Sewall Wright.
@@ -106,11 +118,17 @@ Ronald~Aylmer Fisher.
   edition}.
 \newblock Oxford University Press, 1930.
 
-\bibitem{Spielman2015}
-Stephanie~J Spielman, Suyang Wan, and Claus~O Wilke.
-\newblock {A comparison of one-rate and two-rate inference frameworks for
-  site-specific dN/dS estimation}.
-\newblock {\em bioRxiv}, 2015.
+\bibitem{spielman_relationship_2015}
+Stephanie~J. Spielman and Claus~O. Wilke.
+\newblock The {Relationship} between {dN}/{dS} and {Scaled} {Selection}
+  {Coefficients}.
+\newblock {\em Molecular Biology and Evolution}, 32(4):1097--1108, April 2015.
+
+\bibitem{rodrigue_site-heterogeneous_2014}
+Nicolas Rodrigue and Nicolas Lartillot.
+\newblock Site-heterogeneous mutation-selection models within the
+  {PhyloBayes}-{MPI} package.
+\newblock {\em Bioinformatics}, 30(7):1020--1021, April 2014.
 
 \bibitem{ranwez_orthomam:_2007}
 Vincent Ranwez, Frédéric Delsuc, Sylvie Ranwez, Khalid Belkhir, Marie-Ka
@@ -132,18 +150,6 @@ Arnaud Di~Franco, Raphael Poujol, Henner Brinkmann, Nicolas Lartillot, Denis
 \newblock Detecting erroneous stretches in amino acid {Multiple} {Sequences}
   {Alignment}.
 \newblock Lyon, February 2017.
-
-\bibitem{lartillot_phylobayes_2013}
-Nicolas Lartillot, Nicolas Rodrigue, Daniel Stubbs, and Jacques Richer.
-\newblock {PhyloBayes} {MPI}: {Phylogenetic} {Reconstruction} with {Infinite}
-  {Mixtures} of {Profiles} in a {Parallel} {Environment}.
-\newblock {\em Systematic Biology}, 62(4):611--615, July 2013.
-
-\bibitem{rodrigue_site-heterogeneous_2014}
-Nicolas Rodrigue and Nicolas Lartillot.
-\newblock Site-heterogeneous mutation-selection models within the
-  {PhyloBayes}-{MPI} package.
-\newblock {\em Bioinformatics}, 30(7):1020--1021, April 2014.
 
 \bibitem{eyre-walker_changing_2002}
 Adam Eyre-Walker.
@@ -188,10 +194,10 @@ Jun Gojobori, Hua Tang, Joshua~M. Akey, and Chung-I. Wu.
 \newblock {\em Proceedings of the National Academy of Sciences of the United
   States of America}, 104(10):3907--3912, March 2007.
 
-\bibitem{kosiol_patterns_2008}
-Carolin Kosiol, Tomáš Vinař, Rute R.~da Fonseca, Melissa~J. Hubisz,
-  Carlos~D. Bustamante, Rasmus Nielsen, and Adam Siepel.
-\newblock Patterns of {Positive} {Selection} in {Six} {Mammalian} {Genomes}.
-\newblock {\em PLOS Genetics}, 4(8):e1000144, August 2008.
+\bibitem{ho_time_2005}
+Simon Y.~W. Ho, Matthew~J. Phillips, Alan Cooper, and Alexei~J. Drummond.
+\newblock Time {Dependency} of {Molecular} {Rate} {Estimates} and {Systematic}
+  {Overestimation} of {Recent} {Divergence} {Times}.
+\newblock {\em Molecular Biology and Evolution}, 22(7):1561--1568, July 2005.
 
 \end{thebibliography}
