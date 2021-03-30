@@ -1,0 +1,8 @@
+FTP: 'ftp.ebi.ac.uk'
+STUDY: '/pub/databases/nextgen/capra/variants/'
+CONTAINS: '.genus_snps.CHIR1_0'
+NAME: "Capra_hircus.ARS1"
+ENSEMBL_RELEASE: 92
+SPECIES: "capra_hircus"
+LIFT_OVER: "flo/run/CHIR1_0ToARS1"
+REF_GENOME: "flo/Capra_hircus.ARS1.dna.toplevel.fa"

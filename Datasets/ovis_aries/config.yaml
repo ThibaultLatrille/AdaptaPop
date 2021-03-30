@@ -1,0 +1,6 @@
+FTP: 'ftp.ebi.ac.uk'
+STUDY: '/pub/databases/nextgen/ovis/variants/'
+CONTAINS: '.genus_snps.OARv3_1'
+NAME: "Ovis_aries.Oar_v3.1"
+ENSEMBL_RELEASE: 91
+SPECIES: "ovis_aries"

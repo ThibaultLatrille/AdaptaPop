@@ -1,0 +1,86 @@
+from ftplib import FTP
+import numpy
+import os
+
+configfile: "config.yaml"
+
+NAME = config["NAME"]
+ftp = FTP(config["FTP"])
+ftp.login()
+vfc_dico = {}
+for analysis in ftp.nlst(config["STUDY"]):
+    for file_path in ftp.nlst(analysis):
+        file = file_path.split("/")[-1]
+        if file.endswith("vcf.gz") and config["CONTAINS"] in file:
+            vfc_dico[file.replace('ALL.', '').replace(config["CONTAINS"], "").replace(".vcf.gz", "").split(".")[0]] = file_path
+
+ftp_ensembl = FTP("ftp.ensembl.org")
+ftp_ensembl.login()
+
+GTF = "{0}.{1}".format(config["NAME"], config["ENSEMBL_RELEASE"])
+FASTA = "{0}.cds.all.fa.gz".format(config["NAME"])
+
+rule all:
+    input:
+        expand("CDS." + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys()))
+
+
+rule download_fasta:
+    output:
+        fa_gz=FASTA
+    run:
+        with open(output.gtf_gz, 'wb') as fa_gz:
+            ftp_ensembl.retrbinary("RETR /pub/release-{0}/fasta/{1}/cds/{2}".format(config["ENSEMBL_RELEASE"], config["SPECIES"], output.fa_gz), fa_gz.write)
+
+rule download_gtf:
+    output:
+        gtf_gz=GTF + ".gtf.gz"
+    run:
+        with open(output.gtf_gz, 'wb') as gtf_gz:
+            ftp_ensembl.retrbinary("RETR /pub/release-{0}/gtf/{1}/{2}".format(config["ENSEMBL_RELEASE"], config["SPECIES"], output.gtf_gz), gtf_gz.write)
+
+
+rule gtf_to_bed:
+    input:
+        gtf_gz=GTF + ".gtf.gz"
+    output:
+        bed=GTF + ".bed",
+        sorted_bed=GTF + ".sorted.bed",
+        merged_bed=GTF + ".merged.bed",
+    shell:
+        "python3 ../../scripts/gtf_to_bed.py --gtf {input.gtf_gz} && bedtools sort -i {output.bed} > {output.sorted_bed} && bedtools merge -i {output.sorted_bed} -c 4 -o distinct > {output.merged_bed}"
+
+rule download_vcf:
+    output:
+        vfc_gz=(config["SPECIES"] + config["CONTAINS"] + '.{subset}.vcf.gz') if 'LIFT_OVER' in config else (NAME + '.{subset}.vcf.gz')
+    run:
+        with open(output.vfc_gz, 'wb') as vfc_gz:
+            ftp.retrbinary("RETR " + vfc_dico[wildcards.subset], vfc_gz.write)
+
+if 'LIFT_OVER' in config:
+    rule lift_over_vcf:
+        input:
+            vfc_gz=config["SPECIES"] + config["CONTAINS"] + '.{subset}.vcf.gz',
+            chain=config["LIFT_OVER"],
+            ref_genome=config["REF_GENOME"]
+        output:
+            vfc_gz=NAME + '.{subset}.vcf.gz'
+        shell:
+            "CrossMap.py vcf {input.chain} {input.vfc_gz} {input.ref_genome} {output.vfc_gz} --compress"
+
+rule intersect:
+    input:
+        vfc_gz=NAME + '.{subset}.vcf.gz',
+        bed=GTF + ".merged.bed"
+    output:
+        vfc="CDS." + NAME + '.{subset}.vcf'
+    shell:
+        "bedtools intersect -a {input.vfc_gz} -b {input.bed} -wb -header > {output.vfc}"
+
+rule zip:
+    input:
+        vfc_cds="CDS." + NAME + '.{subset}.vcf',
+        vfc_gz=NAME + '.{subset}.vcf.gz'
+    output: "CDS." + NAME + '.{subset}.vcf.gz'
+    shell:
+        "gzip -k {input.vfc_cds} && rm -rf {input.vfc_cds} && rm -rf {input.vfc_gz}"
