@@ -15,6 +15,7 @@
 /OrthoMam/bayescode/
 /Datasets/*/Snakefile
 /Datasets/capra_hircus/flo/
+*.errors.tsv
 .idea/
 *.dN
 *.dS

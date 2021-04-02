@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 import argparse
-import os
-from lxml import etree
 from Bio import SeqIO
 from Bio.pairwise2 import align
 from libraries import *
-
-
-def build_dict_trID(xml_folder, specie):
-    print('Finding trIDs associated to alignment files.')
-    dico_trid = {}
-    for file in os.listdir(xml_folder):
-        root = etree.parse(xml_folder + "/" + file).getroot()
-        for info in root.findall(".//infoCDS[@specy='{0}']".format(specie)):
-            trid = str(info.find('ensidTr').text)
-            assert trid not in dico_trid
-            dico_trid[trid] = file.replace(".xml", "")
-    print('trID conversion done.')
-    return dico_trid
 
 
 def most_common(lst):
@@ -162,7 +147,7 @@ if __name__ == '__main__':
     path = os.getcwd()
 
     dict_alignment = {}
-    dict_cds = build_dict_cds(path, args.g)
+    dict_cds, not_confirmed_tr = build_dict_cds(path, args.g)
     dict_tr_id = build_dict_trID(args.xml, args.species)
 
     print('Loading fasta file...')

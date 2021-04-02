@@ -97,7 +97,7 @@ rule annotate_vcf:
         fa_gz=FASTA,
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116/',
         xml_folder=ROOT + '/OrthoMam/Datasets/omm_markers',
-        script_vcf=ROOT + '/scripts/vcf_convert_positions.py'
+        script_vcf=ROOT + '/scripts/vcf_annotate_positions.py'
     params:
         specie = config["SPECIES"].capitalize()
     output:

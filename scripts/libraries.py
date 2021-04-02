@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-
 from collections import defaultdict
 import gzip
+import os
+from lxml import etree
 
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 nucleotides = list(complement.keys())
@@ -132,11 +133,21 @@ class Cds(object):
     def seq_length(self):
         return sum(self.exons_length())
 
+    def not_coding(self):
+        return self.seq_length() % 3 != 0
+
+    def befile_lines(self):
+        lines = []
+        for start, end in self.exons:
+            lines.append("{0}\t{1}\t{2}\t{3}\t0\t{4}\n".format(self.chromosome, start, end, self.name, self.strand))
+        return lines
+
 
 def build_dict_cds(data_path, file_name):
     print('Loading GTF file...')
     gtf_file = gzip.open("{0}/{1}".format(data_path, file_name), 'rt')
     dico_cds = dict()
+    nf_tr_id = set()
     for gtf_line in gtf_file:
         if gtf_line.startswith('#'):
             continue
@@ -146,11 +157,28 @@ def build_dict_cds(data_path, file_name):
             continue
 
         transcript_find = comments.find('transcript_id')
+        # comments.find('CCDS') != -1 and comments.find('ccds_id') != -1
         if transcript_find != -1:
             tr_id = comments[transcript_find + 15:].split("\"")[0]
+            if comments.find('cds_start_NF') != -1 or comments.find('cds_end_NF') != -1:
+                if tr_id not in nf_tr_id:
+                    nf_tr_id.add(tr_id)
             if tr_id not in dico_cds:
                 dico_cds[tr_id] = Cds(seqname, strand, tr_id)
             dico_cds[tr_id].add_exon(start, end)
     gtf_file.close()
     print('GTF file loaded.')
-    return dico_cds
+    return dico_cds, nf_tr_id
+
+
+def build_dict_trID(xml_folder, specie):
+    print('Finding trIDs associated to alignment files.')
+    dico_trid = {}
+    for file in os.listdir(xml_folder):
+        root = etree.parse(xml_folder + "/" + file).getroot()
+        for info in root.findall(".//infoCDS[@specy='{0}']".format(specie)):
+            trid = str(info.find('ensidTr').text)
+            assert trid not in dico_trid
+            dico_trid[trid] = file.replace(".xml", "")
+    print('trID conversion done.')
+    return dico_trid
