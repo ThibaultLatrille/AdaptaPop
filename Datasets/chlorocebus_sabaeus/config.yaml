@@ -4,3 +4,4 @@ CONTAINS: 'Svardal_et_al_2017_vervet_monkey_SNPs_incl_rhesus_macaque_diff_SnpEff
 NAME: "Chlorocebus_sabaeus.ChlSab1.1"
 ENSEMBL_RELEASE: 91
 SPECIES: "chlorocebus_sabaeus"
+PANEL: "sample.panel"

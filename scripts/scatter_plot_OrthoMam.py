@@ -43,15 +43,17 @@ plt.subplot(1, 1, 1)
 idf = np.linspace(min((min(table_omega_0), 0)), max(table_omega_0), 30)
 plt.ylabel("$\\omega$", fontsize=fontsize)
 plt.xlabel("$\\omega_0$", fontsize=fontsize)
-print(max(table_omega))
 xmin, xmax = min((min(table_omega_0), 0)), max(table_omega_0) + 0.01
 ymin, ymax = min((min(table_omega), 0)), min(max(table_omega) + 0.01, 2.0)
 plt.xlim((xmin, xmax))
 plt.ylim((ymin, ymax))
+pct = len([omega for omega_0, omega in zip(table_omega_0, table_omega) if omega > omega_0])
+print("{0:3f}% have ω > ω0".format(100 * pct / len(table_omega)))
 
 if site:
-    plt.hist2d(table_omega_0, table_omega, bins=100, range=[[xmin, xmax], [ymin, ymax]], norm=mpl.colors.LogNorm(),
-               cmap=mpl.cm.gray)
+    # plt.hist2d(table_omega_0, table_omega, bins=100, range=[[0.0, 1.0], [0.0, 1.5]], norm=mpl.colors.LogNorm())
+    plt.scatter(table_omega_0, table_omega)
+    plt.plot(idf, idf)
 else:
     model = sm.OLS(table_omega, sm.add_constant(table_omega_0))
     results = model.fit()

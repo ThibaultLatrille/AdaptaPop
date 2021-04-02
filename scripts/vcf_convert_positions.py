@@ -1,152 +1,138 @@
 #!/usr/bin/env python3
-
-from Bio import SeqIO
-from collections import defaultdict
 import argparse
 import os
-import gzip
+from lxml import etree
+from Bio import SeqIO
+from Bio.pairwise2 import align
+from libraries import *
 
 
-class Cds(object):
-    def __init__(self, chromosome, strand, name):
-        """
-        :chromosome : (String) Chromosome number (can also be X/Y or Z/W).
-        :strand : (String) Strand on which the CDS is encoded.
-        :name : (String) Name of the CDS.
-        :exons : (List of 2-tuple) List of exons. Each exon is defined by a tuple (start, end),
-                 where 'start' and 'end' are in absolute position in the chromosome.
-        """
-        self.chromosome = chromosome
-        assert (strand == "+" or strand == "-")
-        self.strand = strand
-        self.name = name
-        self.exons = []
-
-    def add_exon(self, start_exon, end_exon):
-        if int(start_exon) <= int(end_exon):
-            if self.strand == "+":
-                self.exons.append((int(start_exon), int(end_exon)))
-            else:
-                self.exons.insert(0, (int(start_exon), int(end_exon)))
-            for i in range(len(self.exons) - 1):
-                if not self.exons[i][1] < self.exons[i + 1][0]:
-                    print("At least one exon is overlapping with an other")
-
-    def nt_position(self, position):
-        """
-        :param position: (Integer) Nucleotide position in the chromosome.
-        :return: (Integer) Nucleotide position relative to the CDS.
-        """
-        nt = -1
-        running_sum = 0
-        if self.strand == "+":
-            for start, end in self.exons:
-                if start <= position <= end:
-                    nt = position - start + running_sum
-                    break
-                running_sum += end - start + 1
-        else:
-            for start, end in reversed(self.exons):
-                if start <= position <= end:
-                    nt = end - position + running_sum
-                    break
-                running_sum += end - start + 1
-        return nt
-
-    def snp_type(self, fasta_seq, position, ref_nuc, alt_nuc):
-        """
-        Return the SNP type given the position, reference and alternative nucleotide.
-        This method also requires the fasta sequence as input.
-        :param fasta_seq: (String) The fasta sequence.
-        :param position: (Integer) Absolute position of the SNP in the chromosome.
-        :param ref_nuc: (Character) The reference nucleotide.
-        :param alt_nuc: (Character) The absolute nucleotide.
-        :return: (String) The classification of the SNP, can be either "NotInCds",
-                          "RefDiff", "NotIdentified", "RefStop", "Stop", "Syn" or "NonSyn".
-        """
-        nt_position = self.nt_position(position)
-        if nt_position == -1:
-            return '', '', '', ''
-        frame = nt_position % 3
-        codon_ref = fasta_seq[nt_position - frame:nt_position + 3 - frame]
-        aa_ref = codontable[codon_ref]
-        if self.strand == "-":
-            ref_nuc = complement[ref_nuc]
-            alt_nuc = complement[alt_nuc]
-        codon_alt = codon_ref[:frame] + alt_nuc + codon_ref[frame + 1:]
-        aa_alt = codontable[codon_alt]
-        if aa_ref == '' or len(codon_ref) != 3:
-            return "NotInCds"
-        elif codon_ref[frame] != ref_nuc:
-            return "RefDiff"
-        elif aa_ref == '-' or aa_alt == '-':
-            return "NotIdentified"
-        elif aa_ref == 'X':
-            return "RefStop"
-        elif aa_alt == 'X':
-            return "Stop"
-        elif aa_alt == aa_ref:
-            return "Syn"
-        else:
-            return "NonSyn"
-
-    def empty_exon(self):
-        return sum([1 for exon_len in self.exons_length() if exon_len == 1]) > 0
-
-    def exons_length(self):
-        return [j - i + 1 for i, j in self.exons]
-
-    def seq_length(self):
-        return sum(self.exons_length())
-
-
-def build_dict_cds(data_path, file_name):
-    print('Loading GTF file...')
-    gtf_file = gzip.open("{0}/{1}".format(data_path, file_name), 'rt')
-    dico_cds = dict()
-    for gtf_line in gtf_file:
-        if gtf_line.startswith('#'):
-            continue
-
-        seqname, source, feature, start, end, score, strand, frame, comments = gtf_line.replace('\n', '').split('\t')
-        if feature != 'CDS':
-            continue
-
-        transcript_find = comments.find('transcript_id')
-        if transcript_find != -1:
-            tr_id = comments[transcript_find + 15:].split("\"")[0]
-            if tr_id not in dico_cds:
-                dico_cds[tr_id] = Cds(seqname, strand, tr_id)
-            dico_cds[tr_id].add_exon(start, end)
-    gtf_file.close()
-    print('GTF file loaded.')
-    return dico_cds
+def build_dict_trID(xml_folder, specie):
+    print('Finding trIDs associated to alignment files.')
+    dico_trid = {}
+    for file in os.listdir(xml_folder):
+        root = etree.parse(xml_folder + "/" + file).getroot()
+        for info in root.findall(".//infoCDS[@specy='{0}']".format(specie)):
+            trid = str(info.find('ensidTr').text)
+            assert trid not in dico_trid
+            dico_trid[trid] = file.replace(".xml", "")
+    print('trID conversion done.')
+    return dico_trid
 
 
 def most_common(lst):
     return max(set(lst), key=lst.count)
 
 
-complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-nucleotides = list(complement.keys())
-codontable = defaultdict(lambda: "-")
-codontable.update({
-    'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
-    'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T',
-    'AAC': 'N', 'AAT': 'N', 'AAA': 'K', 'AAG': 'K',
-    'AGC': 'S', 'AGT': 'S', 'AGA': 'R', 'AGG': 'R',
-    'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L',
-    'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P',
-    'CAC': 'H', 'CAT': 'H', 'CAA': 'Q', 'CAG': 'Q',
-    'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R',
-    'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V',
-    'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A',
-    'GAC': 'D', 'GAT': 'D', 'GAA': 'E', 'GAG': 'E',
-    'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G',
-    'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
-    'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
-    'TAC': 'Y', 'TAT': 'Y', 'TAA': 'X', 'TAG': 'X',
-    'TGC': 'C', 'TGT': 'C', 'TGA': 'X', 'TGG': 'W'})
+class Alignment(object):
+    def __init__(self, cds_seq, omm_seq, ensg, file_err):
+        self.error = ""
+        self.ensg = ensg
+        self.file_err = file_err
+        if len(omm_seq) == 0:
+            self.error = "SeqOMMEmpty"
+            return
+
+        self.omm_seq = omm_seq
+        omm_seq_aligned = str(omm_seq.replace("---", ''))
+        if len(omm_seq_aligned) % 3 != 0:
+            self.error = "SeqOMMnotMultiple3"
+            return
+
+        if len(cds_seq) % 3 != 0:
+            self.error = "SeqCDSnotMultiple3"
+            return
+
+        alns = align.globalmd(translate(cds_seq), translate(omm_seq_aligned), 10, -1000, -100, -10, -10, -1)
+        if len(alns) == 0:
+            self.error = "NoAlignment"
+            return
+
+        score = 0
+        for aln in alns:
+            seq1 = Alignment.gapsFromPeptide(str(aln[0]), cds_seq)
+            seq2 = Alignment.gapsFromPeptide(str(aln[1]), omm_seq_aligned)
+            tmp_score = Alignment.score_ali(seq1, seq2)
+            if tmp_score >= score:
+                self.cds_seq_aligned = seq1
+                self.omm_seq_aligned = seq2
+
+    def __repr__(self):
+        return translate(self.cds_seq_aligned, True) + '\n' + self.cds_seq_aligned + '\n' + \
+               self.omm_seq_aligned + '\n' + translate(self.omm_seq_aligned, True) + '\n' + self.omm_seq
+
+    def cds_pos_to_omm_pos(self, cds_pos, ref_nuc):
+        if self.error != "": return self.error
+
+        cds_pos_ali = self.pos_add_gap(cds_pos, self.cds_seq_aligned)
+        if self.cds_seq_aligned[cds_pos_ali] != ref_nuc:
+            return "RefOMMDiff"
+
+        if self.omm_seq_aligned[cds_pos_ali] == "-":
+            return "NotConvertible"
+
+        nbr_nuc_omm_ali = cds_pos_ali - self.omm_seq_aligned[:cds_pos_ali].count("-")
+        omm_pos = self.pos_add_gap(nbr_nuc_omm_ali, self.omm_seq)
+
+        if omm_pos is None or omm_pos >= len(self.omm_seq):
+            return "NotConvertible"
+        elif self.omm_seq[omm_pos] != ref_nuc:
+            self.file_err.write(self.ensg + '\n')
+            self.file_err.write("REF {0}\n".format(ref_nuc))
+            self.file_err.write("CDS aligned position {0}:{1}\n".format(cds_pos_ali, self.cds_seq_aligned[cds_pos_ali]))
+            self.file_err.write(str(self) + '\n')
+            self.file_err.write("OMM aligned position {0}:{1}\n".format(cds_pos_ali, self.omm_seq_aligned[cds_pos_ali]))
+            self.file_err.write("OMM position {0}:{1}\n".format(omm_pos, self.omm_seq[omm_pos]))
+            return "RefOMMDiff"
+        return omm_pos
+
+    @staticmethod
+    def score_ali(seq1, seq2):
+        score = 0
+        assert len(seq1) == len(seq2)
+        for c1, c2 in zip(seq1, seq2):
+            if c1 == c2:
+                score += 1
+        return score
+
+    @staticmethod
+    def pos_add_gap(pos_seq_ungap, seq_gap):
+        tmp_pos_seq_ungap = -1
+        for index, nuc in enumerate(seq_gap):
+            if nuc != "-":
+                tmp_pos_seq_ungap += 1
+            if tmp_pos_seq_ungap == pos_seq_ungap:
+                return index
+
+    @staticmethod
+    def chunks(l, n):
+        """ Yield successive n-sized chunks from l."""
+        for i in range(0, len(l), n):
+            yield l[i:i + n]
+
+    @staticmethod
+    def gapsFromPeptide(peptide_seq, nucleotide_seq):
+        if len(nucleotide_seq) == peptide_seq * 3: return nucleotide_seq
+        codons = [codon for codon in Alignment.chunks(nucleotide_seq, 3)]  # splits nucleotides into codons (triplets)
+        gapped_codons = []
+        codon_count = 0
+        for aa in peptide_seq:  # adds '---' gaps to nucleotide seq corresponding to peptide
+            if aa != '-':
+                gapped_codons.append(codons[codon_count])
+                codon_count += 1
+            else:
+                gapped_codons.append('---')
+        return ''.join(gapped_codons)
+
+
+def extract_fasta(file_path, specie):
+    if not os.path.exists(file_path):
+        file_path = file_path.replace("_null_", "__")
+    for f in SeqIO.parse(open(file_path, 'r'), 'fasta'):
+        if f.id == specie:
+            return str(f.seq)
+    return ""
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -159,10 +145,25 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--vcf', required=True, type=str,
                         dest="v", metavar="<vcf>",
                         help="The relative name of the .vcf file")
+    parser.add_argument('-a', '--ali', required=True, type=str,
+                        dest="ali", metavar="<ali>",
+                        help="The alignment folder")
+    parser.add_argument('-x', '--xml', required=True, type=str,
+                        dest="xml", metavar="<xml>",
+                        help="The xml folder")
+    parser.add_argument('-s', '--species', required=True, type=str,
+                        dest="species", metavar="<species>",
+                        help="The species name")
+    parser.add_argument('-o', '--output', required=True, type=str,
+                        dest="output", metavar="<output>",
+                        help="The output file")
     args = parser.parse_args()
 
     path = os.getcwd()
+
+    dict_alignment = {}
     dict_cds = build_dict_cds(path, args.g)
+    dict_tr_id = build_dict_trID(args.xml, args.species)
 
     print('Loading fasta file...')
     dict_fasta = {}
@@ -170,15 +171,8 @@ if __name__ == '__main__':
         dict_fasta[fasta.id.split(".")[0]] = str(fasta.seq[:-3])
     print('Fasta file loaded.')
 
-    stop_filename = '{0}/{1}.Stop.vcf.gz'.format(path, args.v.replace(".vcf.gz", ""))
-    syn_filename = '{0}/{1}.Syn.vcf.gz'.format(path, args.v.replace(".vcf.gz", ""))
-    nonsyn_filename = '{0}/{1}.NonSyn.vcf.gz'.format(path, args.v.replace(".vcf.gz", ""))
-    error_filename = '{0}/{1}.errors.tsv'.format(path, args.v.replace(".vcf.gz", ""))
-
-    stop_file = gzip.open(stop_filename, 'wt')
-    syn_file = gzip.open(syn_filename, 'wt')
-    nonsyn_file = gzip.open(nonsyn_filename, 'wt')
-    error_file = open(error_filename, 'w')
+    annot_file = gzip.open(args.output, 'wt')
+    error_file = open(args.output.replace(".vcf.gz", ".errors.tsv"), 'w')
 
     dict_cat_info = {"Syn": "{0} SNPs are synonymous variations",
                      "NonSyn": "{0} SNPs are non-synonymous variations",
@@ -186,49 +180,68 @@ if __name__ == '__main__':
                      "RefStop": "{0} SNPs have stop codon as reference amino-acid",
                      "RefDiff": "{0} SNPs retrieved from the fasta are not equal to the reference",
                      "NotIdentified": "{0} SNPs have non-identified reference or alternate amino-acid",
-                     "NotInCds": "{0} SNPs are not inside the CDS"}
-
-    dict_cat_nbr = {}
-    for snp_cat in dict_cat_info:
-        dict_cat_nbr[snp_cat] = 0
+                     "NotInCds": "{0} SNPs are not inside the CDS",
+                     "TrIdNotInOMM": "{0} transcript are not in OrthoMam",
+                     "SeqOMMEmpty": "{0} fasta sequences from OrthoMam MSA are empy",
+                     "SeqOMMnotMultiple3": "{0} fasta sequences from OrthoMam MSA are not multiple of 3",
+                     "SeqCDSnotMultiple3": "{0} fasta sequences from CDS are not multiple of 3",
+                     "NoAlignment": "{0} fasta sequences could not be aligned",
+                     "NotConvertible": "{0} SNPs positions are not convertible",
+                     "RefOMMDiff": "{0} SNPs retrieved from OMM are not equal to the reference"
+                     }
+    cat_errors = set(dict_cat_info.keys()).difference({"Syn", "NonSyn", "Stop"})
+    dict_cat_nbr = {snp_cat: 0 for snp_cat in dict_cat_info}
 
     vcf_file = gzip.open("{0}/{1}".format(path, args.v), 'rt')
     for vcf_line in vcf_file:
         if vcf_line[0] == '#':
-            stop_file.write(vcf_line)
-            syn_file.write(vcf_line)
-            nonsyn_file.write(vcf_line)
+            suffix = "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSNP_TYPE\tSNP_TYPES\n"
+            annot_file.write(vcf_line.strip() + suffix)
             continue
 
         chromo, pos, snp_id, ref, alt = vcf_line.split("\t", maxsplit=5)[:5]
         if (ref not in nucleotides) or (alt not in nucleotides):
             continue
 
-        snp_types = []
+        snp_types = dict()
         transcript_id_list = vcf_line[vcf_line.rfind('\t') + 1:-1].split(",")
         for transcript_id in transcript_id_list:
-            snp_types.append(dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt))
+            snp_type = dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt)
+            snp_types[transcript_id] = snp_type
 
-        assert len(snp_types) > 0
-        if "NotInCds" in snp_types:
-            dict_cat_nbr["NotInCds"] += 1
-        elif "RefDiff" in snp_types:
-            dict_cat_nbr["RefDiff"] += 1
-        elif "NotIdentified" in snp_types:
-            dict_cat_nbr["NotIdentified"] += 1
-        elif "RefStop" in snp_types:
-            dict_cat_nbr["RefStop"] += 1
+        type_not_errors = {k: v for k, v in snp_types.items() if v not in cat_errors}
+        if len(type_not_errors) == 0:
+            dict_cat_nbr[most_common([v for v in snp_types.values() if v in cat_errors])] += 1
+            continue
+
+        ali_pos = dict()
+        for tr_id in type_not_errors:
+            if tr_id not in dict_tr_id:
+                ali_pos[tr_id] = "TrIdNotInOMM"
+                continue
+
+            if tr_id not in dict_alignment:
+                fasta_omm = extract_fasta("{0}{1}_NT.fasta".format(args.ali, dict_tr_id[tr_id]), args.species)
+                dict_alignment[tr_id] = Alignment(dict_fasta[tr_id], fasta_omm, dict_tr_id[tr_id], error_file)
+
+            nuc = complement[ref] if dict_cds[tr_id].strand == "-" else ref
+            ali_pos[tr_id] = dict_alignment[tr_id].cds_pos_to_omm_pos(dict_cds[tr_id].nt_position(int(pos)), nuc)
+
+        ali_pos_not_errors = {k: v for k, v in ali_pos.items() if v not in cat_errors}
+        vcf_line = vcf_line.strip()
+        if len(ali_pos_not_errors) == 0:
+            dict_cat_nbr[most_common([v for v in ali_pos.values() if v in cat_errors])] += 1
+            vcf_line += "\tNone\tNone"
         else:
-            max_type = most_common(snp_types)
-            if max_type == "Stop":
-                stop_file.write(vcf_line)
-                dict_cat_nbr["Stop"] += 1
-            elif max_type == "Syn":
-                syn_file.write(vcf_line)
-                dict_cat_nbr["Syn"] += 1
-            elif max_type == "NonSyn":
-                nonsyn_file.write(vcf_line)
-                dict_cat_nbr["NonSyn"] += 1
+            common_pos = most_common(list(ali_pos_not_errors.values()))
+            vcf_line += "\t" + ",".join(set(ali_pos_not_errors.keys())) + "\t" + str(common_pos)
+
+        types = [type_not_errors[k] for k in (ali_pos_not_errors if len(ali_pos_not_errors) > 0 else type_not_errors)]
+        max_type = most_common(types)
+
+        vcf_line += "\t" + max_type + "\t" + ",".join(types) + "\n"
+        annot_file.write(vcf_line)
+        dict_cat_nbr[max_type] += 1
     vcf_file.close()
 
     nbr_snp_total = sum(dict_cat_nbr.values())
@@ -236,14 +249,12 @@ if __name__ == '__main__':
     for cat, nbr in dict_cat_nbr.items():
         error_file.write("\n\n" + dict_cat_info[cat].format(nbr) + " ({0:.3f}%)".format(nbr * 100. / nbr_snp_total))
 
-    stop_file.close()
-    syn_file.close()
-    nonsyn_file.close()
+    annot_file.close()
     error_file.close()
 
     print("{0} variants analyzed in total".format(nbr_snp_total))
-    print("File containing {0} stop variants in {1}".format(dict_cat_nbr["Stop"], stop_filename))
-    print("File containing {0} synonymous variants in {1}".format(dict_cat_nbr["Syn"], syn_filename))
-    print("File containing {0} non-synonymous variants in {1}".format(dict_cat_nbr["NonSyn"], nonsyn_filename))
+    print("File containing {0} stop variants".format(dict_cat_nbr["Stop"]))
+    print("File containing {0} synonymous variants".format(dict_cat_nbr["Syn"]))
+    print("File containing {0} non-synonymous variants".format(dict_cat_nbr["NonSyn"]))
     nbr_errors = nbr_snp_total - dict_cat_nbr["Stop"] - dict_cat_nbr["Syn"] - dict_cat_nbr["NonSyn"]
-    print("File containing {0} errors variants in {1}".format(nbr_errors, error_filename))
+    print("{0} errors variants".format(nbr_errors))
