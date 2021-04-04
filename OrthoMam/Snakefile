@@ -2,24 +2,23 @@ import os
 from ete3 import Tree
 import pandas as pd
 from Bio import SeqIO
-CDS_START_LIST = 0
-CDS_END_LIST = 1000
+
+configfile: 'config.yaml'
 
 fasta_folder = "Datasets/omm_NT_fasta.v10c_116"
 tree_folder = "Datasets/omm_RooTree.v10b_116"
 experiment_folder = "Experiments"
 bayescode_folder = "bayescode/_build"
-CDS_list = list(sorted([i.replace(".fasta", "") for i in os.listdir(fasta_folder)]))[CDS_START_LIST:CDS_END_LIST]
+CDS_list = list(sorted([i.replace(".fasta", "") for i in os.listdir(fasta_folder)]))[config['CDS_START_LIST']:config['CDS_END_LIST']]
 MODELS = {"siteomega": "--omegashift 0.0 --freeomega --omegancat 30 --flatfitness",
           "sitemutsel": "--omegashift 0.0 --ncat 30"}
-CHAINS = [1]
-POINTS = 1000
-BURN_IN = 200
+POINTS = config['POINTS']
+BURN_IN = config['BURN_IN']
 
 localrules: all, filter, gzip_chain
 
 rule all:
-    input: expand(experiment_folder + "/{CDS}/{model}_{chain}.run.chain.gz", CDS=CDS_list, model=MODELS, chain=CHAINS)
+    input: expand(experiment_folder + "/{CDS}/{model}_{chain}.run.chain.gz", CDS=CDS_list, model=MODELS, chain=config['CHAINS'])
 
 rule filter:
     input:
@@ -51,12 +50,14 @@ rule run_bayescode:
     input:
         ali = rules.filter.output.ali,
         tree = rules.filter.output.tree,
-        bayescode = bayescode_folder + "/mutselomega"
+        bayescode = bayescode_folder + "/mutselomega",
+        config = "config.yaml"
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.run")
     params:
         time="3-23:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
-        cmd = lambda w: MODELS[w.model]
-    shell: "{input.bayescode} -a {input.ali} -t {input.tree} {params.cmd} -u {POINTS} {output}"
+        unzip = lambda w, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
+        cmd = lambda w, input: "-a {0} -t {1} -u {2} {3}".format(input.ali, input.tree, POINTS, MODELS[w.model]) if not config['RESTART'] else ""
+    shell: "{params.unzip} {input.bayescode} {params.cmd} {output} "
 
 rule read_bayescode:
     input:

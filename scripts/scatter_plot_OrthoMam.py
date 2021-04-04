@@ -7,6 +7,7 @@ import statsmodels.api as sm
 from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import pandas as pd
 import os
+from scipy.stats import gaussian_kde
 
 RED = "#EB6231"
 YELLOW = "#E29D26"
@@ -40,19 +41,27 @@ fontsize = 16
 fontsize_legend = 12
 plt.figure(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 plt.subplot(1, 1, 1)
-idf = np.linspace(min((min(table_omega_0), 0)), max(table_omega_0), 30)
+idf = np.linspace(0, 1, 30)
 plt.ylabel("$\\omega$", fontsize=fontsize)
 plt.xlabel("$\\omega_0$", fontsize=fontsize)
-xmin, xmax = min((min(table_omega_0), 0)), max(table_omega_0) + 0.01
-ymin, ymax = min((min(table_omega), 0)), min(max(table_omega) + 0.01, 2.0)
+xmin, xmax = 0.05, 1.0
+ymin, ymax = 0.05, 1.5
 plt.xlim((xmin, xmax))
 plt.ylim((ymin, ymax))
 pct = len([omega for omega_0, omega in zip(table_omega_0, table_omega) if omega > omega_0])
 print("{0:3f}% have ω > ω0".format(100 * pct / len(table_omega)))
 
 if site:
-    # plt.hist2d(table_omega_0, table_omega, bins=100, range=[[0.0, 1.0], [0.0, 1.5]], norm=mpl.colors.LogNorm())
-    plt.scatter(table_omega_0, table_omega)
+    plt.hist2d(table_omega_0, table_omega, bins=100, range=[[xmin, xmax], [ymin, ymax]], norm=mpl.colors.LogNorm(), cmap='Blues')
+    '''
+    # fit an array of size [Ndim, Nsamples]
+    kde = gaussian_kde(np.vstack([table_omega_0, table_omega]))
+    # evaluate on a regular grid
+    Xgrid, Ygrid = np.meshgrid(np.linspace(xmin, xmax, 30), np.linspace(ymin, ymax, 30))
+    Z = kde.evaluate(np.vstack([Xgrid.ravel(), Ygrid.ravel()]))
+    # Plot the result as an image
+    plt.imshow(Z.reshape(Xgrid.shape), origin='lower', aspect='auto', extent=[xmin, xmax, ymin, ymax], norm=mpl.colors.LogNorm(), cmap='Blues')
+    '''
     plt.plot(idf, idf)
 else:
     model = sm.OLS(table_omega, sm.add_constant(table_omega_0))
