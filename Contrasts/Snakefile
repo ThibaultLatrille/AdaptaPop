@@ -1,0 +1,65 @@
+import numpy
+import os
+import pandas as pd
+from glob import glob
+
+ROOT = os.path.abspath('..')
+SPECIES = {'Chlorocebus_sabaeus': 'Macaca_mulatta'}
+NBR_REP = 20
+REPLICATES = list(range(1, NBR_REP + 1)) + ["OUTLIERS"]
+GENE_LEVEL = True
+MODEL = "GammaExpo"
+
+def is_int(x):
+    try:
+        int(x)
+        return True
+    except ValueError:
+        return False
+
+PLOT_LIST = []
+for sp in SPECIES:
+    for pop_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.vcf.gz'.format(sp)):
+        pop_id = pop_path.split(".")[-3]
+        if "chr" in pop_id or (pop_id in ["X", "Y", "MT"]) or is_int(pop_id): continue
+        dir = "{0}_{1}".format(sp, pop_id)
+        os.makedirs(dir + "/DoFE", exist_ok=True)
+        os.makedirs(dir + "/tmp", exist_ok=True)
+        PLOT_LIST.append(dir + "/histogram.pdf")
+
+rule all:
+    input: PLOT_LIST[:1]
+
+rule generate_DoFE:
+    input:
+        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/*.{1}.vcf.gz'.format(w.species, w.pop)),
+        ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
+        div_folder=ROOT + '/OrthoMam/Experiments',
+        script=ROOT + '/scripts/generate_DoFE.py',
+    params:
+        tmp_folder=lambda w: "--tmp_folder {0}_{1}/tmp".format(w.species, w.pop),
+        output=lambda w: "--output {0}_{1}/DoFE".format(w.species, w.pop),
+        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
+    output:
+        expand("{{species}}_{{pop}}/DoFE/{rep}.txt", rep=REPLICATES)
+    shell:
+        'python3 {input.script} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --gene_level {GENE_LEVEL} --rep {NBR_REP} {params.species} {params.tmp_folder} {params.output}'
+
+rule run_dfem:
+    input:
+        dfem=ROOT + '/utils/dfem/dfem',
+        DoFE="{species}_{pop}/DoFE/{rep}.txt"
+    output: "{species}_{pop}/DoFE/{rep}.csv"
+    shell:
+        '{input.dfem} -in {input.DoFE} -out {output} -model {MODEL}'
+
+rule plot_histogram:
+    input:
+        dfem_res=expand("{{species}}_{{pop}}/DoFE/{rep}.csv", rep=REPLICATES),
+        script=ROOT + '/scripts/plot_histogram.py'
+    params:
+        folder=lambda w: "--folder {0}_{1}/DoFE".format(w.species, w.pop)
+    output:
+        plot="{species}_{pop}/histogram.pdf"
+    shell:
+        'python3 {input.script} {params.folder} --model {MODEL} --output {output.plot}'

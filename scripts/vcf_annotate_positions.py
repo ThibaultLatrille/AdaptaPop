@@ -180,8 +180,9 @@ if __name__ == '__main__':
     vcf_file = gzip.open("{0}/{1}".format(path, args.v), 'rt')
     for vcf_line in vcf_file:
         if vcf_line[0] == '#':
-            suffix = "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSNP_TYPE\tSNP_TYPES\n"
-            annot_file.write(vcf_line.strip() + suffix)
+            if vcf_line[1] != '#':
+                vcf_line = vcf_line.strip() + "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSNP_TYPE\tSNP_TYPES\n"
+            annot_file.write(vcf_line)
             continue
 
         chromo, pos, snp_id, ref, alt = vcf_line.split("\t", maxsplit=5)[:5]
@@ -218,8 +219,9 @@ if __name__ == '__main__':
             dict_cat_nbr[most_common([v for v in ali_pos.values() if v in cat_errors])] += 1
             vcf_line += "\tNone\tNone"
         else:
+            ensg_set = set([dict_tr_id[tr_id] for tr_id in ali_pos_not_errors])
             common_pos = most_common(list(ali_pos_not_errors.values()))
-            vcf_line += "\t" + ",".join(set(ali_pos_not_errors.keys())) + "\t" + str(common_pos)
+            vcf_line += "\t" + ",".join(ensg_set) + "\t" + str(common_pos)
 
         types = [type_not_errors[k] for k in (ali_pos_not_errors if len(ali_pos_not_errors) > 0 else type_not_errors)]
         max_type = most_common(types)

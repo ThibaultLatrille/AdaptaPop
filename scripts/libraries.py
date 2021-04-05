@@ -3,6 +3,10 @@ from collections import defaultdict
 import gzip
 import os
 from lxml import etree
+import pandas as pd
+import statsmodels.api as sm
+from statsmodels.sandbox.regression.predstd import wls_prediction_std
+import numpy as np
 
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 nucleotides = list(complement.keys())
@@ -182,3 +186,38 @@ def build_dict_trID(xml_folder, specie):
             dico_trid[trid] = file.replace(".xml", "")
     print('trID conversion done.')
     return dico_trid
+
+
+def build_divergence_tables(folder, gene_level=True):
+    cds_list, table_omega_0, table_omega = [], [], []
+    for file in os.listdir(folder):
+        sitemutsel_path = folder + "/" + file + "/sitemutsel_1.run.omegappgt1.000000"
+        siteomega_path = folder + "/" + file + "/siteomega_1.run.omegappgt1.000000"
+        if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
+            continue
+
+        site_omega_0 = pd.read_csv(sitemutsel_path, sep="\t")["omega_0"].values
+        site_omega = pd.read_csv(siteomega_path, sep="\t")["omega"].values
+        if gene_level:
+            table_omega_0.append(np.mean(site_omega_0))
+            table_omega.append(np.mean(site_omega))
+            cds_list.append(file)
+        else:
+            assert len(site_omega_0) == len(site_omega)
+            table_omega_0.extend(site_omega_0)
+            table_omega.extend(site_omega)
+            cds_list.extend([file + str(i + 1) for i in range(len(site_omega))])
+
+    return cds_list, table_omega_0, table_omega
+
+
+def detect_outliers(cds_list, table_omega_0, table_omega):
+    model = sm.OLS(table_omega, sm.add_constant(table_omega_0))
+    results = model.fit()
+    b, a = results.params[0:2]
+    alpha = 0.005
+    prstd, iv_l, iv_u = wls_prediction_std(results, alpha=alpha)
+
+    cds_adaptive_list = [k for i, k in enumerate(cds_list) if table_omega[i] > iv_u[i]]
+    cds_epistasis_list = [k for i, k in enumerate(cds_list) if table_omega[i] < iv_l[i]]
+    return cds_adaptive_list, cds_epistasis_list

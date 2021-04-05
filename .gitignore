@@ -13,8 +13,10 @@
 /OrthoMam/Datasets/
 /OrthoMam/Experiments/
 /OrthoMam/bayescode/
-/Datasets/*/Snakefile
-/Datasets/capra_hircus/flo/
+/Polymorphism/*/Snakefile
+/Polymorphism/Capra_hircus/flo/
+/scripts/__pycache__/
+/Contrasts/*/
 *.errors.tsv
 .idea/
 *.dN

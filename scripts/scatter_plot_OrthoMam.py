@@ -10,9 +10,7 @@ import os
 from scipy.stats import gaussian_kde
 
 RED = "#EB6231"
-YELLOW = "#E29D26"
 BLUE = "#5D80B4"
-LIGHTGREEN = "#6ABD9B"
 GREEN = "#8FB03E"
 site = True
 cds_list, table_omega_0, table_omega = [], [], []

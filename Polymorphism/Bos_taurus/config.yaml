@@ -1,6 +1,6 @@
 FTP: 'ftp.ebi.ac.uk'
 STUDY: '/pub/databases/nextgen/bos/variants/'
 CONTAINS: '.genus_snps.UMD3_1'
-NAME: "Bos_taurus.UMD3.1"
+ASSEMBLY: "UMD3.1"
 ENSEMBL_RELEASE: 91
-SPECIES: "bos_taurus"
+SPECIES: "Bos_taurus"

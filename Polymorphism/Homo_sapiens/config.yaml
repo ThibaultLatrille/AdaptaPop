@@ -1,7 +1,7 @@
 FTP: 'ftp.1000genomes.ebi.ac.uk'
 STUDY: 'vol1/ftp/data_collections/1000_genomes_project/release/'
 CONTAINS: 'shapeit2_integrated_snvindels_v2a_27022019'
-NAME: "Homo_sapiens.GRCh38"
+ASSEMBLY: "GRCh38"
 ENSEMBL_RELEASE: 91
-SPECIES: "homo_sapiens"
+SPECIES: "Homo_sapiens"
 PANEL: "integrated_call_samples_v3.20130502.ALL.panel"

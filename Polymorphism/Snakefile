@@ -5,7 +5,7 @@ import pandas as pd
 
 configfile: 'config.yaml'
 
-NAME = config['NAME']
+NAME = config['SPECIES'] + "." + config['ASSEMBLY']
 ftp = FTP(config['FTP'])
 ftp.login()
 vfc_dico = {}
@@ -18,8 +18,8 @@ for analysis in ftp.nlst(config['STUDY']):
 ftp_ensembl = FTP('ftp.ensembl.org')
 ftp_ensembl.login()
 
-GTF = '{0}.{1}'.format(config['NAME'], config['ENSEMBL_RELEASE'])
-FASTA = '{0}.cds.all.fa.gz'.format(config['NAME'])
+GTF = '{0}.{1}'.format(NAME, config['ENSEMBL_RELEASE'])
+FASTA = '{0}.cds.all.fa.gz'.format(NAME)
 ROOT = os.path.abspath('../..')
 
 POPULATIONS = set(pd.read_csv(config["PANEL"], sep='\t')["pop"]) if 'PANEL' in config else False
@@ -99,11 +99,11 @@ rule annotate_vcf:
         xml_folder=ROOT + '/OrthoMam/Datasets/omm_markers',
         script_vcf=ROOT + '/scripts/vcf_annotate_positions.py'
     params:
-        specie = config["SPECIES"].capitalize()
+        specie = config["SPECIES"]
     output:
         vfc_gz='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz'
     shell:
-        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --xml {input.xml_folder} --xml {input.xml_folder} --specie {params.specie} --output {output.vfc_gz}'
+        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --xml {input.xml_folder} --specie {params.specie} --output {output.vfc_gz}'
 
 if POPULATIONS:
     rule chr_to_pop:
