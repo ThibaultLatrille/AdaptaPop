@@ -176,7 +176,7 @@ def build_dict_cds(data_path, file_name):
 
 
 def build_dict_trID(xml_folder, specie):
-    print('Finding trIDs associated to alignment files.')
+    print('Converting TR_ID to ENSG.')
     dico_trid = {}
     for file in os.listdir(xml_folder):
         root = etree.parse(xml_folder + "/" + file).getroot()
@@ -184,40 +184,104 @@ def build_dict_trID(xml_folder, specie):
             trid = str(info.find('ensidTr').text)
             assert trid not in dico_trid
             dico_trid[trid] = file.replace(".xml", "")
-    print('trID conversion done.')
+    print('TR_ID to ENSG conversion done.')
     return dico_trid
 
 
-def build_divergence_tables(folder, gene_level=True):
-    cds_list, table_omega_0, table_omega = [], [], []
-    for file in os.listdir(folder):
+def ontology_table(xml_folder):
+    print('Finding CDS ontologies.')
+    go_id2name, go_id2cds_list = {}, {}
+    all_go_set = set()
+    for file in os.listdir(xml_folder):
+        root = etree.parse(xml_folder + "/" + file).getroot()
+        for annot in root.find('goAnnot').findall("annot"):
+            go_id = annot.find('goId').text
+            go_name = annot.find('goName').text
+            if go_id not in go_id2name: go_id2name[go_id] = go_name.replace('"', '')
+            if go_id not in go_id2cds_list: go_id2cds_list[go_id] = set()
+            ensg = file.replace(".xml", "")
+            go_id2cds_list[go_id].add(ensg)
+            all_go_set.add(ensg)
+    print('CDS ontologies found.')
+    return go_id2cds_list, go_id2name, all_go_set
+
+
+def tex_f(x):
+    if 0.001 < abs(x) < 10:
+        return "{:6.3f}".format(x)
+    elif 10 <= abs(x) < 10000:
+        return "{:6.1f}".format(x)
+    else:
+        s = "{:6.2g}".format(x)
+        if "e" in s:
+            mantissa, exp = s.split('e')
+            s = mantissa + 'e$^{' + str(int(exp)) + '}$'
+            s = " " * (5 + 6 - len(s)) + s
+        return s
+
+
+def build_divergence_dico(folder, gene_level=True):
+    print('Loading divergence results.')
+    dico_omega_0, dico_omega = {}, {}
+    for file in sorted(os.listdir(folder)):
         sitemutsel_path = folder + "/" + file + "/sitemutsel_1.run.omegappgt1.000000"
         siteomega_path = folder + "/" + file + "/siteomega_1.run.omegappgt1.000000"
         if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
             continue
 
+        engs = file[:-3]
         site_omega_0 = pd.read_csv(sitemutsel_path, sep="\t")["omega_0"].values
         site_omega = pd.read_csv(siteomega_path, sep="\t")["omega"].values
         if gene_level:
-            table_omega_0.append(np.mean(site_omega_0))
-            table_omega.append(np.mean(site_omega))
-            cds_list.append(file)
+            dico_omega_0[engs] = np.mean(site_omega_0)
+            dico_omega[engs] = np.mean(site_omega)
         else:
             assert len(site_omega_0) == len(site_omega)
-            table_omega_0.extend(site_omega_0)
-            table_omega.extend(site_omega)
-            cds_list.extend([file + str(i + 1) for i in range(len(site_omega))])
+            dico_omega_0[engs] = site_omega_0
+            dico_omega[engs] = site_omega
 
-    return cds_list, table_omega_0, table_omega
+    print('Divergence results loaded.')
+    return dico_omega_0, dico_omega
 
 
-def detect_outliers(cds_list, table_omega_0, table_omega):
-    model = sm.OLS(table_omega, sm.add_constant(table_omega_0))
-    results = model.fit()
-    b, a = results.params[0:2]
-    alpha = 0.005
-    prstd, iv_l, iv_u = wls_prediction_std(results, alpha=alpha)
+def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
+    adaptive_dico, epistasis_dico, nearly_neutral_dico = {}, {}, {}
 
-    cds_adaptive_list = [k for i, k in enumerate(cds_list) if table_omega[i] > iv_u[i]]
-    cds_epistasis_list = [k for i, k in enumerate(cds_list) if table_omega[i] < iv_l[i]]
-    return cds_adaptive_list, cds_epistasis_list
+    for ensg, omega in dico_omega.items():
+        if filter_set and ensg not in filter_set: continue
+        omega_0 = dico_omega_0[ensg]
+        if gene_level:
+            if omega > omega_0 + 0.1:
+                adaptive_dico[ensg] = None
+            elif 0.05 < omega < omega_0 - 0.1:
+                epistasis_dico[ensg] = None
+            elif max(0.05, omega_0 - 0.1) <= omega <= omega_0 + 0.1:
+                nearly_neutral_dico[ensg] = None
+        else:
+            adaptive_dico[ensg] = [i for i, v in enumerate(omega) if omega_0[i] + 0.1 < v < 1.0]
+            epistasis_dico[ensg] = [i for i, v in enumerate(omega) if 0.05 < v < omega_0[i] - 0.1]
+            nearly_neutral_dico[ensg] = [i for i, v in enumerate(omega) if
+                                         max(0.05, omega_0[i] - 0.1) <= v <= omega_0[i] + 0.1]
+
+    return adaptive_dico, epistasis_dico, nearly_neutral_dico
+
+
+def filtered_table_omega(dico_omega, dico_subset, gene_level=True):
+    output = []
+    for ensg in dico_subset:
+        ens_omega = dico_omega[ensg]
+        if gene_level:
+            output.append(ens_omega)
+        else:
+            output.extend([ens_omega[pos] for pos in dico_subset[ensg]])
+    return output
+
+
+def table_omega(dico_omega, gene_level=True):
+    output = []
+    for values in dico_omega.values():
+        if gene_level:
+            output.append(values)
+        else:
+            output.extend(values)
+    return output
