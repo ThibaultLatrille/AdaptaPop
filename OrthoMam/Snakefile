@@ -15,10 +15,10 @@ MODELS = {"siteomega": "--omegashift 0.0 --freeomega --omegancat 30 --flatfitnes
 POINTS = config['POINTS']
 BURN_IN = config['BURN_IN']
 
-localrules: all, filter, gzip_chain
+localrules: all, filter
 
 rule all:
-    input: expand(experiment_folder + "/{CDS}/{model}_{chain}.run.chain.gz", CDS=CDS_list, model=MODELS, chain=config['CHAINS'])
+    input: expand(experiment_folder + "/{CDS}/{model}_{chain}.read", CDS=CDS_list, model=MODELS, chain=config['CHAINS'])
 
 rule filter:
     input:
@@ -57,20 +57,17 @@ rule run_bayescode:
         time="3-23:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
         unzip = lambda w, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
         cmd = lambda w, input: "-a {0} -t {1} -u {2} {3}".format(input.ali, input.tree, POINTS, MODELS[w.model]) if not config['RESTART'] else ""
-    shell: "{params.unzip} {input.bayescode} {params.cmd} {output} "
+    shell: "{params.unzip} {input.bayescode} {params.cmd} {output} && gzip -f {output}.chain"
+
+rule inference:
+    input: expand(experiment_folder + "/{CDS}/{model}_{chain}.run", CDS=CDS_list, model=MODELS, chain=config['CHAINS'])
 
 rule read_bayescode:
     input:
         run = rules.run_bayescode.output,
         bayescode = bayescode_folder + "/readmutselomega"
     params:
-        time="0-4:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS, 
+        time="0-4:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
+        read=lambda w, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN, "--omega_0" if w.model == "sitemutsel" else "", ci, input.run) for ci in [0.25, 0.05, 0.025, 0.005]])
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.read")
-    shell: "{input.bayescode} -b {BURN_IN} {input.run}"
-
-rule gzip_chain:
-    input:
-        run = rules.run_bayescode.output,
-        read = rules.read_bayescode.output
-    output: experiment_folder + "/{CDS}/{model}_{chain}.run.chain.gz"
-    shell: "gzip -f {input.run}.chain"
+    shell: "gunzip {input.run}.chain.gz && {params.read} && gzip -f {input.run}.chain"
