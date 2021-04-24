@@ -1,0 +1,19 @@
+\documentclass[USLetter,5pt]{article}
+\usepackage{adjustbox}
+\newcommand{\specialcell}[2][c]{%
+\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\begin{document}
+\begin{table}[ht]
+\centering
+\begin{adjustbox}{width = 1\textwidth}
+\small\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Gene Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$\\
+\hline
+\hline
+\end{tabular}
+\end{adjustbox}
+\caption{0 tests performed with 0 CDS detected as epistasis and 5861 as nearly-neutral.
+}
+\end{table}
+\end{document}

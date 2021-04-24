@@ -1,0 +1,96 @@
+\documentclass[USLetter,5pt]{article}
+\usepackage{adjustbox}
+\newcommand{\specialcell}[2][c]{%
+\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\begin{document}
+\begin{table}[ht]
+\centering
+\begin{adjustbox}{width = 1\textwidth}
+\small\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Gene Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$\\
+\hline
+extracellular space & 29 &  2.350 &   12.3 & 1.7e$^{-17}$ & 3.4e$^{-15}$\\
+extracellular region & 30 &  3.661 &  8.195 & 1.3e$^{-13}$ & 2.6e$^{-11}$\\
+defense response to bacterium & 7 &  0.283 &   24.8 & 7.7e$^{-8}$ & 1.5e$^{-5}$\\
+antioxidant activity & 4 &  0.028 &  143.2 &   3e$^{-7}$ & 5.8e$^{-5}$\\
+antimicrobial humoral response & 4 &  0.028 &  143.2 &   3e$^{-7}$ & 5.8e$^{-5}$\\
+neutrophil chemotaxis & 5 &  0.101 &   49.7 & 3.2e$^{-7}$ & 6.3e$^{-5}$\\
+secretory granule lumen & 6 &  0.316 &   19.0 & 2.5e$^{-6}$ & 0.00049\\
+chemotaxis & 6 &  0.352 &   17.1 & 4.4e$^{-6}$ & 0.00085\\
+innate immune response & 9 &  1.079 &  8.343 & 5.4e$^{-6}$ &  0.001\\
+high-density lipoprotein particle remodeling & 3 &  0.019 &  158.2 & 9.1e$^{-6}$ &  0.002\\
+chemokine-mediated signaling pathway & 4 &  0.103 &   39.0 & 1.1e$^{-5}$ &  0.002\\
+immune system process & 9 &  1.220 &  7.376 & 1.4e$^{-5}$ &  0.003\\
+inflammatory response & 8 &  0.930 &  8.599 & 1.4e$^{-5}$ &  0.003\\
+cellular response to interleukin-1 & 4 &  0.131 &   30.6 & 2.4e$^{-5}$ &  0.005\\
+extracellular exosome & 21 &  6.080 &  3.454 & 2.6e$^{-5}$ &  0.005\\
+blood microparticle & 5 &  0.303 &   16.5 & 3.1e$^{-5}$ &  0.006\\
+chemokine activity & 3 &  0.038 &   79.1 & 3.1e$^{-5}$ &  0.006\\
+immune response & 7 &  0.812 &  8.615 & 4.4e$^{-5}$ &  0.009\\
+neutrophil degranulation & 8 &  1.300 &  6.156 & 0.00012 &  0.024\\
+regulation of cell proliferation & 6 &  0.727 &  8.254 & 0.00018 &  0.036\\
+retina homeostasis & 3 &  0.085 &   35.1 & 0.00019 &  0.037\\
+cellular response to tumor necrosis factor & 4 &  0.262 &   15.3 & 0.00025 &  0.050\\
+G-protein coupled receptor signaling pathway & 10 &  2.261 &  4.424 & 0.00028 &  0.054\\
+protease binding & 4 &  0.299 &   13.4 & 0.0004 &  0.079\\
+defense response to Gram-negative bacterium & 3 &  0.123 &   24.3 & 0.00047 &  0.092\\
+lipid binding & 6 &  0.893 &  6.717 & 0.00052 &  0.101\\
+sequestering of zinc ion & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+cysteine-type endopeptidase inhibitor activity & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+high-density lipoprotein particle assembly & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+leukocyte migration involved in inflammatory response & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+high-density lipoprotein particle clearance & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+response to reactive oxygen species & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+B cell chemotaxis & 2 &  0.019 &  103.6 & 0.00057 &  0.112\\
+cellular oxidant detoxification & 3 &  0.152 &   19.7 & 0.0008 &  0.156\\
+negative regulation of hydrolase activity & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+chylomicron assembly & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+lipoprotein metabolic process & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+negative regulation of programmed cell death & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+vitamin transport & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+RAGE receptor binding & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+low-density lipoprotein particle & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+reverse cholesterol transport & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+neuron projection regeneration & 2 &  0.029 &   69.0 & 0.00094 &  0.185\\
+cell-cell signaling & 5 &  0.685 &  7.304 &  0.001 &  0.201\\
+positive regulation of NF-kappaB transcription factor activity & 4 &  0.413 &  9.695 &  0.001 &  0.238\\
+retinoid metabolic process & 3 &  0.181 &   16.6 &  0.001 &  0.243\\
+monocyte chemotaxis & 2 &  0.039 &   51.8 &  0.001 &  0.276\\
+negative regulation of blood coagulation & 2 &  0.039 &   51.8 &  0.001 &  0.276\\
+defense response to fungus & 2 &  0.039 &   51.8 &  0.001 &  0.276\\
+negative regulation of proteolysis & 2 &  0.039 &   51.8 &  0.001 &  0.276\\
+cholesterol transporter activity & 2 &  0.039 &   51.8 &  0.001 &  0.276\\
+defense response to Gram-positive bacterium & 3 &  0.190 &   15.8 &  0.001 &  0.277\\
+lipid transporter activity & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+regulation of cytoskeleton organization & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+triglyceride catabolic process & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+positive regulation of G-protein coupled receptor protein signaling pathway & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+endocytic vesicle lumen & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+phosphatidylcholine binding & 2 &  0.048 &   41.4 &  0.002 &  0.384\\
+regulation of immune response & 3 &  0.219 &   13.7 &  0.002 &  0.399\\
+lipid metabolic process & 7 &  1.670 &  4.191 &  0.003 &  0.504\\
+astrocyte development & 2 &  0.058 &   34.5 &  0.003 &  0.508\\
+cell surface receptor signaling pathway & 5 &  0.863 &  5.792 &  0.003 &  0.526\\
+peptidase inhibitor activity & 3 &  0.257 &   11.7 &  0.003 &  0.605\\
+vasodilation & 2 &  0.068 &   29.6 &  0.003 &  0.650\\
+arachidonic acid secretion & 2 &  0.068 &   29.6 &  0.003 &  0.650\\
+cholesterol efflux & 2 &  0.068 &   29.6 &  0.003 &  0.650\\
+negative regulation of peptidase activity & 3 &  0.267 &   11.2 &  0.003 &  0.666\\
+negative regulation of endopeptidase activity & 3 &  0.276 &   10.9 &  0.004 &  0.729\\
+cellular protein metabolic process & 4 &  0.583 &  6.859 &  0.004 &  0.773\\
+cytokine activity & 4 &  0.583 &  6.859 &  0.004 &  0.773\\
+triglyceride homeostasis & 2 &  0.077 &   25.9 &  0.004 &  0.807\\
+positive regulation of Rho protein signal transduction & 2 &  0.077 &   25.9 &  0.004 &  0.807\\
+cholesterol metabolic process & 3 &  0.305 &  9.837 &  0.005 &  0.943\\
+acrosomal membrane & 2 &  0.087 &   23.0 &  0.005 &  0.980\\
+complement activation & 2 &  0.087 &   23.0 &  0.005 &  0.980\\
+endopeptidase inhibitor activity & 2 &  0.087 &   23.0 &  0.005 &  0.980\\
+detection of chemical stimulus involved in sensory perception of bitter taste & 2 &  0.087 &   23.0 &  0.005 &  0.980\\
+\hline
+\end{tabular}
+\end{adjustbox}
+\caption{196 tests performed with 58 CDS detected as adaptive and 5803 as nearly-neutral.
+}
+\end{table}
+\end{document}

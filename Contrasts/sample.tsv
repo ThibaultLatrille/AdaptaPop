@@ -1,0 +1,42 @@
+Species	SisterSpecies	SampleName	Location	SampleSize
+Chlorocebus_sabaeus	Macaca_mulatta	Barbados	Barbados	5
+Chlorocebus_sabaeus	Macaca_mulatta	Central_African_Republic	Central_African_Republic	11
+Chlorocebus_sabaeus	Macaca_mulatta	Ethiopia	Ethiopia	16
+Chlorocebus_sabaeus	Macaca_mulatta	Gambia	Gambia	22
+Chlorocebus_sabaeus	Macaca_mulatta	Kenya	Kenya	4
+Chlorocebus_sabaeus	Macaca_mulatta	Nevis	Nevis	12
+Chlorocebus_sabaeus	Macaca_mulatta	Saint_Kitts	Saint_Kitts	22
+Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South_Africa	49
+Chlorocebus_sabaeus	Macaca_mulatta	Zambia	Zambia	16
+Bos_taurus	Bison_bison_bison	IRBT	Iran	9
+Bos_taurus	Bison_bison_bison	UGBT	Uganda	25
+Ovis_aries	Pantholops_hodgsonii	IROA	Iran	20
+Ovis_aries	Pantholops_hodgsonii	IROO	Iran	19
+Ovis_aries	Pantholops_hodgsonii	MODA	Morocco	160
+Ovis_aries	Pantholops_hodgsonii	ISGC	Various	75
+Homo_sapiens	Pan_troglodytes	YRI	Yoruba in Ibadan, Nigeria	108
+Homo_sapiens	Pan_troglodytes	LWK	Luhya in Webuye, Kenya	99
+Homo_sapiens	Pan_troglodytes	GWD	Gambian in Western Divisions in the Gambia	113
+Homo_sapiens	Pan_troglodytes	MSL	Mende in Sierra Leone	85
+Homo_sapiens	Pan_troglodytes	ESN	Esan in Nigeria	99
+Homo_sapiens	Pan_troglodytes	CHB	Han Chinese in Beijing, China	103
+Homo_sapiens	Pan_troglodytes	JPT	Japanese in Tokyo, Japan	104
+Homo_sapiens	Pan_troglodytes	CHS	Southern Han Chinese	105
+Homo_sapiens	Pan_troglodytes	CDX	Chinese Dai in Xishuangbanna, China	93
+Homo_sapiens	Pan_troglodytes	KHV	Kinh in Ho Chi Minh City, Vietnam	99
+Homo_sapiens	Pan_troglodytes	CEU	Utah Residents (CEPH) with European Ancestry	99
+Homo_sapiens	Pan_troglodytes	TSI	Toscani in Italia	107
+Homo_sapiens	Pan_troglodytes	FIN	Finnish in Finland	99
+Homo_sapiens	Pan_troglodytes	GBR	British in England and Scotland	91
+Homo_sapiens	Pan_troglodytes	IBS	Iberian Population in Spain	107
+Homo_sapiens	Pan_troglodytes	ASW	Americans of African Ancestry in SW USA	61
+Homo_sapiens	Pan_troglodytes	ACB	African Caribbeans in Barbados	96
+Homo_sapiens	Pan_troglodytes	MXL	Mexican Ancestry from Los Angeles USA	64
+Homo_sapiens	Pan_troglodytes	PUR	Puerto Ricans from Puerto Rico	104
+Homo_sapiens	Pan_troglodytes	CLM	Colombians from Medellin, Colombia	94
+Homo_sapiens	Pan_troglodytes	PEL	Peruvians from Lima, Peru	85
+Homo_sapiens	Pan_troglodytes	GIH	Gujarati Indian from Houston, Texas	103
+Homo_sapiens	Pan_troglodytes	PJL	Punjabi from Lahore, Pakistan	96
+Homo_sapiens	Pan_troglodytes	BEB	Bengali from Bangladesh	86
+Homo_sapiens	Pan_troglodytes	STU	Sri Lankan Tamil from the UK	102
+Homo_sapiens	Pan_troglodytes	ITU	Indian Telugu from the UK	102

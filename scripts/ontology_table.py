@@ -11,17 +11,25 @@ if __name__ == '__main__':
     parser.add_argument('-x', '--xml', required=True, type=str, dest="xml", metavar="<xml>", help="The xml folder")
     parser.add_argument('-e', '--epistasis', required=False, type=str, default='False', dest="epistasis",
                         metavar="<epistasis>", help="Epistasis (otherwise is adaptive)")
+    parser.add_argument('-c', '--ci', required=False, type=str, dest="ci", default="0.025", metavar="<ci>",
+                        help="The confidence interval")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
+    parser.add_argument('-g', '--granularity', required=False, type=str, default=True, dest="granularity",
+                        help="Gene or site level")
 
     args = parser.parse_args()
 
     args.epistasis = args.epistasis.lower() == 'true'
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=True)
-    adaptive_dico, epistasis_dico, nearly_neutral_dico = split_outliers(dico_omega_0, dico_omega, gene_level=True)
-    focal_dico = epistasis_dico if args.epistasis else adaptive_dico
+    gene = args.granularity.lower() == "gene"
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene, ci=args.ci)
+    strg_adap_dico, adap_dico, epi_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    focal_dico = epi_dico if args.epistasis else adap_dico
     go_id2cds_list, go_id2name, set_all_go_cds = ontology_table(args.xml)
     cds_focal_set = set(focal_dico) & set_all_go_cds
-    cds_control_set = set(nearly_neutral_dico) & set_all_go_cds
+    cds_control_set = set(nn_dico) & set_all_go_cds
+    if not gene:
+        cds_focal_set = set([k for k, v in focal_dico.items() if len(v) / len(dico_omega[k]) >= 0.1]) & set_all_go_cds
+        cds_control_set = cds_control_set - cds_focal_set
     assert len(cds_control_set & cds_focal_set) == 0
     cds_set = cds_focal_set.union(cds_control_set)
 
@@ -72,8 +80,8 @@ if __name__ == '__main__':
              tex_f(oddsratio), tex_f(p_value), tex_f(p_value * nbr_tests)]) + "\\\\\n")
 
     caption = "{0} tests performed with {1} CDS detected as {2} and {3} as nearly-neutral." \
-              "\n".format(nbr_tests, len(focal_dico), "epistasis" if args.epistasis else "adaptive",
-                          len(nearly_neutral_dico))
+              "\n".format(nbr_tests, len(cds_focal_set), "epistasis" if args.epistasis else "adaptive",
+                          len(cds_control_set))
 
     table_tex.writelines("\\hline\n")
     table_tex.writelines("\\end{tabular}\n")

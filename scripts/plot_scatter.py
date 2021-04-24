@@ -2,13 +2,17 @@ import matplotlib as mpl
 
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.colors import to_rgb, Normalize
 import argparse
 from libraries import *
 
-RED = "#EB6231"
-BLUE = "#5D80B4"
-GREEN = "#8FB03E"
+RED = to_rgb("#EB6231")
+BLUE = to_rgb("#5D80B4")
+GREEN = to_rgb("#8FB03E")
+GREY = to_rgb("grey")
+BLACK = to_rgb("black")
 
+error_kwargs = {"lw": .5, "zorder": -1}
 my_dpi = 128
 fontsize = 16
 fontsize_legend = 12
@@ -20,65 +24,117 @@ plt.xlabel("$\\omega_0$", fontsize=fontsize)
 xmin, xmax = 0.05, 1.0
 ymin, ymax = 0.05, 1.0
 plt.xlim((xmin, xmax))
+plt.plot(idf, idf, color="black")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--folder', required=True, type=str, dest="folder",
                         help="folder containing OrthoMam results")
     parser.add_argument('-g', '--granularity', required=True, type=str, dest="granularity", help="Gene or site level")
+    parser.add_argument('-c', '--ci', required=False, type=str, dest="ci", default="0.025", metavar="<ci>",
+                        help="The confidence interval")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
     args = parser.parse_args()
 
     gene = args.granularity.lower() == "gene"
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene)
-    adaptive_dico, epistasis_dico, nearly_neutral_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene, ci=args.ci)
+    strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+
+    unclass_omega_0 = filtered_table_omega(dico_omega_0, unclass_dico, gene_level=gene)
+    unclass_omega = filtered_table_omega(dico_omega, unclass_dico, gene_level=gene)
+    strg_ada_omega_0 = filtered_table_omega(dico_omega_0, strg_ada_dico, gene_level=gene)
+    strg_ada_omega = filtered_table_omega(dico_omega, strg_ada_dico, gene_level=gene)
+    ada_omega_0 = filtered_table_omega(dico_omega_0, ada_dico, gene_level=gene)
+    ada_omega = filtered_table_omega(dico_omega, ada_dico, gene_level=gene)
+    epi_omega_0 = filtered_table_omega(dico_omega_0, epi_dico, gene_level=gene)
+    epi_omega = filtered_table_omega(dico_omega, epi_dico, gene_level=gene)
+    nn_omega_0 = filtered_table_omega(dico_omega_0, nn_dico, gene_level=gene)
+    nn_omega = filtered_table_omega(dico_omega, nn_dico, gene_level=gene)
 
     if gene:
-        print('{0} adaptive genes'.format(len(adaptive_dico)))
-        print('{0} epistasis genes'.format(len(epistasis_dico)))
-        print('{0} nearly-neutral genes'.format(len(nearly_neutral_dico)))
-        nearly_neutral_omega_0 = filtered_table_omega(dico_omega_0, nearly_neutral_dico, gene_level=gene)
-        nearly_neutral_omega = filtered_table_omega(dico_omega, nearly_neutral_dico, gene_level=gene)
+        print('{0} adaptive genes'.format(len(ada_dico)))
+        print('{0} epistasis genes'.format(len(epi_dico)))
+        print('{0} nearly-neutral genes'.format(len(nn_dico)))
+        print('{0} unclassified genes'.format(len(unclass_dico)))
 
-        model = sm.OLS(nearly_neutral_omega, sm.add_constant(nearly_neutral_omega_0))
-        results = model.fit()
-        b, a = results.params[0:2]
-        plt.plot(idf, a * idf + b, 'r-', label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(
-            float(a), abs(float(b)), results.rsquared, "+" if float(b) > 0 else "-"), color=GREEN)
+        # model = sm.OLS(list(nn_omega[:, 1]), sm.add_constant(list(nn_omega_0[:, 1])))
+        # results = model.fit()
+        # b, a = results.params[0:2]
+        # plt.plot(idf, a * idf + b, 'r-', label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(
+        #    float(a), abs(float(b)), results.rsquared, "+" if float(b) > 0 else "-"), color=GREEN)
 
-        plt.scatter(nearly_neutral_omega_0, nearly_neutral_omega, linewidth=3, edgecolors='none', alpha=0.85,
-                    label=r"${0}$ nearly-neutral CDS".format(len(nearly_neutral_dico)), c=GREEN)
+        plt.errorbar(unclass_omega_0[:, 1], unclass_omega[:, 1],
+                     xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
+                           unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
+                     yerr=[unclass_omega[:, 1] - unclass_omega[:, 0], unclass_omega[:, 2] - unclass_omega[:, 1]],
+                     alpha=0.75, label=r"${0}$ unclassified CDS".format(len(unclass_dico)), c=GREY,
+                     fmt='o', marker=None, mew=0, ecolor=GREY, **error_kwargs)
 
-        plt.scatter(filtered_table_omega(dico_omega_0, adaptive_dico, gene_level=gene),
-                    filtered_table_omega(dico_omega, adaptive_dico, gene_level=gene), edgecolors='none', alpha=0.85,
-                    linewidth=3, label=r"${0}$ adaptive CDS".format(len(adaptive_dico)), c=RED)
+        plt.errorbar(epi_omega_0[:, 1], epi_omega[:, 1],
+                     xerr=[epi_omega_0[:, 1] - epi_omega_0[:, 0], epi_omega_0[:, 2] - epi_omega_0[:, 1]],
+                     yerr=[epi_omega[:, 1] - epi_omega[:, 0], epi_omega[:, 2] - epi_omega[:, 1]],
+                     alpha=0.75, label=r"${0}$ epistasis CDS".format(len(epi_dico)), c=BLUE,
+                     fmt='o', marker=None, mew=0, ecolor=BLUE, **error_kwargs)
 
-        plt.scatter(filtered_table_omega(dico_omega_0, epistasis_dico, gene_level=gene),
-                    filtered_table_omega(dico_omega, epistasis_dico, gene_level=gene), edgecolors='none', alpha=0.85,
-                    linewidth=3, label=r"${0}$ epistasis CDS".format(len(epistasis_dico)), c=BLUE)
-        plt.legend(fontsize=fontsize_legend)
+        plt.errorbar(ada_omega_0[:, 1], ada_omega[:, 1],
+                     xerr=[ada_omega_0[:, 1] - ada_omega_0[:, 0], ada_omega_0[:, 2] - ada_omega_0[:, 1]],
+                     yerr=[ada_omega[:, 1] - ada_omega[:, 0], ada_omega[:, 2] - ada_omega[:, 1]],
+                     alpha=0.75, label=r"${0}$ adaptive CDS".format(len(ada_dico)), c=RED,
+                     fmt='o', marker=None, mew=0, ecolor=RED, **error_kwargs)
+
+        plt.errorbar(nn_omega_0[:, 1], nn_omega[:, 1],
+                     xerr=[nn_omega_0[:, 1] - nn_omega_0[:, 0], nn_omega_0[:, 2] - nn_omega_0[:, 1]],
+                     yerr=[nn_omega[:, 1] - nn_omega[:, 0], nn_omega[:, 2] - nn_omega[:, 1]],
+                     alpha=0.75, label=r"${0}$ nearly-neutral CDS".format(len(nn_dico)), c=GREEN,
+                     fmt='o', marker=None, mew=0, ecolor=GREEN, **error_kwargs)
+
     else:
+        xmin, xmax = 0.05, 1.4
         ymin, ymax = 0.05, 1.4
-        plt.hist2d(table_omega(dico_omega_0, gene), table_omega(dico_omega, gene), bins=100,
-                   range=[[xmin, xmax], [ymin, ymax]], norm=mpl.colors.LogNorm(),
-                   cmap='Blues')
+        xbins, ybins = 100, 100
+        colors = np.zeros((ybins, xbins, 4))
+        interpolation = 'nearest'
+        colors[..., 0:3] = GREY[0:3]
+        heatmap, xedges, yedges = np.histogram2d(unclass_omega_0[:, 1], unclass_omega[:, 1], bins=(xbins, ybins),
+                                                 range=[[xmin, xmax], [ymin, ymax]])
+        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
+        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
+        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
 
-        plt.text(0.5, 0.5, '{0} nearly-neutral sites\n'.format(sum([len(v) for v in nearly_neutral_dico.values()])),
-                 horizontalalignment='center', verticalalignment='center', fontweight="bold",
-                 fontsize=fontsize_legend * 1.5, color=GREEN)
-        plt.plot(idf, idf, color=GREEN)
+        colors[..., 0:3] = BLUE[0:3]
+        heatmap, xedges, yedges = np.histogram2d(epi_omega_0[:, 1], epi_omega[:, 1], bins=(xbins, ybins),
+                                                 range=[[xmin, xmax], [ymin, ymax]])
+        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
+        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
+        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
 
-        plt.text(0.1, 0.8, '{0} adaptive sites\n'.format(sum([len(v) for v in adaptive_dico.values()])),
-                 horizontalalignment='left', verticalalignment='top', fontweight="bold",
-                 fontsize=fontsize_legend * 1.5, color=RED)
-        plt.plot(idf, idf + 0.1, color=RED)
-        plt.plot(np.linspace(0, 0.9, 30), [1.0] * len(idf), color=RED)
+        colors[..., 0:3] = RED[0:3]
+        heatmap, xedges, yedges = np.histogram2d(ada_omega_0[:, 1], ada_omega[:, 1], bins=(xbins, ybins),
+                                                 range=[[xmin, xmax], [ymin, ymax]])
+        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
+        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
+        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
 
-        plt.text(0.8, 0.1, '{0} epistasis sites\n'.format(sum([len(v) for v in epistasis_dico.values()])),
-                 horizontalalignment='right', verticalalignment='bottom', fontweight="bold",
-                 fontsize=fontsize_legend * 1.5, color=BLUE)
-        plt.plot(idf, idf - 0.1, color=BLUE)
+        colors[..., 0:3] = BLACK[0:3]
+        heatmap, xedges, yedges = np.histogram2d(strg_ada_omega_0[:, 1], strg_ada_omega[:, 1], bins=(xbins, ybins),
+                                                 range=[[xmin, xmax], [ymin, ymax]])
+        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
+        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
+        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
 
+        colors[..., 0:3] = GREEN[0:3]
+        heatmap, xedges, yedges = np.histogram2d(nn_omega_0[:, 1], nn_omega[:, 1], bins=(xbins, ybins),
+                                                 range=[[xmin, xmax], [ymin, ymax]])
+        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
+        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
+        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
+
+        plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in ada_dico.values()])), color=RED)
+        plt.scatter(0, 0, label=r'{0} strongly adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])), color=BLACK)
+        plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])), color=GREEN)
+        plt.scatter(0, 0, label=r'{0} epistasis sites'.format(sum([len(v) for v in epi_dico.values()])), color=BLUE)
+
+    plt.legend(fontsize=fontsize_legend)
     plt.ylim((ymin, ymax))
     plt.tight_layout()
     plt.savefig(args.output, format="pdf")

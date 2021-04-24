@@ -4,9 +4,10 @@ import gzip
 import os
 from lxml import etree
 import pandas as pd
-import statsmodels.api as sm
-from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import numpy as np
+from math import floor
+from Bio.Phylo.PAML import yn00
+from Bio import SeqIO, Seq
 
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 nucleotides = list(complement.keys())
@@ -220,50 +221,72 @@ def tex_f(x):
         return s
 
 
-def build_divergence_dico(folder, gene_level=True):
+def build_divergence_dico(folder, gene_level=True, ci="0.025"):
     print('Loading divergence results.')
+    ci = "0.0025" if gene_level else "0.05"
     dico_omega_0, dico_omega = {}, {}
     for file in sorted(os.listdir(folder)):
-        sitemutsel_path = folder + "/" + file + "/sitemutsel_1.run.omegappgt1.000000"
-        siteomega_path = folder + "/" + file + "/siteomega_1.run.omegappgt1.000000"
+        sitemutsel_path = "{0}/{1}/sitemutsel_1.run.ci{2}.tsv".format(folder, file, ci)
+        siteomega_path = "{0}/{1}/siteomega_1.run.ci{2}.tsv".format(folder, file, ci)
         if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
             continue
 
         engs = file[:-3]
-        site_omega_0 = pd.read_csv(sitemutsel_path, sep="\t")["omega_0"].values
-        site_omega = pd.read_csv(siteomega_path, sep="\t")["omega"].values
         if gene_level:
-            dico_omega_0[engs] = np.mean(site_omega_0)
-            dico_omega[engs] = np.mean(site_omega)
+            dico_omega_0[engs] = pd.read_csv(sitemutsel_path, sep="\t", nrows=1).values[:, 1:][0]
+            dico_omega[engs] = pd.read_csv(siteomega_path, sep="\t", nrows=1).values[:, 1:][0]
         else:
-            assert len(site_omega_0) == len(site_omega)
-            dico_omega_0[engs] = site_omega_0
-            dico_omega[engs] = site_omega
-
+            dico_omega_0[engs] = pd.read_csv(sitemutsel_path, sep="\t", skiprows=1).values[:, 1:]
+            dico_omega[engs] = pd.read_csv(siteomega_path, sep="\t", skiprows=1).values[:, 1:]
+            '''
+            assert ((dico_omega_0[engs][:, 0] <= dico_omega_0[engs][:, 1]).all())
+            assert ((dico_omega_0[engs][:, 1] <= dico_omega_0[engs][:, 2]).all())
+            assert ((dico_omega[engs][:, 1] <= dico_omega[engs][:, 2]).all())
+            assert ((dico_omega[engs][:, 1] <= dico_omega[engs][:, 2]).all())
+            '''
     print('Divergence results loaded.')
     return dico_omega_0, dico_omega
 
 
 def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
-    adaptive_dico, epistasis_dico, nearly_neutral_dico = {}, {}, {}
+    strongly_adaptive_dico, adaptive_dico, epistasis_dico, nearly_neutral_dico, unclassify_dico = {}, {}, {}, {}, {}
 
     for ensg, omega in dico_omega.items():
         if filter_set and ensg not in filter_set: continue
         omega_0 = dico_omega_0[ensg]
         if gene_level:
-            if omega > omega_0 + 0.1:
+            if (omega[2] - omega[0] > 0.3) or (omega_0[2] - omega_0[0] > 0.3):
+                continue
+            if 1.0 < omega[0]:
+                strongly_adaptive_dico[ensg] = None
+            elif omega_0[2] < omega[0]:
                 adaptive_dico[ensg] = None
-            elif 0.05 < omega < omega_0 - 0.1:
+            elif 0.05 < omega[0] and omega[2] < omega_0[0]:
                 epistasis_dico[ensg] = None
-            elif max(0.05, omega_0 - 0.1) <= omega <= omega_0 + 0.1:
+            elif 0.05 <= omega[0] <= 1.0 and (
+                    (omega_0[1] <= omega[1] <= omega_0[2] and omega[0] <= omega_0[1] <= omega[1]) or
+                    (omega[1] <= omega_0[1] <= omega[2] and omega_0[0] <= omega[1] <= omega_0[1])):
                 nearly_neutral_dico[ensg] = None
+            else:
+                unclassify_dico[ensg] = None
         else:
-            adaptive_dico[ensg] = [i for i, v in enumerate(omega) if omega_0[i] + 0.1 < v < 1.0]
-            epistasis_dico[ensg] = [i for i, v in enumerate(omega) if 0.05 < v < omega_0[i] - 0.1]
-            nearly_neutral_dico[ensg] = [i for i, v in enumerate(omega) if
-                                         max(0.05, omega_0[i] - 0.1) <= v <= omega_0[i] + 0.1]
+            strongly_adaptive_dico[ensg] = [i for i, w in enumerate(omega) if 1.0 < w[0] and w[1] < 1.4]
+            adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i][2] < w[0] <= 1.0]
+            epistasis_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 < w[0] and w[2] < omega_0[i][0]]
+            nearly_neutral_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w[0] <= 1.0 and (
+                    (omega_0[i][1] <= w[1] <= omega_0[i][2] and w[0] <= omega_0[i][1] <= w[1]) or
+                    (w[1] <= omega_0[i][1] <= w[2] and omega_0[i][0] <= w[1] <= omega_0[i][1]))]
 
-    return adaptive_dico, epistasis_dico, nearly_neutral_dico
+            assert (len(set(nearly_neutral_dico[ensg]) & set(epistasis_dico[ensg])) == 0)
+            assert (len(set(nearly_neutral_dico[ensg]) & set(adaptive_dico[ensg])) == 0)
+            assert (len(set(nearly_neutral_dico[ensg]) & set(strongly_adaptive_dico[ensg])) == 0)
+            assert (len(set(adaptive_dico[ensg]) & set(strongly_adaptive_dico[ensg])) == 0)
+            assert (len(set(adaptive_dico[ensg]) & set(epistasis_dico[ensg])) == 0)
+
+            classified = set(strongly_adaptive_dico[ensg]).union(set(adaptive_dico[ensg])).union(
+                set(epistasis_dico[ensg])).union(set(nearly_neutral_dico[ensg]))
+            unclassify_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w[0] and i not in classified]
+    return strongly_adaptive_dico, adaptive_dico, epistasis_dico, nearly_neutral_dico, unclassify_dico
 
 
 def filtered_table_omega(dico_omega, dico_subset, gene_level=True):
@@ -274,7 +297,7 @@ def filtered_table_omega(dico_omega, dico_subset, gene_level=True):
             output.append(ens_omega)
         else:
             output.extend([ens_omega[pos] for pos in dico_subset[ensg]])
-    return output
+    return np.array(output, dtype=np.float)
 
 
 def table_omega(dico_omega, gene_level=True):
@@ -284,4 +307,196 @@ def table_omega(dico_omega, gene_level=True):
             output.append(values)
         else:
             output.extend(values)
-    return output
+    return np.array(output, dtype=np.float)
+
+
+def snp_data_frame(vcf_path):
+    print("Loading file " + vcf_path)
+    fixed_poly = dict()
+    sample_size_set = set()
+    snp_table, header = {"ENSG": [], "POS": [], "TYPE": [], "COUNT": []}, {}
+    vcf_file = gzip.open(vcf_path, 'rt')
+    for vcf_line in vcf_file:
+        if vcf_line[0] == '#':
+            if vcf_line[1] != '#':
+                header = {k: i for i, k in enumerate(vcf_line.strip().split("\t"))}
+            continue
+
+        line_list = vcf_line.strip().split("\t")
+        ensg = line_list[header["ENSG"]]
+        if ensg == "None": continue
+
+        if line_list[header["CHR"]] in ["X", "Y", "MT"]: continue
+
+        genotypes = [s.split(":")[0].count("1") for s in line_list[header["FORMAT"] + 1:header["CHR"]] if
+                     ("|" in s) or ("/" in s)]
+        count = sum(genotypes)
+        n = len(genotypes) * 2
+        if count == 0: continue
+
+        nuc_pos = int(line_list[header["ENSG_POS"]])
+        codon_pos = int(nuc_pos / 3)
+        if count == n:
+            if ensg not in fixed_poly: fixed_poly[ensg] = {}
+            ref, alt = line_list[header["REF"]], line_list[header["ALT"]]
+            fixed_poly[ensg][codon_pos] = nuc_pos % 3, ref, alt
+            continue
+
+        snp_table["COUNT"].append(count)
+        snp_table["ENSG"].append(ensg)
+        snp_table["POS"].append(codon_pos)
+        snp_table["TYPE"].append(line_list[header["SNP_TYPE"]])
+        sample_size_set.add(n)
+
+    print(vcf_path + " loaded.")
+    assert len(sample_size_set) == 1
+    n = sample_size_set.pop()
+    return pd.DataFrame(snp_table).groupby("ENSG"), fixed_poly, n
+
+
+def load_alignments(ensg_list, sp_1, sp_2, ali_folder):
+    ali_dico = dict()
+
+    for ensg in ensg_list:
+        sister_focal_seqs = dict()
+        for f in SeqIO.parse(open(ali_folder + "/" + ensg + "_NT.fasta", 'r'), 'fasta'):
+            if f.id not in [sp_1, sp_2]: continue
+            sister_focal_seqs[f.id] = f.seq
+
+        if sp_1 in sister_focal_seqs and sp_2 in sister_focal_seqs:
+            ali_dico[ensg] = sister_focal_seqs
+
+    return ali_dico
+
+
+def filter_positions(sister_focal_seqs, sp_focal, fixed_poly, gene_level, positions):
+    seq_dico = dict()
+
+    for sp_id, seq in sister_focal_seqs.items():
+
+        s_list = list()
+        for pos in (range(len(seq) // 3) if gene_level else positions):
+            codon = str(seq[pos * 3:pos * 3 + 3])
+
+            if pos in fixed_poly and sp_id == sp_focal:
+                frame, ref, alt = fixed_poly[pos]
+                if codon[frame] != ref:
+                    assert codon[frame] == complement[ref]
+                    alt = complement[alt]
+
+                codon = codon[:frame] + alt + codon[frame + 1:]
+
+            if codontable[codon] == "X": codon = "---"
+            s_list.append(codon)
+
+        seq_dico[sp_id] = "".join(s_list)
+
+    return seq_dico
+
+
+def run_yn00(seq1, seq2, tmp_path, filepath):
+    SeqIO.write([seq1, seq2], filepath + ".fasta", "fasta")
+    yn = yn00.Yn00(alignment=filepath + ".fasta", working_dir=tmp_path, out_file=filepath + "_yn00.out")
+
+    try:
+        res = yn.run()[seq1.id][seq2.id]['YN00']
+        dn = int(round(res['N'] * res['dN']))
+        ds = int(round(res['S'] * res['dS']))
+        return res['N'], dn, res['S'], ds
+    except:
+        return 0, 0, 0, 0
+
+
+def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, fixed_poly, tmp_path, dfe_path):
+    sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
+    sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
+    s1, s2 = [], []
+
+    for ensg in ensg_dico_pos:
+        seq_dico = filter_positions(ali_dico[ensg], sp_1, fixed_poly[ensg] if ensg in fixed_poly else {},
+                                    gene_level, ensg_dico_pos[ensg])
+
+        s1.append(seq_dico[sp_1])
+        s2.append(seq_dico[sp_2])
+
+        if ensg not in df.groups: continue
+
+        dff = df.get_group(ensg)
+        if not gene_level:
+            filt = dff["POS"].isin(ensg_dico_pos[ensg])
+            dff = dff[filt]
+
+        for row in dff.itertuples(index=False):
+            if row.TYPE == "Syn":
+                ps += 1
+                sfs_s[row.COUNT] += 1
+            elif row.TYPE == "NonSyn":
+                pn += 1
+                sfs_n[row.COUNT] += 1
+            else:
+                assert row.TYPE == "Stop"
+
+    seq1 = SeqIO.SeqRecord(id=sp_1, name="", description="", seq=Seq.Seq("".join(s1)))
+    seq2 = SeqIO.SeqRecord(id=sp_2, name="", description="", seq=Seq.Seq("".join(s2)))
+    sites_n, dn, sites_s, ds = run_yn00(seq1, seq2, tmp_path, filepath.replace(".txt", ""))
+
+    sfs_list = ["Summed", n]
+    for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
+        range_sfs = range(1, int(floor(n // 2)) + 1)
+        assert len(range_sfs) * 2 == n
+        sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
+
+    sfs_list += [sites_n, dn, sites_s, ds]
+    content = "{0}+{1} ({2} sites)".format(sp_1, sp_2, len(seq1.seq)) + "\n"
+    content += "\t".join(map(str, sfs_list)) + "\n"
+
+    sfs_file = open(filepath, 'w')
+    sfs_file.write(content)
+    sfs_file.close()
+
+    out_filename = filepath.replace(".txt", ".csv")
+    os.system("{0}  -in {1} -out {2} -model GammaExpo".format(dfe_path, filepath, out_filename))
+
+
+def subsample_sites(cds_dico, nbr_sites, weights):
+    dico_list = list(cds_dico)
+    rand_dico = dict()
+    interval = [0]
+    for k, v in cds_dico.items():
+        interval.append(interval[-1] + len(v))
+
+    if nbr_sites > interval[-1]:
+        nbr_sites = interval[-1]
+    site_choices = sorted(np.random.choice(interval[-1], nbr_sites, replace=False, p=weights))
+
+    insert = np.searchsorted(interval, site_choices, side='right') - 1
+
+    for ins, site in zip(insert, site_choices):
+        ensg = dico_list[ins]
+        pos = cds_dico[ensg][site - interval[ins]]
+        if ensg not in rand_dico: rand_dico[ensg] = []
+        rand_dico[ensg].append(pos)
+    return rand_dico
+
+
+def subsample_genes(cds_dico, nbr_sites, weights):
+    return {k: None for k in np.random.choice(list(cds_dico), nbr_sites, replace=False, p=weights)}
+
+
+def bin_dataset(dico_omega_0, dico_omega, bins=10, gene_level=True, filter_set=False):
+    bin_dicos = [dict() for _ in range(bins)]
+    interval = np.linspace(0, 0.5, bins)
+    for ensg, omega in dico_omega.items():
+        if filter_set and ensg not in filter_set: continue
+        if gene_level:
+            omega_A = omega[1] - dico_omega_0[ensg][1]
+            insert = np.searchsorted(interval, omega_A, side='right') - 1
+            bin_dicos[insert][ensg] = None
+        else:
+            for pos, site_omega in enumerate(omega):
+                omega_A = site_omega[1] - dico_omega_0[ensg][pos][1]
+                insert = np.searchsorted(interval, omega_A, side='right') - 1
+                if ensg not in bin_dicos[insert]:
+                    bin_dicos[insert][ensg] = list()
+                bin_dicos[insert][ensg].append(pos)
+    return bin_dicos

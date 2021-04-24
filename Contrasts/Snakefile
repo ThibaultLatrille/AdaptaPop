@@ -4,79 +4,99 @@ import pandas as pd
 from glob import glob
 
 ROOT = os.path.abspath('..')
-SPECIES = {'Chlorocebus_sabaeus': 'Macaca_mulatta'}
-NBR_REP = 25
-REPLICATES = [item for sublist in [["ADAPTIVE_{0}".format(rep), "NEARLY_NEUTRAL_{0}".format(rep)] for rep in range(1, NBR_REP + 1)] for item in sublist]
 GRANULARITY = ["gene", "site"]
 MODEL = "GammaExpo"
 SUBSAMPLING_SITES = 50000
-SUBSAMPLING_GENES = 150
+SUBSAMPLING_GENES = 200
+
+NBR_REP = 25
+NBR_BATCHES = 4
 SUBSAMPLING_WEIGHTED = True
 
+NBR_BINS = 10
+NBR_REPETITIONS_PER_BIN = 5
 
-def is_int(x):
-    try:
-        int(x)
-        return True
-    except ValueError:
-        return False
+BATCHES = range(1, NBR_BATCHES + 1)
+REPLICATES = [item for sublist in [["ADAPTIVE_{0}".format(rep), "NEARLY_NEUTRAL_{0}".format(rep)] for rep in range(1, NBR_REP + 1)] for item in sublist]
+BINS = list(range(1, NBR_BINS + 1))
+REPETITIONS_PER_BIN = list(range(1, NBR_REPETITIONS_PER_BIN + 1))
 
 PLOT_LIST = []
-for sp in SPECIES:
-    for pop_path in sorted(glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.vcf.gz'.format(sp))):
-        pop_id = pop_path.split(".")[-3]
-        if "chr" in pop_id or (pop_id in ["X", "Y", "MT"]) or is_int(pop_id): continue
+SPECIES = {}
+for id, row in list(pd.read_csv("sample.tsv", sep='\t').iterrows())[:2]:
+    SPECIES[row["Species"]] = row["SisterSpecies"]
+    for pop_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(row["Species"], row["SampleName"])):
         for granularity in GRANULARITY:
-            dir = "{0}_{1}_{2}".format(sp, pop_id, granularity)
-            os.makedirs(dir + "/DoFE", exist_ok=True)
-            os.makedirs(dir + "/tmp", exist_ok=True)
+            dir = "{0}-{1}-{2}".format(row["Species"], row["SampleName"], granularity)
             PLOT_LIST.append(dir + "/histogram.pdf")
-        break
-
-localrules: all, generate_DoFE, plot_histogram, plot_scatter
+            if granularity != "site" or NBR_BINS < 2: continue
+            PLOT_LIST.append(dir + "/bins.pdf")
+            
+        
+localrules: all, plot_histogram, plot_scatter, plot_bins, ontology_table
 
 rule all:
     input:
         PLOT_LIST,
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
-         expand("ontology_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"])
+        expand("ontology_{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
 
 rule generate_DoFE:
     input:
-        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/*.{1}.vcf.gz'.format(w.species, w.pop, w.granularity)),
+        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(w.species, w.pop)),
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
         div_folder=ROOT + '/OrthoMam/Experiments',
         script=ROOT + '/scripts/generate_DoFE.py',
+        dfem=ROOT + '/utils/dfem/dfem',
     params:
-        tmp_folder=lambda w: "--tmp_folder {0}_{1}_{2}/tmp".format(w.species, w.pop, w.granularity),
-        output=lambda w: "--output {0}_{1}_{2}/DoFE".format(w.species, w.pop, w.granularity),
+        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-{2}-{3}".format(w.species, w.pop, w.granularity, w.batch),
+        tmp_folder=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/tmp/{3}/".format(w.species, w.pop, w.granularity, w.batch),
+        output=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/DoFE/".format(w.species, w.pop, w.granularity),
         species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
     output:
-        expand("{{species}}_{{pop}}_{{granularity}}/DoFE/{rep}.txt", rep=REPLICATES)
+        expand("{{species}}-{{pop}}-{{granularity}}/DoFE/{{batch}}_{rep}.csv", rep=REPLICATES)
     shell:
-        'python3 {input.script} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED}  {params.species} {params.tmp_folder} {params.output}'
-
-rule run_dfem:
-    input:
-        dfem=ROOT + '/utils/dfem/dfem',
-        DoFE="{species}_{pop}_{granularity}/DoFE/{rep}.txt"
-    output: "{species}_{pop}_{granularity}/DoFE/{rep}.csv"
-    params:
-        time="0-1:00", mem=1000, threads=1, queue="normal",
-        name=lambda w: "{0}_{1}_{2}_rep{3}".format(w.species, w.pop, w.granularity, w.rep),
-    shell:
-        '{input.dfem} -in {input.DoFE} -out {output} -model {MODEL}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --dfem_path {input.dfem} --seed {wildcards.batch} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule plot_histogram:
     input:
-        dfem_res=expand("{{species}}_{{pop}}_{{granularity}}/DoFE/{rep}.csv", rep=REPLICATES),
+        dfem_res=expand("{{species}}-{{pop}}-{{granularity}}/DoFE/{batch}_{rep}.csv", batch=BATCHES, rep=REPLICATES),
         script=ROOT + '/scripts/plot_histogram.py'
     params:
-        folder=lambda w: "--folder {0}_{1}_{2}/DoFE".format(w.species, w.pop, w.granularity)
+        folder=lambda w: "--folder {0}-{1}-{2}/DoFE".format(w.species, w.pop, w.granularity)
     output:
-        plot="{species}_{pop}_{granularity}/histogram.pdf"
+        plot="{species}-{pop}-{granularity}/histogram.pdf"
     shell:
         'python3 {input.script} {params.folder} --model {MODEL} --output {output.plot}'
+
+rule generate_bins_DoFE:
+    input:
+        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(w.species, w.pop)),
+        ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
+        div_folder=ROOT + '/OrthoMam/Experiments',
+        script=ROOT + '/scripts/generate_bins_DoFE.py',
+        dfem=ROOT + '/utils/dfem/dfem',
+    params:
+        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-bins".format(w.species, w.pop),
+        tmp_folder=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/tmpBins/".format(w.species, w.pop, w.granularity),
+        output=lambda w:  ROOT + "/Contrasts/{0}-{1}-{2}/DoFEBins/".format(w.species, w.pop, w.granularity),
+        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
+    output:
+        expand("{{species}}-{{pop}}-{{granularity}}/DoFEBins/{bin}_{rep}.csv", bin=BINS, rep=REPETITIONS_PER_BIN)
+    shell:
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --dfem_path {input.dfem} --seed {NBR_BINS} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
+
+rule plot_bins:
+    input:
+        dfem_res=expand("{{species}}-{{pop}}-{{granularity}}/DoFEBins/{bin}_{rep}.csv", bin=BINS, rep=REPETITIONS_PER_BIN),
+        script=ROOT + '/scripts/plot_bins.py'
+    params:
+        folder=lambda w: "--folder {0}-{1}-{2}/DoFEBins".format(w.species, w.pop, w.granularity)
+    output:
+        plot="{species}-{pop}-{granularity}/bins.pdf"
+    shell:
+        'python3 {input.script} {params.folder} --model {MODEL} --output {output.plot}'
+
 
 rule plot_scatter:
     input:
@@ -93,9 +113,9 @@ rule ontology_table:
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
         script=ROOT + '/scripts/ontology_table.py',
     output:
-        tex="ontology_{epistasis}_table.tex",
-        pdf="ontology_{epistasis}_table.pdf"
+        tex="ontology_{granularity}_{epistasis}_table.tex",
+        pdf="ontology_{granularity}_{epistasis}_table.pdf"
     params:
         epistasis=lambda wildcards: True if wildcards.epistasis == 'epistasis' else False
     shell:
-        'python3 {input.script} --folder {input.folder} --xml {input.xml} --epistasis {params.epistasis} --output {output.tex}'
+        'python3 {input.script} --folder {input.folder} --xml {input.xml} --granularity {wildcards.granularity} --epistasis {params.epistasis} --output {output.tex}'

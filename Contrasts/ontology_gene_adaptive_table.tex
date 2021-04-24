@@ -1,0 +1,51 @@
+\documentclass[USLetter,5pt]{article}
+\usepackage{adjustbox}
+\newcommand{\specialcell}[2][c]{%
+\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\begin{document}
+\begin{table}[ht]
+\centering
+\begin{adjustbox}{width = 1\textwidth}
+\small\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+Gene Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$\\
+\hline
+immune system process & 38 &  4.916 &  7.730 & 2.1e$^{-14}$ &  1e$^{-11}$\\
+innate immune response & 32 &  4.295 &  7.451 & 3.7e$^{-12}$ & 1.8e$^{-9}$\\
+extracellular space & 60 &   20.3 &  2.959 & 4.6e$^{-9}$ & 2.2e$^{-6}$\\
+extracellular region & 73 &   29.4 &  2.483 &   5e$^{-8}$ & 2.5e$^{-5}$\\
+cell surface & 29 &  6.699 &  4.329 & 9.5e$^{-8}$ & 4.7e$^{-5}$\\
+external side of plasma membrane & 17 &  2.377 &  7.152 & 5.3e$^{-7}$ & 0.00026\\
+blood microparticle & 14 &  1.399 &   10.0 & 6.1e$^{-7}$ & 0.0003\\
+regulation of complement activation & 10 &  0.405 &   24.7 &   1e$^{-6}$ & 0.00051\\
+defense response to virus & 12 &  1.006 &   11.9 & 1.7e$^{-6}$ & 0.00081\\
+plasma membrane & 98 &   48.7 &  2.011 & 2.2e$^{-6}$ &  0.001\\
+platelet degranulation & 11 &  1.010 &   10.9 &   7e$^{-6}$ &  0.003\\
+immune response & 22 &  5.500 &  4.000 & 7.1e$^{-6}$ &  0.003\\
+integral component of plasma membrane & 46 &   19.5 &  2.355 & 1.6e$^{-5}$ &  0.008\\
+proteolysis & 25 &  7.835 &  3.191 & 2.9e$^{-5}$ &  0.014\\
+chemotaxis & 11 &  1.417 &  7.762 & 3.7e$^{-5}$ &  0.018\\
+extracellular exosome & 67 &   34.1 &  1.967 & 4.4e$^{-5}$ &  0.022\\
+receptor-mediated endocytosis & 10 &  1.219 &  8.205 & 6.5e$^{-5}$ &  0.032\\
+positive regulation of ERK1 and ERK2 cascade & 13 &  2.419 &  5.374 & 7.2e$^{-5}$ &  0.035\\
+cell surface receptor signaling pathway & 17 &  4.396 &  3.867 & 9.7e$^{-5}$ &  0.048\\
+adaptive immune response & 12 &  2.225 &  5.393 & 0.00013 &  0.065\\
+serine-type endopeptidase activity & 14 &  3.223 &  4.344 & 0.00017 &  0.083\\
+inflammatory response & 20 &  6.366 &  3.142 & 0.00019 &  0.095\\
+receptor binding & 19 &  5.984 &  3.175 & 0.00025 &  0.122\\
+cellular protein metabolic process & 10 &  1.628 &  6.143 & 0.00026 &  0.125\\
+apical plasma membrane & 16 &  4.416 &  3.624 & 0.00026 &  0.126\\
+toll-like receptor signaling pathway & 7 &  0.616 &   11.4 & 0.00033 &  0.164\\
+extracellular vesicle & 8 &  1.024 &  7.816 & 0.00044 &  0.214\\
+metallopeptidase activity & 10 &  1.833 &  5.455 & 0.00046 &  0.224\\
+leukocyte migration & 10 &  1.833 &  5.455 & 0.00046 &  0.224\\
+amyloid-beta binding & 6 &  0.412 &   14.6 & 0.00054 &  0.264\\
+receptor activity & 10 &  2.244 &  4.456 &  0.001 &  0.616\\
+peptidase activity & 19 &  7.219 &  2.632 &  0.001 &  0.663\\
+\hline
+\end{tabular}
+\end{adjustbox}
+\caption{490 tests performed with 243 CDS detected as adaptive and 1153 as nearly-neutral.
+}
+\end{table}
+\end{document}
