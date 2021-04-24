@@ -9,14 +9,17 @@
 /qsub
 /data
 .snakemake/
+/Enard
 /OrthoMam/Compressed/
 /OrthoMam/Datasets/
 /OrthoMam/Experiments/
 /OrthoMam/bayescode/
+/OrthoMam/TableOmega.tsv
 /Polymorphism/*/Snakefile
 /Polymorphism/Capra_hircus/flo/
 /scripts/__pycache__/
 /Contrasts/*/
+/utils/
 *.errors.tsv
 .idea/
 *.dN
