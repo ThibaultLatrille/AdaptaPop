@@ -257,9 +257,9 @@ def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
         if gene_level:
             if (omega[2] - omega[0] > 0.3) or (omega_0[2] - omega_0[0] > 0.3):
                 continue
-            if 1.0 < omega[0]:
+            if 1.0 < omega[1]:
                 strongly_adaptive_dico[ensg] = None
-            elif omega_0[2] < omega[0]:
+            elif omega_0[2] < omega[0] and omega[1] <= 1.0:
                 adaptive_dico[ensg] = None
             elif 0.05 < omega[0] and omega[2] < omega_0[0]:
                 epistasis_dico[ensg] = None
@@ -270,10 +270,10 @@ def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
             else:
                 unclassify_dico[ensg] = None
         else:
-            strongly_adaptive_dico[ensg] = [i for i, w in enumerate(omega) if 1.0 < w[0] and w[1] < 1.4]
-            adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i][2] < w[0] <= 1.0]
+            strongly_adaptive_dico[ensg] = [i for i, w in enumerate(omega) if 1.0 < w[1] < 5.0]
+            adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i][2] < w[0] and w[1] <= 1.0]
             epistasis_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 < w[0] and w[2] < omega_0[i][0]]
-            nearly_neutral_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w[0] <= 1.0 and (
+            nearly_neutral_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w[0] and w[1] <= 1.0 and (
                     (omega_0[i][1] <= w[1] <= omega_0[i][2] and w[0] <= omega_0[i][1] <= w[1]) or
                     (w[1] <= omega_0[i][1] <= w[2] and omega_0[i][0] <= w[1] <= omega_0[i][1]))]
 

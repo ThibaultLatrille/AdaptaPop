@@ -6,7 +6,7 @@ from glob import glob
 ROOT = os.path.abspath('..')
 GRANULARITY = ["gene", "site"]
 MODEL = "GammaExpo"
-SUBSAMPLING_SITES = 50000
+SUBSAMPLING_SITES = 40000
 SUBSAMPLING_GENES = 200
 
 NBR_REP = 25
