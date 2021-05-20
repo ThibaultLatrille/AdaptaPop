@@ -38,7 +38,7 @@ rule filter:
         tree.write(outfile=output.tree, format=1)
 
         fasta_seqs = SeqIO.parse(open(input.fasta, 'r'), 'fasta')
-        ids_seqs = [(fasta.id, str(fasta.seq)) for fasta in fasta_seqs if fasta.id.split("_")[0].lower() not in species_to_discard]
+        ids_seqs = [(fasta.id, str(fasta.seq).replace("!", "-").replace("?", "-")) for fasta in fasta_seqs if fasta.id.split("_")[0].lower() not in species_to_discard]
 
         assert len(ids_seqs) == len(tree.get_leaf_names())
         ali_file = open(output.ali, 'w')
@@ -67,7 +67,8 @@ rule read_bayescode:
         run = rules.run_bayescode.output,
         bayescode = bayescode_folder + "/readmutselomega"
     params:
-        time="0-4:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
-        read=lambda w, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN, "--omega_0" if w.model == "sitemutsel" else "", ci, input.run) for ci in [0.25, 0.05, 0.025, 0.005]])
+        time="0-10:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
+        ss=lambda w, input: "{0} -b {1} --ss {2} ".format(input.bayescode, BURN_IN, input.run),
+        read=lambda w, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN, "--omega_0" if w.model == "sitemutsel" else "", ci, input.run) for ci in [0.0, 0.25, 0.05, 0.025, 0.005, 0.0025]])
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.read")
-    shell: "gunzip {input.run}.chain.gz && {params.read} && gzip -f {input.run}.chain"
+    shell: "gunzip {input.run}.chain.gz && {params.read} && {params.ss} && gzip -f {input.run}.chain"

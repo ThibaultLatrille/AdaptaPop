@@ -2,7 +2,6 @@
 from collections import defaultdict
 import gzip
 import os
-from lxml import etree
 import pandas as pd
 import numpy as np
 from math import floor
@@ -10,7 +9,7 @@ from Bio.Phylo.PAML import yn00
 from Bio import SeqIO, Seq
 
 complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-nucleotides = list(complement.keys())
+nucleotides = list(sorted(complement.keys()))
 codontable = defaultdict(lambda: "-")
 codontable.update({
     'ATA': 'I', 'ATC': 'I', 'ATT': 'I', 'ATG': 'M',
@@ -117,17 +116,17 @@ class Cds(object):
         codon_alt = codon_ref[:frame] + alt_nuc + codon_ref[frame + 1:]
         aa_alt = codontable[codon_alt]
         if aa_ref == '' or len(codon_ref) != 3 or aa_ref == '-' or aa_alt == '-':
-            return "NotIdentified"
+            return "NotIdentified", codon_ref, codon_alt
         elif codon_ref[frame] != ref_nuc:
-            return "RefDiff"
+            return "RefDiff", codon_ref, codon_alt
         elif aa_ref == 'X':
-            return "RefStop"
+            return "RefStop", codon_ref, codon_alt
         elif aa_alt == 'X':
-            return "Stop"
+            return "Stop", codon_ref, codon_alt
         elif aa_alt == aa_ref:
-            return "Syn"
+            return "Syn", codon_ref, codon_alt
         else:
-            return "NonSyn"
+            return "NonSyn", codon_ref, codon_alt
 
     def empty_exon(self):
         return sum([1 for exon_len in self.exons_length() if exon_len == 1]) > 0
@@ -178,6 +177,7 @@ def build_dict_cds(data_path, file_name):
 
 def build_dict_trID(xml_folder, specie):
     print('Converting TR_ID to ENSG.')
+    from lxml import etree
     dico_trid = {}
     for file in os.listdir(xml_folder):
         root = etree.parse(xml_folder + "/" + file).getroot()
@@ -187,24 +187,6 @@ def build_dict_trID(xml_folder, specie):
             dico_trid[trid] = file.replace(".xml", "")
     print('TR_ID to ENSG conversion done.')
     return dico_trid
-
-
-def ontology_table(xml_folder):
-    print('Finding CDS ontologies.')
-    go_id2name, go_id2cds_list = {}, {}
-    all_go_set = set()
-    for file in os.listdir(xml_folder):
-        root = etree.parse(xml_folder + "/" + file).getroot()
-        for annot in root.find('goAnnot').findall("annot"):
-            go_id = annot.find('goId').text
-            go_name = annot.find('goName').text
-            if go_id not in go_id2name: go_id2name[go_id] = go_name.replace('"', '')
-            if go_id not in go_id2cds_list: go_id2cds_list[go_id] = set()
-            ensg = file.replace(".xml", "")
-            go_id2cds_list[go_id].add(ensg)
-            all_go_set.add(ensg)
-    print('CDS ontologies found.')
-    return go_id2cds_list, go_id2name, all_go_set
 
 
 def tex_f(x):
@@ -221,17 +203,19 @@ def tex_f(x):
         return s
 
 
-def build_divergence_dico(folder, gene_level=True, ci="0.025"):
+def build_divergence_dico(folder, ensg_list, gene_level=True, ci="0.025"):
     print('Loading divergence results.')
     ci = "0.0025" if gene_level else "0.05"
     dico_omega_0, dico_omega = {}, {}
-    for file in sorted(os.listdir(folder)):
-        sitemutsel_path = "{0}/{1}/sitemutsel_1.run.ci{2}.tsv".format(folder, file, ci)
-        siteomega_path = "{0}/{1}/siteomega_1.run.ci{2}.tsv".format(folder, file, ci)
+    for engs in sorted(ensg_list):
+        sitemutsel_path = "{0}/{1}_NT/sitemutsel_1.run.ci{2}.tsv".format(folder, engs, ci)
+        siteomega_path = "{0}/{1}_NT/siteomega_1.run.ci{2}.tsv".format(folder, engs, ci)
         if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
-            continue
+            sitemutsel_path = sitemutsel_path.replace("_null_", "__")
+            siteomega_path = siteomega_path.replace("_null_", "__")
 
-        engs = file[:-3]
+        assert os.path.isfile(siteomega_path) and os.path.isfile(sitemutsel_path)
+
         if gene_level:
             dico_omega_0[engs] = pd.read_csv(sitemutsel_path, sep="\t", nrows=1).values[:, 1:][0]
             dico_omega[engs] = pd.read_csv(siteomega_path, sep="\t", nrows=1).values[:, 1:][0]
@@ -310,48 +294,42 @@ def table_omega(dico_omega, gene_level=True):
     return np.array(output, dtype=np.float)
 
 
-def snp_data_frame(vcf_path):
-    print("Loading file " + vcf_path)
+def snp_data_frame(vcf_path, is_unfolded):
     fixed_poly = dict()
     sample_size_set = set()
-    snp_table, header = {"ENSG": [], "POS": [], "TYPE": [], "COUNT": []}, {}
-    vcf_file = gzip.open(vcf_path, 'rt')
-    for vcf_line in vcf_file:
-        if vcf_line[0] == '#':
-            if vcf_line[1] != '#':
-                header = {k: i for i, k in enumerate(vcf_line.strip().split("\t"))}
+    snp_table = []
+    df_snps = pd.read_csv(vcf_path, compression="gzip")
+    tot = {"FIXED": 0, "REF": 0, "ALT": 0, "UNDEFINED": 0}
+    for index, row in df_snps.iterrows():
+        codon_pos = int(row["POS"] / 3)
+        if is_unfolded:
+            if row["ANC"] == row["REF"]:
+                tot["REF"] += 1
+            elif row["ANC"] == row["ALT"]:
+                row["COUNT"] = row["SAMPLE_SIZE"] - row["COUNT"]
+                if row["ENSG"] not in fixed_poly: fixed_poly[row["ENSG"]] = {}
+                fixed_poly[row.ENSG][codon_pos] = row["POS"] % 3, row["REF"], row["ALT"]
+                tot["ALT"] += 1
+            else:
+                tot["UNDEFINED"] += 1
+                continue
+        else:
+            tot["REF"] += 1
+
+        if row["COUNT"] == row["SAMPLE_SIZE"]:
+            if row["ENSG"] not in fixed_poly: fixed_poly[row["ENSG"]] = {}
+            fixed_poly[row["ENSG"]][codon_pos] = row["POS"] % 3, row["REF"], row["ALT"]
+            tot["FIXED"] += 1
             continue
 
-        line_list = vcf_line.strip().split("\t")
-        ensg = line_list[header["ENSG"]]
-        if ensg == "None": continue
-
-        if line_list[header["CHR"]] in ["X", "Y", "MT"]: continue
-
-        genotypes = [s.split(":")[0].count("1") for s in line_list[header["FORMAT"] + 1:header["CHR"]] if
-                     ("|" in s) or ("/" in s)]
-        count = sum(genotypes)
-        n = len(genotypes) * 2
-        if count == 0: continue
-
-        nuc_pos = int(line_list[header["ENSG_POS"]])
-        codon_pos = int(nuc_pos / 3)
-        if count == n:
-            if ensg not in fixed_poly: fixed_poly[ensg] = {}
-            ref, alt = line_list[header["REF"]], line_list[header["ALT"]]
-            fixed_poly[ensg][codon_pos] = nuc_pos % 3, ref, alt
-            continue
-
-        snp_table["COUNT"].append(count)
-        snp_table["ENSG"].append(ensg)
-        snp_table["POS"].append(codon_pos)
-        snp_table["TYPE"].append(line_list[header["SNP_TYPE"]])
-        sample_size_set.add(n)
-
-    print(vcf_path + " loaded.")
+        snp_table.append(row)
+        sample_size_set.add(row["SAMPLE_SIZE"])
+    tot_sum = sum(tot.values())
+    print("{0} SNPs".format(tot_sum))
+    for k, v in tot.items():
+        print("{0}: {1} ({2:.2f}%)".format(k, v, 100 * v / tot_sum))
     assert len(sample_size_set) == 1
-    n = sample_size_set.pop()
-    return pd.DataFrame(snp_table).groupby("ENSG"), fixed_poly, n
+    return pd.DataFrame(snp_table).groupby("ENSG"), fixed_poly, sample_size_set.pop()
 
 
 def load_alignments(ensg_list, sp_1, sp_2, ali_folder):
@@ -359,7 +337,9 @@ def load_alignments(ensg_list, sp_1, sp_2, ali_folder):
 
     for ensg in ensg_list:
         sister_focal_seqs = dict()
-        for f in SeqIO.parse(open(ali_folder + "/" + ensg + "_NT.fasta", 'r'), 'fasta'):
+        file_path = ali_folder + "/" + ensg + "_NT.fasta"
+        if not os.path.exists(file_path): file_path = file_path.replace("_null_", "__")
+        for f in SeqIO.parse(open(file_path, 'r'), 'fasta'):
             if f.id not in [sp_1, sp_2]: continue
             sister_focal_seqs[f.id] = f.seq
 
@@ -380,10 +360,6 @@ def filter_positions(sister_focal_seqs, sp_focal, fixed_poly, gene_level, positi
 
             if pos in fixed_poly and sp_id == sp_focal:
                 frame, ref, alt = fixed_poly[pos]
-                if codon[frame] != ref:
-                    assert codon[frame] == complement[ref]
-                    alt = complement[alt]
-
                 codon = codon[:frame] + alt + codon[frame + 1:]
 
             if codontable[codon] == "X": codon = "---"
@@ -407,7 +383,8 @@ def run_yn00(seq1, seq2, tmp_path, filepath):
         return 0, 0, 0, 0
 
 
-def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, fixed_poly, tmp_path, dfe_path):
+def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, fixed_poly, tmp_path, dfe_models,
+              is_unfolded, polyDFE_dict, error_f):
     sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
     sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
     s1, s2 = [], []
@@ -436,29 +413,53 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
             else:
                 assert row.TYPE == "Stop"
 
+    if np.sum(sfs_n) < 10 or np.sum(sfs_s) < 10:
+        error_f.write("ER0: not enough polymorphism. SFS are:\n" + " ".join(sfs_s) + "\n" + " ".join(sfs_n) + "\n")
+        return False
+
     seq1 = SeqIO.SeqRecord(id=sp_1, name="", description="", seq=Seq.Seq("".join(s1)))
     seq2 = SeqIO.SeqRecord(id=sp_2, name="", description="", seq=Seq.Seq("".join(s2)))
-    sites_n, dn, sites_s, ds = run_yn00(seq1, seq2, tmp_path, filepath.replace(".txt", ""))
+    if seq1.seq == seq2.seq:
+        error_f.write("ER1: identical sequences. Sequences are:\n" + "".join(s1) + "\n" + "".join(s2) + "\n")
+        return False
 
-    sfs_list = ["Summed", n]
-    for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
-        range_sfs = range(1, int(floor(n // 2)) + 1)
-        assert len(range_sfs) * 2 == n
-        sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
+    sites_n, dn, sites_s, ds = run_yn00(seq1, seq2, tmp_path, filepath)
 
-    sfs_list += [sites_n, dn, sites_s, ds]
-    content = "{0}+{1} ({2} sites)".format(sp_1, sp_2, len(seq1.seq)) + "\n"
-    content += "\t".join(map(str, sfs_list)) + "\n"
+    if sites_n == dn == sites_s == ds == 0:
+        error_f.write("ER2: Yn00 failed. Sequences are:\n" + "".join(s1) + "\n" + "".join(s2) + "\n")
+        return False
 
-    sfs_file = open(filepath, 'w')
-    sfs_file.write(content)
-    sfs_file.close()
+    if "dfem" in "".join(dfe_models) or "grapes" in "".join(dfe_models):
+        sfs_list = ["Summed", n]
+        for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
+            if is_unfolded:
+                sfs_list += [nbr_site] + [sfs_s[i] for i in range(1, n)]
+            else:
+                range_sfs = range(1, int(floor(n // 2)) + 1)
+                assert len(range_sfs) * 2 == n
+                sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
+        sfs_list += [sites_n, dn, sites_s, ds]
 
-    out_filename = filepath.replace(".txt", ".csv")
-    os.system("{0}  -in {1} -out {2} -model GammaExpo".format(dfe_path, filepath, out_filename))
+        dofe_file = open(filepath + ".dofe", 'w')
+        dofe_file.write("{0}+{1} ({2} sites)".format(sp_1, sp_2, len(seq1.seq)) + "\n")
+        if is_unfolded: dofe_file.write("#unfolded\n")
+        dofe_file.write("\t".join(map(str, sfs_list)) + "\n")
+        dofe_file.close()
+
+    if "polyDFE" in "".join(dfe_models) and is_unfolded:
+        polyDFE_dict["SFSs"] += " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
+        polyDFE_dict["SFSn"] += " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
+
+    for dfe_path in dfe_models:
+        out = filepath + "_" + dfe_path.split("/")[-2]
+        if "dfem" in dfe_path or "grapes" in dfe_path:
+            os.system(
+                "{0} -in {1}.dofe -out {2}.csv -model GammaExpo 1> {2}.out 2> {2}.err".format(dfe_path, filepath, out))
+
+    return True
 
 
-def subsample_sites(cds_dico, nbr_sites, weights):
+def subsample_sites(cds_dico, nbr_sites, weights, replace=False):
     dico_list = list(cds_dico)
     rand_dico = dict()
     interval = [0]
@@ -467,7 +468,7 @@ def subsample_sites(cds_dico, nbr_sites, weights):
 
     if nbr_sites > interval[-1]:
         nbr_sites = interval[-1]
-    site_choices = sorted(np.random.choice(interval[-1], nbr_sites, replace=False, p=weights))
+    site_choices = sorted(np.random.choice(interval[-1], nbr_sites, replace=replace, p=weights))
 
     insert = np.searchsorted(interval, site_choices, side='right') - 1
 
@@ -479,24 +480,25 @@ def subsample_sites(cds_dico, nbr_sites, weights):
     return rand_dico
 
 
-def subsample_genes(cds_dico, nbr_sites, weights):
-    return {k: None for k in np.random.choice(list(cds_dico), nbr_sites, replace=False, p=weights)}
+def subsample_genes(cds_dico, nbr_genes, weights, replace=False):
+    return {k: None for k in np.random.choice(list(cds_dico), nbr_genes, replace=replace, p=weights)}
 
 
-def bin_dataset(dico_omega_0, dico_omega, bins=10, gene_level=True, filter_set=False):
+def bin_dataset(cds_dico, dico_omega_0, bins=10, gene_level=True):
     bin_dicos = [dict() for _ in range(bins)]
-    interval = np.linspace(0, 0.5, bins)
-    for ensg, omega in dico_omega.items():
-        if filter_set and ensg not in filter_set: continue
-        if gene_level:
-            omega_A = omega[1] - dico_omega_0[ensg][1]
-            insert = np.searchsorted(interval, omega_A, side='right') - 1
+    sort_w_0 = np.sort(filtered_table_omega(dico_omega_0, cds_dico, gene_level)[:, 1])
+    split_w_0 = np.array_split(sort_w_0, bins)
+    interval = [split_w_0[0][0]] + [s[-1] for s in split_w_0]
+    interval[-1] += 0.01
+    if gene_level:
+        for ensg in cds_dico.keys():
+            omega_0 = dico_omega_0[ensg][1]
+            insert = np.searchsorted(interval, omega_0, side='right') - 1
             bin_dicos[insert][ensg] = None
-        else:
-            for pos, site_omega in enumerate(omega):
-                omega_A = site_omega[1] - dico_omega_0[ensg][pos][1]
-                insert = np.searchsorted(interval, omega_A, side='right') - 1
-                if ensg not in bin_dicos[insert]:
-                    bin_dicos[insert][ensg] = list()
+    else:
+        for ensg, pos_list in cds_dico.items():
+            for pos in pos_list:
+                insert = np.searchsorted(interval, dico_omega_0[ensg][pos][1], side='right') - 1
+                if ensg not in bin_dicos[insert]: bin_dicos[insert][ensg] = list()
                 bin_dicos[insert][ensg].append(pos)
     return bin_dicos

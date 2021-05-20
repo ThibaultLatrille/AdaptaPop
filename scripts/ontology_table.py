@@ -1,8 +1,28 @@
 import scipy.stats as st
-from libraries import build_divergence_dico, split_outliers, ontology_table, tex_f
+from libraries import build_divergence_dico, split_outliers, tex_f
 import os
+from lxml import etree
 import numpy as np
 import argparse
+
+
+def ontology_table(xml_folder):
+    print('Finding CDS ontologies.')
+    go_id2name, go_id2cds_list = {}, {}
+    all_go_set = set()
+    for file in os.listdir(xml_folder):
+        root = etree.parse(xml_folder + "/" + file).getroot()
+        for annot in root.find('goAnnot').findall("annot"):
+            go_id = annot.find('goId').text
+            go_name = annot.find('goName').text
+            if go_id not in go_id2name: go_id2name[go_id] = go_name.replace('"', '')
+            if go_id not in go_id2cds_list: go_id2cds_list[go_id] = set()
+            ensg = file.replace(".xml", "")
+            go_id2cds_list[go_id].add(ensg)
+            all_go_set.add(ensg)
+    print('CDS ontologies found.')
+    return go_id2cds_list, go_id2name, all_go_set
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -22,7 +42,8 @@ if __name__ == '__main__':
     args.epistasis = args.epistasis.lower() == 'true'
     gene = args.granularity.lower() == "gene"
     dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene, ci=args.ci)
-    strg_adap_dico, adap_dico, epi_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    strg_adap_dico, adap_dico, epi_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega,
+                                                                                     gene_level=gene)
     focal_dico = epi_dico if args.epistasis else adap_dico
     go_id2cds_list, go_id2name, set_all_go_cds = ontology_table(args.xml)
     cds_focal_set = set(focal_dico) & set_all_go_cds
@@ -90,7 +111,7 @@ if __name__ == '__main__':
     table_tex.writelines("\\end{document}\n")
     table_tex.close()
     print('Table generated')
-    os.system("pdflatex {0}".format(args.output))
+    os.system("pdflatex -output-directory={0} {1}".format(os.path.dirname(args.output), args.output))
     print('Pdf generated')
 
     print('Ontology computed')

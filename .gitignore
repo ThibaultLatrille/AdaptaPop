@@ -15,11 +15,18 @@
 /OrthoMam/Experiments/
 /OrthoMam/bayescode/
 /OrthoMam/TableOmega.tsv
+/OrthoMam/Experiments.tar.xz
+/Polymorphism/CDS.ANNOT.tar.xz
 /Polymorphism/*/Snakefile
 /Polymorphism/Capra_hircus/flo/
+/Contrasts/CDS.ANNOT.tar.xz
+/Contrasts/annotation.*.tsv
 /scripts/__pycache__/
 /Contrasts/*/
 /utils/
+*.est-sfs.pvalues.txt
+*.est-sfs.txt
+*.est-sfs.usfs
 *.errors.tsv
 .idea/
 *.dN
@@ -38,3 +45,4 @@ rub
 *.synctex.gz
 *.pdf
 *.gtf_to_bed_errors.txt
+

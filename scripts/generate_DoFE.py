@@ -1,4 +1,7 @@
 import argparse
+
+import pandas as pd
+
 from libraries import *
 from scipy.stats import norm
 
@@ -11,9 +14,9 @@ if __name__ == '__main__':
     parser.add_argument('--vcf', required=True, type=str, dest="vcf", help="VCF annotated file")
     parser.add_argument('--granularity', required=False, type=str, default=True, dest="granularity",
                         help="Gene or site level")
-    parser.add_argument('--nbr_sites', required=False, type=int, default=50000, dest="nbr_sites",
+    parser.add_argument('--nbr_sites', required=False, type=int, default=-1, dest="nbr_sites",
                         help="Number of sites to subsample")
-    parser.add_argument('--nbr_genes', required=False, type=int, default=150, dest="nbr_genes",
+    parser.add_argument('--nbr_genes', required=False, type=int, default=-1, dest="nbr_genes",
                         help="Number of genes to subsample")
     parser.add_argument('--focal_species', required=True, type=str, dest="focal_species",
                         help="Focal species (containing polymorphism)")
@@ -23,7 +26,9 @@ if __name__ == '__main__':
                         help="Weighted sampling such as to control for omega")
     parser.add_argument('--seed', required=False, type=int, default=123456789, dest="seed",
                         help="Seed for random generator")
-    parser.add_argument('--dfem_path', required=True, type=str, dest="dfem_path", help="Executable path for DFEM")
+    parser.add_argument('--annotation', required=True, type=str, dest="annotation", help="Annotation of ENSG")
+    parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
+    parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('--rep', required=True, type=int, dest="rep", help="Number of replicates")
     parser.add_argument('--tmp_folder', required=True, type=str, dest="tmp_folder", help="Temporary files path")
@@ -31,10 +36,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     gene = args.granularity.lower() == "gene"
-    dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, gene_level=gene)
+    is_unfolded = args.sfs == "unfolded"
+    ensg_annot = pd.read_csv(args.annotation, sep="\t")
+    filter_set = set(ensg_annot[-ensg_annot["CHR"].isin(["X", "Y", "MT", "None"])]["ENSG"])
+    dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, filter_set, gene_level=gene)
     dico_alignments = load_alignments(dico_omega, args.focal_species, args.sister_species, args.ali_folder)
+    filter_set = filter_set.intersection(set(dico_alignments))
     _, adaptive_dico, epistasis_dico, nearly_neutral_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene,
-                                                                              filter_set=set(dico_alignments))
+                                                                              filter_set=filter_set)
     if gene:
         if args.nbr_genes == -1 or args.nbr_genes > len(adaptive_dico): args.nbr_genes = len(adaptive_dico)
         print('{0} adaptive genes'.format(len(adaptive_dico)))
@@ -47,26 +56,27 @@ if __name__ == '__main__':
         print('{0} epistasis sites'.format(sum([len(v) for v in epistasis_dico.values()])))
         print('{0} nearly-neutral sites'.format(sum([len(v) for v in nearly_neutral_dico.values()])))
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded)
     np.random.seed(args.seed)
 
     weigths_nearly_neutral = None
     txt = "E[w{0}]={1:.3g}, Var[w{0}]={2:.3g} for {3} {4} set\n"
-    f = open(args.output + ".txt", 'w')
+    f_sample = open(args.output + ".txt", 'w')
     w = filtered_table_omega(dico_omega, nearly_neutral_dico, gene)[:, 1]
     w_0 = filtered_table_omega(dico_omega_0, nearly_neutral_dico, gene)[:, 1]
     w_A = w - w_0
-    f.write(txt.format("", np.mean(w), np.std(w), "all nearly-neutral", args.granularity))
-    f.write(txt.format("0", np.mean(w_0), np.std(w_0), "all nearly-neutral", args.granularity))
-    f.write(txt.format("A", np.mean(w_A), np.std(w_A), "all nearly-neutral", args.granularity))
+    f_sample.write(txt.format("", np.mean(w), np.std(w), "all nearly-neutral", args.granularity))
+    f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "all nearly-neutral", args.granularity))
+    f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "all nearly-neutral", args.granularity))
 
     w = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]
     w_0 = filtered_table_omega(dico_omega_0, adaptive_dico, gene)[:, 1]
     w_A = w - w_0
-    f.write(txt.format("", np.mean(w), np.std(w), "all adaptive", args.granularity))
-    f.write(txt.format("0", np.mean(w_0), np.std(w_0), "all adaptive", args.granularity))
-    f.write(txt.format("A", np.mean(w_A), np.std(w_A), "all adaptive", args.granularity))
+    f_sample.write(txt.format("", np.mean(w), np.std(w), "all adaptive", args.granularity))
+    f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "all adaptive", args.granularity))
+    f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "all adaptive", args.granularity))
 
+    errors = open(args.tmp_folder + "/errors.txt", 'w')
     if args.weighted.lower() == "true":
         print("Weighted sampling controlling for w")
         adaptive_table = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]
@@ -77,32 +87,45 @@ if __name__ == '__main__':
         weigths_nearly_neutral /= norm.pdf(x, loc=np.mean(x), scale=np.std(x))
         weigths_nearly_neutral /= np.sum(weigths_nearly_neutral)
 
-    for rep in range(1, args.rep + 1):
-        if gene:
-            adaptive_set = subsample_genes(adaptive_dico, args.nbr_genes, None)
-            nearly_neutral_set = subsample_genes(nearly_neutral_dico, args.nbr_genes, weigths_nearly_neutral)
-        else:
-            adaptive_set = subsample_sites(adaptive_dico, args.nbr_sites, None)
-            nearly_neutral_set = subsample_sites(nearly_neutral_dico, args.nbr_sites, weigths_nearly_neutral)
+    for adapt in [True, False]:
+        txt_set = "ADAPTIVE" if adapt else "NEARLY_NEUTRAL"
+        prefix = "{0}_{1}".format(args.output, txt_set)
+        sfs_polyDFE = {"SFSn": "", "SFSs": ""}
+        rep = 1
 
-        w = filtered_table_omega(dico_omega, nearly_neutral_set, gene)[:, 1]
-        w_0 = filtered_table_omega(dico_omega_0, nearly_neutral_set, gene)[:, 1]
-        w_A = w - w_0
-        f.write(txt.format("", np.mean(w), np.std(w), "resampled nearly-neutral", args.granularity))
-        f.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled nearly-neutral", args.granularity))
-        f.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled nearly-neutral", args.granularity))
+        while rep < args.rep + 1:
+            if gene:
+                if adapt:
+                    subset = subsample_genes(adaptive_dico, args.nbr_genes, None, replace=True)
+                else:
+                    subset = subsample_genes(nearly_neutral_dico, args.nbr_genes, weigths_nearly_neutral, replace=False)
+            else:
+                if adapt:
+                    subset = subsample_sites(adaptive_dico, args.nbr_sites, None, replace=True)
+                else:
+                    subset = subsample_sites(nearly_neutral_dico, args.nbr_sites, weigths_nearly_neutral, replace=False)
 
-        w = filtered_table_omega(dico_omega, adaptive_set, gene)[:, 1]
-        w_0 = filtered_table_omega(dico_omega_0, adaptive_set, gene)[:, 1]
-        w_A = w - w_0
-        f.write(txt.format("", np.mean(w), np.std(w), "resampled adaptive", args.granularity))
-        f.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled adaptive", args.granularity))
-        f.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled adaptive", args.granularity))
+            w = filtered_table_omega(dico_omega, subset, gene)[:, 1]
+            w_0 = filtered_table_omega(dico_omega_0, subset, gene)[:, 1]
+            w_A = w - w_0
+            f_sample.write(txt.format("", np.mean(w), np.std(w), "resampled " + txt_set.lower(), args.granularity))
+            f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled " + txt_set.lower(), args.granularity))
+            f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled " + txt_set.lower(), args.granularity))
 
-        dfe_alpha("{0}_ADAPTIVE_{1}.txt".format(args.output, rep), df_snp, sample_size, adaptive_set, gene,
-                  args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder, args.dfem_path)
+            if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, subset, gene,
+                         args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
+                         args.dfe_path, is_unfolded, sfs_polyDFE, errors):
+                rep += 1
 
-        dfe_alpha("{0}_NEARLY_NEUTRAL_{1}.txt".format(args.output, rep), df_snp, sample_size, nearly_neutral_set, gene,
-                  args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder, args.dfem_path)
+        if sfs_polyDFE["SFSs"] != "":
+            sfs_file = open(prefix + ".sfs", 'w')
+            sfs_file.write("#{0}+{1}".format(args.focal_species, args.sister_species) + "\n")
+            sfs_file.write("{0} {0} {1}".format(args.rep, sample_size) + "\n")
+            sfs_file.write(sfs_polyDFE["SFSs"])
+            sfs_file.write(sfs_polyDFE["SFSn"])
+            sfs_file.close()
+            dfe_path = set([p for p in args.dfe_path if "polyDFE" in p]).pop()
+            os.system("{0} -d {1}.sfs -m C -e 1> {1}_polyDFE.out 2> {1}_polyDFE.err".format(dfe_path, prefix))
 
-    f.close()
+    errors.close()
+    f_sample.close()

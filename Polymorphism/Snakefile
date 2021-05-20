@@ -26,7 +26,8 @@ POPULATIONS = set(pd.read_csv(config["PANEL"], sep='\t')["pop"]) if 'PANEL' in c
 
 rule all:
     input:
-        expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys()))
+        expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz', subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
+        # 'CDS.SELCOEFF.' + NAME + '.tsv.gz'
 
 
 rule download_fasta:
@@ -96,6 +97,7 @@ rule annotate_vcf:
         gtf_gz=GTF + '.gtf.gz',
         fa_gz=FASTA,
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116/',
+        tree_folder=ROOT + '/OrthoMam/Datasets/omm_RooTree.v10b_116/',
         xml_folder=ROOT + '/OrthoMam/Datasets/omm_markers',
         script_vcf=ROOT + '/scripts/vcf_annotate_positions.py'
     params:
@@ -103,7 +105,20 @@ rule annotate_vcf:
     output:
         vfc_gz='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz'
     shell:
-        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --xml {input.xml_folder} --specie {params.specie} --output {output.vfc_gz}'
+        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --tree {input.tree_folder} --xml {input.xml_folder} --specie {params.specie} --output {output.vfc_gz}'
+
+rule selcoeff:
+    input:
+        vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys())),
+        script=ROOT + '/scripts/est_sfs.py',
+        est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
+        est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
+        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt',
+        exp_folder=ROOT + '/OrthoMam/Experiments/',
+    output:
+        tsv='CDS.SELCOEFF.' + NAME + '.tsv.gz',
+    shell:
+        'python3 {input.script} --vcf {input.vcf} --exp_folder {input.exp_folder} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'
 
 if POPULATIONS:
     rule chr_to_pop:
@@ -117,3 +132,15 @@ if POPULATIONS:
             vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=POPULATIONS),
         shell:
             'python3 {input.script} --panel {input.panel} --vcf {input.vcf} --output {params.output}'
+
+rule est_sfs:
+    input:
+        vcf='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',
+        script=ROOT + '/scripts/est_sfs.py',
+        est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
+        est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
+        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt',
+    output:
+        tsv='CDS.ANNOT.' + NAME + '.{subset}.tsv.gz',
+    shell:
+        'python3 {input.script} --vcf {input.vcf} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'

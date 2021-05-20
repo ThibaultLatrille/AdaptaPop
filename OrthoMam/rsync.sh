@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-rsync -r --include='*.run.ci0.*' --exclude="*.chain.gz" tlatrill@pbil-gates.univ-lyon1.fr:/beegfs/data/tlatrill/AdaptaPop/OrthoMam/Experiments/ Experiments/
+VM=tlatrill@pbil-gates.univ-lyon1.fr
+DIR=/beegfs/data/tlatrill
+rsync -r --include='*.run.ci0.*' --include='*.run.siteprofiles'  --include='*.ali'  --include='*.rootree' --include='*/' --exclude='*' ${VM}:${DIR}/AdaptaPop/OrthoMam/Experiments/ Experiments/

@@ -81,12 +81,37 @@ Please, feel free to open a [pull-request](https://github.com/ThibaultLatrille/A
 ## TO DO:
 - ~~Snakefile for generating gene specific SFS and run DFEM~~
 - ~~Aggregate sites (SFS, fasta)~~
-- ~~Histogram outliers (subsampling)~~
+- ~~Histogram nearly-neutral (subsampling)~~
+- ~~Histogram adaptive (boostrap)~~
 - ~~Ontology test for genes~~
 - ~~Control for omega in the nearly-neutral set (weighted sampling)~~
-- ~~Regression instead of qualitative sets~~
-- ~~Detecting outliers based on CI~~
+- ~~Detecting outliers based on CI~~*-
+- ~~Regression on w_NA versus w_0 only for the nearly-neutral~~
+- ~~Unfold SFS (needs polarization)~~
+- Get Fj-Fi for polymorphisms 
 - Run on all samples
+
+
+From Martin’s talk in the morning we saw that positive linked selection influences piN/piS.
+This means positive linked selection will influence the estimate of omega_NA in the MK setting.
+Do you think that will bias your results?
+Second/separate question, how do you think a fluctuation environment (fluctuating DFE) or recent change in population size will influence the congruence between the phylogenetic and the population genetic model?
+
+How do you think the choice of the two different species is influencing the analysis ?
+For example, for species within the same genus, or more distant.
+How to choose that. And how does that affect?
+
+Adaptation is actually computed using divergence in both approaches.
+So it seems that what is congruent between phylogeny and polymorphism is w0 more than wA.
+Am I right?
+
+Assuming that everything hold and is robust, what would be you interpretation of the congruence?
+Were you surprised by it?
+
+About epistasis in the second part: could you select the genes detected as nearly neutral in the first part to get better estimates of Ne?
+What you call epistatis is actually constraints on the evolution between sites, such as background selection would do, among other causes?
+
+On the first part of your talk, could you use incongruence between omega_0 and omega_NA to learn about changes in Ne or changes in the DFE over time?
 
 ## Licence
 

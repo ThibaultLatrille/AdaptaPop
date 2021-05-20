@@ -1,8 +1,10 @@
 import matplotlib as mpl
+import numpy as np
 
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgb, Normalize
+from scipy.ndimage.filters import gaussian_filter
 import argparse
 from libraries import *
 
@@ -13,8 +15,8 @@ GREY = to_rgb("grey")
 BLACK = to_rgb("black")
 
 error_kwargs = {"lw": .5, "zorder": -1}
-my_dpi = 128
-fontsize = 16
+my_dpi = 256
+fontsize = 14
 fontsize_legend = 12
 plt.figure(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 plt.subplot(1, 1, 1)
@@ -25,6 +27,14 @@ xmin, xmax = 0.05, 1.0
 ymin, ymax = 0.05, 1.0
 plt.xlim((xmin, xmax))
 plt.plot(idf, idf, color="black")
+
+
+def fmt(x):
+    s = f"{x:.1f}"
+    if s.endswith("0"):
+        s = f"{x:.0f}"
+    return f"{s}"
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -93,49 +103,46 @@ if __name__ == '__main__':
         ymin, ymax = 0.05, 1.4
         xbins, ybins = 100, 100
         colors = np.zeros((ybins, xbins, 4))
-        interpolation = 'nearest'
-        colors[..., 0:3] = GREY[0:3]
-        heatmap, xedges, yedges = np.histogram2d(unclass_omega_0[:, 1], unclass_omega[:, 1], bins=(xbins, ybins),
-                                                 range=[[xmin, xmax], [ymin, ymax]])
-        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
-        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
-        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
+        list_plot = list()
+        list_plot.append((GREY, unclass_omega_0, unclass_omega))
+        list_plot.append((BLUE, epi_omega_0, epi_omega))
+        list_plot.append((BLACK, strg_ada_omega_0, strg_ada_omega))
+        list_plot.append((RED, ada_omega_0, ada_omega))
+        list_plot.append((GREEN, nn_omega_0, nn_omega))
 
-        colors[..., 0:3] = BLUE[0:3]
-        heatmap, xedges, yedges = np.histogram2d(epi_omega_0[:, 1], epi_omega[:, 1], bins=(xbins, ybins),
-                                                 range=[[xmin, xmax], [ymin, ymax]])
-        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
-        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
-        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
+        heatmaps = list()
+        for COLOR, omega_0, omega in list_plot:
+            heatmap, xedges, yedges = np.histogram2d(omega_0[:, 1], omega[:, 1], bins=(xbins, ybins),
+                                                     range=[[xmin, xmax], [ymin, ymax]])
+            extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
 
-        colors[..., 0:3] = RED[0:3]
-        heatmap, xedges, yedges = np.histogram2d(ada_omega_0[:, 1], ada_omega[:, 1], bins=(xbins, ybins),
-                                                 range=[[xmin, xmax], [ymin, ymax]])
-        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
-        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
-        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
+            heatmaps.append((COLOR, extent, heatmap))
 
-        colors[..., 0:3] = BLACK[0:3]
-        heatmap, xedges, yedges = np.histogram2d(strg_ada_omega_0[:, 1], strg_ada_omega[:, 1], bins=(xbins, ybins),
-                                                 range=[[xmin, xmax], [ymin, ymax]])
-        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
-        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
-        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
+        max_heatmap = max([h.max() for c, e, h in heatmaps])
+        for COLOR, extent, heatmap in heatmaps:
+            if COLOR == GREY: continue
+            colors[..., 0:3] = COLOR[0:3]
+            colors[..., -1] = Normalize(0.0, 1.5 * np.log(max_heatmap), clip=True)(np.log(heatmap.T))
+            # mask = colors[..., -1] == 0.0
+            # colors[..., -1] = colors[..., -1] * 0.9 + 0.1
+            # colors[..., -1][mask] = 0.0
+            plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation='nearest')
+            data = gaussian_filter(heatmap.T, 1.25)
+            set_levels = list(np.logspace(np.log10(25 if np.max(data) >= 25 else 5), np.log10(np.max(data)) - 0.15,
+                                          3 if COLOR == BLUE else 5))
+            cs = plt.contour(data, extent=extent, levels=set_levels, colors=[COLOR] * len(set_levels), linestyles='-')
+            plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=10)
 
-        colors[..., 0:3] = GREEN[0:3]
-        heatmap, xedges, yedges = np.histogram2d(nn_omega_0[:, 1], nn_omega[:, 1], bins=(xbins, ybins),
-                                                 range=[[xmin, xmax], [ymin, ymax]])
-        extent = [yedges[0], yedges[-1], xedges[0], xedges[-1]]
-        colors[..., -1] = Normalize(heatmap.min(), heatmap.max()*0.65)(heatmap.T)
-        plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation=interpolation)
-
+        plt.scatter(0, 0, label=r'{0} strongly adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])),
+                    color=BLACK)
         plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in ada_dico.values()])), color=RED)
-        plt.scatter(0, 0, label=r'{0} strongly adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])), color=BLACK)
-        plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])), color=GREEN)
+        plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])),
+                    color=GREEN)
         plt.scatter(0, 0, label=r'{0} epistasis sites'.format(sum([len(v) for v in epi_dico.values()])), color=BLUE)
 
-    plt.legend(fontsize=fontsize_legend)
+    plt.legend(fontsize=fontsize_legend, loc="lower right")
     plt.ylim((ymin, ymax))
+    plt.xticks(fontsize=fontsize_legend)
     plt.tight_layout()
     plt.savefig(args.output, format="pdf")
     plt.savefig(args.output.replace(".pdf", ".png"), format="png")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
-from Bio import SeqIO
 from Bio.pairwise2 import align
 from libraries import *
+from ete3 import Tree
 
 
 def most_common(lst):
@@ -110,12 +110,40 @@ class Alignment(object):
         return ''.join(gapped_codons)
 
 
+class Outgroup(object):
+    def __init__(self, file_path, specie, tree_path):
+        if not os.path.exists(file_path): file_path = file_path.replace("_null_", "__")
+        if not os.path.exists(tree_path): tree_path = tree_path.replace("_null_", "__")
+
+        t = Tree(tree_path)
+        leaves = t.get_leaves_by_name(specie)
+        assert len(leaves) == 1
+        leaf = leaves[0]
+        self.seqs = [list(), list(), list(), list()]
+        self.names = [leaf.get_leaf_names(), list(), list(), list()]
+        for gr in [1, 2, 3]:
+            if leaf is not None and len(leaf.get_sisters()) > 0:
+                self.names[gr] = leaf.get_sisters()[0].get_leaf_names()
+            if leaf is not None:
+                leaf = leaf.up
+
+        for f in SeqIO.parse(open(file_path, 'r'), 'fasta'):
+            for id_g, group in enumerate(self.names):
+                if f.id in group:
+                    self.seqs[id_g].append(str(f.seq))
+
+    def position(self, cds_pos):
+        out = []
+        for out_seqs in self.seqs:
+            states = [s[cds_pos] for s in out_seqs if s[cds_pos] in nucleotides]
+            out.append("-" if len(states) == 0 else most_common(states))
+        return out
+
+
 def extract_fasta(file_path, specie):
-    if not os.path.exists(file_path):
-        file_path = file_path.replace("_null_", "__")
+    if not os.path.exists(file_path): file_path = file_path.replace("_null_", "__")
     for f in SeqIO.parse(open(file_path, 'r'), 'fasta'):
-        if f.id == specie:
-            return str(f.seq)
+        if f.id == specie: return str(f.seq)
     return ""
 
 
@@ -136,6 +164,9 @@ if __name__ == '__main__':
     parser.add_argument('-x', '--xml', required=True, type=str,
                         dest="xml", metavar="<xml>",
                         help="The xml folder")
+    parser.add_argument('-t', '--tree', required=True, type=str,
+                        dest="tree", metavar="<tree>",
+                        help="The tree folder")
     parser.add_argument('-s', '--species', required=True, type=str,
                         dest="species", metavar="<species>",
                         help="The species name")
@@ -146,7 +177,7 @@ if __name__ == '__main__':
 
     path = os.getcwd()
 
-    dict_alignment = {}
+    dict_alignment, dict_outgroup = {}, {}
     dict_cds, not_confirmed_tr = build_dict_cds(path, args.g)
     dict_tr_id = build_dict_trID(args.xml, args.species)
 
@@ -181,7 +212,7 @@ if __name__ == '__main__':
     for vcf_line in vcf_file:
         if vcf_line[0] == '#':
             if vcf_line[1] != '#':
-                vcf_line = vcf_line.strip() + "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSNP_TYPE\tSNP_TYPES\n"
+                vcf_line = vcf_line.strip() + "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSTRAND\tENSG_REF\tOUTGROUP_1\tOUTGROUP_2\tOUTGROUP_3\tSNP_TYPE\n"
             annot_file.write(vcf_line)
             continue
 
@@ -192,7 +223,7 @@ if __name__ == '__main__':
         snp_types = dict()
         transcript_id_list = vcf_line[vcf_line.rfind('\t') + 1:-1].split(",")
         for transcript_id in transcript_id_list:
-            snp_type = dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt)
+            snp_type, c_ref, c_alt = dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt)
             snp_types[transcript_id] = snp_type
 
         type_not_errors = {k: v for k, v in snp_types.items() if v not in cat_errors}
@@ -217,26 +248,27 @@ if __name__ == '__main__':
         vcf_line = vcf_line.strip()
         if len(ali_pos_not_errors) == 0:
             dict_cat_nbr[most_common([v for v in ali_pos.values() if v in cat_errors])] += 1
-            vcf_line += "\tNone\tNone"
+            types = [type_not_errors[k] for k in type_not_errors]
+            vcf_line += "\t" + "\t".join(["None"] * 7) + "\t" + most_common(types) + "\n"
+            annot_file.write(vcf_line)
+            dict_cat_nbr[most_common(types)] += 1
         else:
-            ensg_set = set([dict_tr_id[tr_id] for tr_id in ali_pos_not_errors])
-            common_pos = most_common(list(ali_pos_not_errors.values()))
-            vcf_line += "\t" + ",".join(ensg_set) + "\t" + str(common_pos)
-
-        types = [type_not_errors[k] for k in (ali_pos_not_errors if len(ali_pos_not_errors) > 0 else type_not_errors)]
-        max_type = most_common(types)
-
-        vcf_line += "\t" + max_type + "\t" + ",".join(types) + "\n"
-        annot_file.write(vcf_line)
-        dict_cat_nbr[max_type] += 1
+            set_snp = set([(dict_tr_id[tr_id], pos, type_not_errors[tr_id], dict_cds[tr_id].strand) for tr_id, pos in
+                           ali_pos_not_errors.items()])
+            for ensg, pos, c_type, strand in set_snp:
+                if ensg not in dict_outgroup:
+                    dict_outgroup[ensg] = Outgroup("{0}{1}_NT.fasta".format(args.ali, ensg), args.species,
+                                                   "{0}{1}_NT.rootree".format(args.tree, ensg))
+                new_line = vcf_line + "\t{0}\t{1}\t{2}\t".format(ensg, pos, strand) + \
+                           "\t".join(dict_outgroup[ensg].position(pos)) + "\t" + c_type + "\n"
+                annot_file.write(new_line)
     vcf_file.close()
+    annot_file.close()
 
     nbr_snp_total = sum(dict_cat_nbr.values())
     error_file.write("{0} SNPs in total".format(nbr_snp_total))
     for cat, nbr in dict_cat_nbr.items():
         error_file.write("\n\n" + dict_cat_info[cat].format(nbr) + " ({0:.3f}%)".format(nbr * 100. / nbr_snp_total))
-
-    annot_file.close()
     error_file.close()
 
     print("{0} variants analyzed in total".format(nbr_snp_total))

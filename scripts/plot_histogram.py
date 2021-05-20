@@ -13,7 +13,8 @@ RED = "#EB6231"
 nearly_neutral = []
 adaptive = []
 omega_dict = {"OMEGA_A": [], "ADAPTIVE": []}
-
+fontsize = 16
+fontsize_legend = 14
 my_dpi = 256
 fig = plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
 bins = 30
@@ -26,17 +27,18 @@ if __name__ == '__main__':
 
     for filepath in glob(args.folder + "/*.csv"):
 
-        dfem_df = pd.read_csv(filepath)
-        omega_a = float(dfem_df[dfem_df["model"] == args.model]["omegaA"])
+        if args.model in ["dfem", "grapes"]:
+            dfem_df = pd.read_csv(filepath)
+            omega_a = float(dfem_df[dfem_df["model"] == "GammaExpo"]["omegaA"])
 
-        omega_dict["OMEGA_A"].append(omega_a)
+            omega_dict["OMEGA_A"].append(omega_a)
 
-        if "ADAPTIVE" in filepath:
-            omega_dict["ADAPTIVE"].append(True)
-            adaptive.append(omega_a)
-        else:
-            omega_dict["ADAPTIVE"].append(False)
-            nearly_neutral.append(omega_a)
+            if "ADAPTIVE" in filepath:
+                omega_dict["ADAPTIVE"].append(True)
+                adaptive.append(omega_a)
+            else:
+                omega_dict["ADAPTIVE"].append(False)
+                nearly_neutral.append(omega_a)
 
     pd.DataFrame(omega_dict).to_csv(args.output.replace(".pdf", ".tsv"), sep="\t", index=False)
     # p_val = len([1 for x in nearly_neutral if x > adaptive]) / len(nearly_neutral)
@@ -54,9 +56,10 @@ if __name__ == '__main__':
     mean_adaptive = np.mean(adaptive)
     plt.plot((mean_adaptive, mean_adaptive), (0, y_max), linewidth=3, color=RED,
              label=(r'$\omega_{A}$' + '={0:3g}'.format(mean_adaptive)))
-    plt.xlabel(r'$\omega_{A}$', fontsize=8)
-    plt.ylabel('Density', fontsize=8)
-    plt.legend(fontsize=8)
+    plt.xlabel(r'$\omega_{A}$', fontsize=fontsize)
+    plt.ylabel('Density', fontsize=fontsize)
+    plt.legend(fontsize=fontsize_legend, loc='upper left')
+    plt.xticks(fontsize=fontsize_legend)
     plt.tight_layout()
     plt.savefig(args.output, format="pdf")
     plt.savefig(args.output.replace(".pdf", ".png"), format="png")

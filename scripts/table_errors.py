@@ -10,7 +10,9 @@ def find_errors(folder, gene_level=True, ci="0.025"):
     for file in sorted(os.listdir(folder)):
         sitemutsel_path = "{0}/{1}/sitemutsel_1.run.ci{2}.tsv".format(folder, file, ci)
         siteomega_path = "{0}/{1}/siteomega_1.run.ci{2}.tsv".format(folder, file, ci)
-        if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
+        siteprofiles_path = "{0}/{1}/siteomega_1.run.siteprofiles".format(folder, file, ci)
+        if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path) or not os.path.isfile(
+                siteprofiles_path):
             list_errors.append(file)
 
     return list_errors

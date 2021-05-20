@@ -3,18 +3,26 @@ import os
 import pandas as pd
 from glob import glob
 
+configfile: 'config.yaml'
+
 ROOT = os.path.abspath('..')
-GRANULARITY = ["gene", "site"]
-MODEL = "GammaExpo"
-SUBSAMPLING_SITES = 40000
-SUBSAMPLING_GENES = 200
+FOLDER = os.path.abspath('.')
+GRANULARITY = config['GRANULARITY']
+SUBSAMPLING_SITES = config['SUBSAMPLING_SITES']
+SUBSAMPLING_GENES = config['SUBSAMPLING_GENES']
 
-NBR_REP = 25
-NBR_BATCHES = 4
-SUBSAMPLING_WEIGHTED = True
+NBR_REP = config['NBR_REP']
+NBR_BATCHES = config['NBR_BATCHES']
+SUBSAMPLING_WEIGHTED = config['SUBSAMPLING_WEIGHTED']
 
-NBR_BINS = 10
-NBR_REPETITIONS_PER_BIN = 5
+NBR_BINS = config['NBR_BINS']
+NBR_REPETITIONS_PER_BIN = config['NBR_REPETITIONS_PER_BIN']
+
+DFE_DICT = {"dfem": ROOT + '/utils/dfem/dfem',
+            "grapes": ROOT + '/utils/grapes/grapes/grapes',
+            "polyDFE": ROOT + '/utils/polyDFE/polyDFE-2.0-linux-64-bit'}
+DFE_MODELS =  [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
+assert(len(DFE_MODELS) > 0)
 
 BATCHES = range(1, NBR_BATCHES + 1)
 REPLICATES = [item for sublist in [["ADAPTIVE_{0}".format(rep), "NEARLY_NEUTRAL_{0}".format(rep)] for rep in range(1, NBR_REP + 1)] for item in sublist]
@@ -23,80 +31,94 @@ REPETITIONS_PER_BIN = list(range(1, NBR_REPETITIONS_PER_BIN + 1))
 
 PLOT_LIST = []
 SPECIES = {}
-for id, row in list(pd.read_csv("sample.tsv", sep='\t').iterrows())[:2]:
+for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
     SPECIES[row["Species"]] = row["SisterSpecies"]
-    for pop_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(row["Species"], row["SampleName"])):
+    for popu_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(row["Species"], row["SampleName"])):
         for granularity in GRANULARITY:
             dir = "{0}-{1}-{2}".format(row["Species"], row["SampleName"], granularity)
-            PLOT_LIST.append(dir + "/histogram.pdf")
-            if granularity != "site" or NBR_BINS < 2: continue
-            PLOT_LIST.append(dir + "/bins.pdf")
+            for model in config['DFE_MODELS']:
+                for sfs in config['SFS']:
+                    if NBR_BATCHES > 0:
+                        PLOT_LIST.append(dir + "/histogram-{0}-{1}.pdf".format(model, sfs))
+                    if NBR_BINS > 1:
+                        PLOT_LIST.append(dir + "/bins-{0}-{1}.pdf".format(model, sfs))
             
         
-localrules: all, plot_histogram, plot_scatter, plot_bins, ontology_table
+localrules: all, annotation, plot_histogram, plot_scatter, plot_bins, ontology_table
 
 rule all:
     input:
         PLOT_LIST,
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
-        expand("ontology_{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
+        expand("ontology/{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
+
+rule annotation:
+    input:
+        xml=ROOT + '/OrthoMam/Datasets/omm_markers',
+        script=ROOT + '/scripts/annotation_ensg.py',
+    output:
+        tsv=FOLDER + "/annotation.{species}.tsv",
+    shell:
+        'python3 {input.script} --species {wildcards.species} --xml {input.xml} --output {output.tsv}'
+
 
 rule generate_DoFE:
     input:
-        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(w.species, w.pop)),
+        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(w.species, w.popu)),
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
         div_folder=ROOT + '/OrthoMam/Experiments',
+        annotation=lambda w: FOLDER + "/annotation.{0}.tsv".format(w.species),
         script=ROOT + '/scripts/generate_DoFE.py',
-        dfem=ROOT + '/utils/dfem/dfem',
+        dfe=DFE_MODELS,
     params:
-        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-{2}-{3}".format(w.species, w.pop, w.granularity, w.batch),
-        tmp_folder=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/tmp/{3}/".format(w.species, w.pop, w.granularity, w.batch),
-        output=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/DoFE/".format(w.species, w.pop, w.granularity),
-        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
+        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-{2}-{3}".format(w.species, w.popu, w.granularity, w.batch),
+        tmp_folder=lambda w: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(w.species, w.popu, w.granularity, w.batch),
+        output=lambda w: FOLDER + "/{0}-{1}-{2}/{3}/".format(w.species, w.popu, w.granularity, w.sfs),
+        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
     output:
-        expand("{{species}}-{{pop}}-{{granularity}}/DoFE/{{batch}}_{rep}.csv", rep=REPLICATES)
+        expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{{batch}}.txt")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --dfem_path {input.dfem} --seed {wildcards.batch} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --annotation {input.annotation} --dfe_path {input.dfe} --seed {wildcards.batch} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule plot_histogram:
     input:
-        dfem_res=expand("{{species}}-{{pop}}-{{granularity}}/DoFE/{batch}_{rep}.csv", batch=BATCHES, rep=REPLICATES),
+        dfe_res=expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{batch}.txt", batch=BATCHES),
         script=ROOT + '/scripts/plot_histogram.py'
     params:
-        folder=lambda w: "--folder {0}-{1}-{2}/DoFE".format(w.species, w.pop, w.granularity)
+        folder=lambda w: "--folder {0}-{1}-{2}/{3}".format(w.species, w.popu, w.granularity, w.sfs)
     output:
-        plot="{species}-{pop}-{granularity}/histogram.pdf"
+        plot="{species}-{popu}-{granularity}/histogram-{model}-{sfs}.pdf"
     shell:
-        'python3 {input.script} {params.folder} --model {MODEL} --output {output.plot}'
+        'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot}'
 
 rule generate_bins_DoFE:
     input:
-        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.vcf.gz'.format(w.species, w.pop)),
+        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(w.species, w.popu)),
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
         div_folder=ROOT + '/OrthoMam/Experiments',
+        annotation=lambda w: FOLDER + "/annotation.{0}.tsv".format(w.species),
         script=ROOT + '/scripts/generate_bins_DoFE.py',
-        dfem=ROOT + '/utils/dfem/dfem',
+        dfe=DFE_MODELS,
     params:
-        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-bins".format(w.species, w.pop),
-        tmp_folder=lambda w: ROOT + "/Contrasts/{0}-{1}-{2}/tmpBins/".format(w.species, w.pop, w.granularity),
-        output=lambda w:  ROOT + "/Contrasts/{0}-{1}-{2}/DoFEBins/".format(w.species, w.pop, w.granularity),
-        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
+        time="4-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-bins".format(w.species, w.popu),
+        tmp_folder=lambda w: FOLDER + "/{0}-{1}-{2}/tmpBins/".format(w.species, w.popu, w.granularity),
+        output=lambda w:  FOLDER + "/{0}-{1}-{2}/{3}Bins/".format(w.species, w.popu, w.granularity, w.sfs),
+        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
     output:
-        expand("{{species}}-{{pop}}-{{granularity}}/DoFEBins/{bin}_{rep}.csv", bin=BINS, rep=REPETITIONS_PER_BIN)
+        directory("{species}-{popu}-{granularity}/{sfs}Bins")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --dfem_path {input.dfem} --seed {NBR_BINS} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --annotation {input.annotation} --dfe_path {input.dfe} --seed {NBR_BINS} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule plot_bins:
     input:
-        dfem_res=expand("{{species}}-{{pop}}-{{granularity}}/DoFEBins/{bin}_{rep}.csv", bin=BINS, rep=REPETITIONS_PER_BIN),
+        dfe_res="{species}-{popu}-{granularity}/{sfs}Bins",
         script=ROOT + '/scripts/plot_bins.py'
     params:
-        folder=lambda w: "--folder {0}-{1}-{2}/DoFEBins".format(w.species, w.pop, w.granularity)
+        folder=lambda w: "--folder {0}-{1}-{2}/{3}Bins".format(w.species, w.popu, w.granularity, w.sfs)
     output:
-        plot="{species}-{pop}-{granularity}/bins.pdf"
+        plot="{species}-{popu}-{granularity}/bins-{model}-{sfs}.pdf"
     shell:
-        'python3 {input.script} {params.folder} --model {MODEL} --output {output.plot}'
-
+        'python3 {input.script} {params.folder} --model {model} --output {output.plot}'
 
 rule plot_scatter:
     input:
@@ -113,8 +135,8 @@ rule ontology_table:
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
         script=ROOT + '/scripts/ontology_table.py',
     output:
-        tex="ontology_{granularity}_{epistasis}_table.tex",
-        pdf="ontology_{granularity}_{epistasis}_table.pdf"
+        tex="ontology/{granularity}_{epistasis}_table.tex",
+        pdf="ontology/{granularity}_{epistasis}_table.pdf"
     params:
         epistasis=lambda wildcards: True if wildcards.epistasis == 'epistasis' else False
     shell:
