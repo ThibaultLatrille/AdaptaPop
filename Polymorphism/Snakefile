@@ -27,7 +27,7 @@ POPULATIONS = set(pd.read_csv(config["PANEL"], sep='\t')["pop"]) if 'PANEL' in c
 rule all:
     input:
         expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz', subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
-        # 'CDS.SELCOEFF.' + NAME + '.tsv.gz'
+        'CDS.SELCOEFF.' + NAME + '.vcf.gz'
 
 
 rule download_fasta:
@@ -110,15 +110,12 @@ rule annotate_vcf:
 rule selcoeff:
     input:
         vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys())),
-        script=ROOT + '/scripts/est_sfs.py',
-        est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
-        est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
-        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt',
+        script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
         exp_folder=ROOT + '/OrthoMam/Experiments/',
     output:
-        tsv='CDS.SELCOEFF.' + NAME + '.tsv.gz',
+        vcf='CDS.SELCOEFF.' + NAME + '.vcf.gz',
     shell:
-        'python3 {input.script} --vcf {input.vcf} --exp_folder {input.exp_folder} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'
+        'python3 {input.script} --vcf {input.vcf} --folder {input.exp_folder} --output {output.vcf}'
 
 if POPULATIONS:
     rule chr_to_pop:

@@ -212,7 +212,8 @@ if __name__ == '__main__':
     for vcf_line in vcf_file:
         if vcf_line[0] == '#':
             if vcf_line[1] != '#':
-                vcf_line = vcf_line.strip() + "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSTRAND\tENSG_REF\tOUTGROUP_1\tOUTGROUP_2\tOUTGROUP_3\tSNP_TYPE\n"
+                vcf_line = vcf_line.strip() + "\tCHR\tTR_START\tTR_END\tTR_IDS\tENSG\tENSG_POS\tSTRAND\tENSG_REF\t" \
+                                              "OUTGROUP_1\tOUTGROUP_2\tOUTGROUP_3\tSNP_TYPE\tCODON_REF\tCODON_ALT\n"
             annot_file.write(vcf_line)
             continue
 
@@ -224,11 +225,11 @@ if __name__ == '__main__':
         transcript_id_list = vcf_line[vcf_line.rfind('\t') + 1:-1].split(",")
         for transcript_id in transcript_id_list:
             snp_type, c_ref, c_alt = dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt)
-            snp_types[transcript_id] = snp_type
+            snp_types[transcript_id] = (snp_type, c_ref, c_alt)
 
-        type_not_errors = {k: v for k, v in snp_types.items() if v not in cat_errors}
+        type_not_errors = {k: (v, c_ref, c_alt) for k, (v, c_ref, c_alt) in snp_types.items() if v not in cat_errors}
         if len(type_not_errors) == 0:
-            dict_cat_nbr[most_common([v for v in snp_types.values() if v in cat_errors])] += 1
+            dict_cat_nbr[most_common([v for v, c_ref, c_alt in snp_types.values() if v in cat_errors])] += 1
             continue
 
         ali_pos = dict()
@@ -248,19 +249,22 @@ if __name__ == '__main__':
         vcf_line = vcf_line.strip()
         if len(ali_pos_not_errors) == 0:
             dict_cat_nbr[most_common([v for v in ali_pos.values() if v in cat_errors])] += 1
-            types = [type_not_errors[k] for k in type_not_errors]
-            vcf_line += "\t" + "\t".join(["None"] * 7) + "\t" + most_common(types) + "\n"
+            snp_type = most_common([snp_type for snp_type, _, _ in type_not_errors.values()])
+            c_ref = most_common([c_ref for _, c_ref, _ in type_not_errors.values()])
+            c_alt = most_common([c_alt for _, _, c_alt in type_not_errors.values()])
+            vcf_line += "\t" + "\t".join(["None"] * 7) + "\t{0}\t{1}\t{2}\n".format(snp_type, c_ref, c_alt)
             annot_file.write(vcf_line)
-            dict_cat_nbr[most_common(types)] += 1
+            dict_cat_nbr[snp_type] += 1
         else:
             set_snp = set([(dict_tr_id[tr_id], pos, type_not_errors[tr_id], dict_cds[tr_id].strand) for tr_id, pos in
                            ali_pos_not_errors.items()])
-            for ensg, pos, c_type, strand in set_snp:
+            for ensg, pos, (snp_type, c_ref, c_alt), strand in set_snp:
                 if ensg not in dict_outgroup:
                     dict_outgroup[ensg] = Outgroup("{0}{1}_NT.fasta".format(args.ali, ensg), args.species,
                                                    "{0}{1}_NT.rootree".format(args.tree, ensg))
                 new_line = vcf_line + "\t{0}\t{1}\t{2}\t".format(ensg, pos, strand) + \
-                           "\t".join(dict_outgroup[ensg].position(pos)) + "\t" + c_type + "\n"
+                           "\t".join(dict_outgroup[ensg].position(pos)) + \
+                           "\t{0}\t{1}\t{2}\n".format(snp_type, c_ref, c_alt)
                 annot_file.write(new_line)
     vcf_file.close()
     annot_file.close()

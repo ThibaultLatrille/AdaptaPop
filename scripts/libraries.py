@@ -106,7 +106,7 @@ class Cds(object):
         """
         nt_position = self.nt_position(position)
         if nt_position == -1:
-            return "NotInCds"
+            return "NotInCds", "", ""
         frame = nt_position % 3
         codon_ref = fasta_seq[nt_position - frame:nt_position + 3 - frame]
         aa_ref = codontable[codon_ref]

@@ -34,14 +34,15 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--ci', required=False, type=str, dest="ci", default="0.025", metavar="<ci>",
                         help="The confidence interval")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
-    parser.add_argument('-g', '--granularity', required=False, type=str, default=True, dest="granularity",
+    parser.add_argument('-g', '--granularity', required=True, type=str, default="gene", dest="granularity",
                         help="Gene or site level")
 
     args = parser.parse_args()
 
     args.epistasis = args.epistasis.lower() == 'true'
     gene = args.granularity.lower() == "gene"
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene, ci=args.ci)
+    list_ensg = [i[:-3] for i in os.listdir(args.folder)]
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene, ci=args.ci)
     strg_adap_dico, adap_dico, epi_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega,
                                                                                      gene_level=gene)
     focal_dico = epi_dico if args.epistasis else adap_dico

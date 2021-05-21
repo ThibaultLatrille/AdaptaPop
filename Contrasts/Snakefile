@@ -44,7 +44,7 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
                         PLOT_LIST.append(dir + "/bins-{0}-{1}.pdf".format(model, sfs))
             
         
-localrules: all, annotation, plot_histogram, plot_scatter, plot_bins, ontology_table
+localrules: all, pickle, plot_histogram, plot_scatter, plot_bins, ontology_table
 
 rule all:
     input:
@@ -52,22 +52,24 @@ rule all:
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
         expand("ontology/{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
 
-rule annotation:
+rule pickle:
     input:
+        ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
+        div_folder=ROOT + '/OrthoMam/Experiments',
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
         script=ROOT + '/scripts/annotation_ensg.py',
     output:
-        tsv=FOLDER + "/annotation.{species}.tsv",
+        tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2",
+    params:
+        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
     shell:
-        'python3 {input.script} --species {wildcards.species} --xml {input.xml} --output {output.tsv}'
+        'python3 {input.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
 
 rule generate_DoFE:
     input:
         vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(w.species, w.popu)),
-        ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
-        div_folder=ROOT + '/OrthoMam/Experiments',
-        annotation=lambda w: FOLDER + "/annotation.{0}.tsv".format(w.species),
+        pickle=lambda w: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(w.species, w.granularity),
         script=ROOT + '/scripts/generate_DoFE.py',
         dfe=DFE_MODELS,
     params:
@@ -78,7 +80,7 @@ rule generate_DoFE:
     output:
         expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{{batch}}.txt")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --annotation {input.annotation} --dfe_path {input.dfe} --seed {wildcards.batch} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --pickle {input.pickle} --dfe_path {input.dfe} --seed {wildcards.batch} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule plot_histogram:
     input:
@@ -94,9 +96,7 @@ rule plot_histogram:
 rule generate_bins_DoFE:
     input:
         vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(w.species, w.popu)),
-        ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
-        div_folder=ROOT + '/OrthoMam/Experiments',
-        annotation=lambda w: FOLDER + "/annotation.{0}.tsv".format(w.species),
+        pickle=lambda w: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(w.species, w.granularity),
         script=ROOT + '/scripts/generate_bins_DoFE.py',
         dfe=DFE_MODELS,
     params:
@@ -107,7 +107,7 @@ rule generate_bins_DoFE:
     output:
         directory("{species}-{popu}-{granularity}/{sfs}Bins")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --annotation {input.annotation} --dfe_path {input.dfe} --seed {NBR_BINS} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --pickle {input.pickle} --dfe_path {input.dfe} --seed {NBR_BINS} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule plot_bins:
     input:

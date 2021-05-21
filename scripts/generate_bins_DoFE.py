@@ -1,14 +1,12 @@
 import argparse
 from libraries import *
+import bz2
+import _pickle as cPickle
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--ali_folder', required=True, type=str, dest="ali_folder",
-                        help="folder containing the OrthoMam alignments")
-    parser.add_argument('--div_folder', required=True, type=str, dest="div_folder",
-                        help="folder containing OrthoMam results")
     parser.add_argument('--vcf', required=True, type=str, dest="vcf", help="VCF annotated file")
-    parser.add_argument('--granularity', required=False, type=str, default=True, dest="granularity",
+    parser.add_argument('--granularity', required=False, type=str, default="gene", dest="granularity",
                         help="Gene or site level")
     parser.add_argument('--nbr_sites', required=False, type=int, default=50000, dest="nbr_sites",
                         help="Number of sites to subsample")
@@ -22,7 +20,7 @@ if __name__ == '__main__':
                         help="Weighted sampling such as to control for omega")
     parser.add_argument('--seed', required=False, type=int, default=123456789, dest="seed",
                         help="Seed for random generator")
-    parser.add_argument('--annotation', required=True, type=str, dest="annotation", help="Annotation of ENSG")
+    parser.add_argument('--pickle', required=True, type=str, dest="pickle", help="Annotation of ENSG")
     parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
     parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
@@ -36,13 +34,13 @@ if __name__ == '__main__':
     is_unfolded = args.sfs == "unfolded"
     if args.nbr_sites <= 0: args.nbr_sites = float('inf')
     if args.nbr_genes <= 0: args.nbr_genes = float('inf')
-    ensg_annot = pd.read_csv(args.annotation, sep="\t")
-    filter_set = set(ensg_annot[-ensg_annot["CHR"].isin(["X", "Y", "MT", "None"])]["ENSG"])
-    dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, filter_set, gene_level=gene)
-    dico_alignments = load_alignments(dico_omega, args.focal_species, args.sister_species, args.ali_folder)
-    filter_set = filter_set.intersection(set(dico_alignments))
+    pickle_file = bz2.BZ2File(args.pickle, 'rb')
+    filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
+    pickle_file.close()
+    print("Data loaded")
     _, _, _, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene, filter_set=filter_set)
     dico_bins = bin_dataset(nn_dico, dico_omega_0, args.nbr_bins, gene_level=gene)
+    print("Data binned")
 
     df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded)
     np.random.seed(args.seed)
@@ -63,6 +61,7 @@ if __name__ == '__main__':
         sfs_polyDFE = {"SFSn": "", "SFSs": ""}
         rep = 1
         while rep < args.rep + 1:
+            print("{0}_{1}".format(prefix, rep))
             if gene:
                 resampled_set = subsample_genes(dico, min(len(w_0), args.nbr_genes), None, replace=True)
             else:

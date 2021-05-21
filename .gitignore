@@ -28,10 +28,12 @@
 *.est-sfs.txt
 *.est-sfs.usfs
 *.errors.tsv
+*.pk1.bz2
 .idea/
 *.dN
 *.dS
 *.t
+*.ai
 *.ctl
 *.png
 rst

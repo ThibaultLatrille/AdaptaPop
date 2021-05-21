@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #### Local
-VM=ubuntu@193.49.167.107
+VM=ubuntu@X.X.X.X
 ssh -X ${VM}
 
 #### Remote
