@@ -88,8 +88,12 @@ Please, feel free to open a [pull-request](https://github.com/ThibaultLatrille/A
 - ~~Detecting outliers based on CI~~*-
 - ~~Regression on w_NA versus w_0 only for the nearly-neutral~~
 - ~~Unfold SFS (needs polarization)~~
-- Get Fj-Fi for polymorphisms 
+- ~~Get Fj-Fi for polymorphisms~~
+- ~~Compress fasta results after DFEM runs~~
 - Run on all samples
+- Table with all statistics, each row is a population
+- Nearly-neutral should filter adaptive sites in close proximity
+- Run with w* (????)
 
 
 From Martin’s talk in the morning we saw that positive linked selection influences piN/piS.

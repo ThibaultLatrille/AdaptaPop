@@ -455,7 +455,7 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         if "dfem" in dfe_path or "grapes" in dfe_path:
             os.system(
                 "{0} -in {1}.dofe -out {2}.csv -model GammaExpo 1> {2}.out 2> {2}.err".format(dfe_path, filepath, out))
-
+    os.system("gzip {0}.fasta".format(filepath))
     return True
 
 

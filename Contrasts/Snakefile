@@ -29,7 +29,7 @@ REPLICATES = [item for sublist in [["ADAPTIVE_{0}".format(rep), "NEARLY_NEUTRAL_
 BINS = list(range(1, NBR_BINS + 1))
 REPETITIONS_PER_BIN = list(range(1, NBR_REPETITIONS_PER_BIN + 1))
 
-PLOT_LIST = []
+EXP_LIST = []
 SPECIES = {}
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
     SPECIES[row["Species"]] = row["SisterSpecies"]
@@ -39,16 +39,16 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
             for model in config['DFE_MODELS']:
                 for sfs in config['SFS']:
                     if NBR_BATCHES > 0:
-                        PLOT_LIST.append(dir + "/histogram-{0}-{1}.pdf".format(model, sfs))
+                        EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model, sfs))
                     if NBR_BINS > 1:
-                        PLOT_LIST.append(dir + "/bins-{0}-{1}.pdf".format(model, sfs))
+                        EXP_LIST.append(dir + "/bins-{0}-{1}.tsv".format(model, sfs))
             
         
-localrules: all, pickle, plot_histogram, plot_scatter, plot_bins, ontology_table
+localrules: all, pickle, parse_wA_results, parse_wNA_results, plot_results, tsv_to_tex, plot_scatter, ontology_table
 
 rule all:
     input:
-        PLOT_LIST,
+        "Analysis/results.tex",
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
         expand("ontology/{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
 
@@ -78,18 +78,18 @@ rule generate_DoFE:
         output=lambda w: FOLDER + "/{0}-{1}-{2}/{3}/".format(w.species, w.popu, w.granularity, w.sfs),
         species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
     output:
-        expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{{batch}}.txt")
+       touch( "{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
         'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --pickle {input.pickle} --dfe_path {input.dfe} --seed {wildcards.batch} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
-rule plot_histogram:
+rule parse_wA_results:
     input:
         dfe_res=expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{batch}.txt", batch=BATCHES),
-        script=ROOT + '/scripts/plot_histogram.py'
+        script=ROOT + '/scripts/parse_results.py'
     params:
         folder=lambda w: "--folder {0}-{1}-{2}/{3}".format(w.species, w.popu, w.granularity, w.sfs)
     output:
-        plot="{species}-{popu}-{granularity}/histogram-{model}-{sfs}.pdf"
+        plot="{species}-{popu}-{granularity}/histogram-{model}-{sfs}.tsv"
     shell:
         'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot}'
 
@@ -105,20 +105,37 @@ rule generate_bins_DoFE:
         output=lambda w:  FOLDER + "/{0}-{1}-{2}/{3}Bins/".format(w.species, w.popu, w.granularity, w.sfs),
         species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
     output:
-        directory("{species}-{popu}-{granularity}/{sfs}Bins")
+        touch("{species}-{popu}-{granularity}/{sfs}Bins/bins.txt")
     shell:
         'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --pickle {input.pickle} --dfe_path {input.dfe} --seed {NBR_BINS} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPETITIONS_PER_BIN} --nbr_bins {NBR_BINS} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES}  --output {params.output} --tmp_folder {params.tmp_folder} {params.species}'
 
-rule plot_bins:
+rule parse_wNA_results:
     input:
-        dfe_res="{species}-{popu}-{granularity}/{sfs}Bins",
-        script=ROOT + '/scripts/plot_bins.py'
+        dfe_res=rules.generate_bins_DoFE.output,
+        script=ROOT + '/scripts/parse_results.py'
     params:
         folder=lambda w: "--folder {0}-{1}-{2}/{3}Bins".format(w.species, w.popu, w.granularity, w.sfs)
     output:
-        plot="{species}-{popu}-{granularity}/bins-{model}-{sfs}.pdf"
+        plot="{species}-{popu}-{granularity}/bins-{model}-{sfs}.tsv"
     shell:
-        'python3 {input.script} {params.folder} --model {model} --output {output.plot}'
+        'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot}'
+
+rule plot_results:
+    input:
+        tsv=EXP_LIST,
+        script=ROOT + '/scripts/plot_histogram.py'
+    output:
+        tsv="Analysis/results.tsv"
+    shell:
+        'mkdir -p Analysis && python3 {input.script} --tsv {input.tsv} --output Analysis'
+
+rule tsv_to_tex:
+    input:
+        tsv="Analysis/results.tsv",
+        script=ROOT + '/scripts/tsv_to_tex.py'
+    output: "Analysis/results.tex"
+    shell: 'python3 {input.script} --tsv {input.tsv} --output {output}'
+
 
 rule plot_scatter:
     input:

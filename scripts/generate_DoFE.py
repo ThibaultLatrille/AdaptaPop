@@ -71,7 +71,7 @@ if __name__ == '__main__':
     f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "all adaptive", args.granularity))
     f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "all adaptive", args.granularity))
 
-    errors = open(args.tmp_folder + "/errors.txt", 'w')
+    errors = gzip.open(args.tmp_folder + "/errors.txt.gz", 'wt')
     if args.weighted.lower() == "true":
         print("Weighted sampling controlling for w")
         adaptive_table = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]

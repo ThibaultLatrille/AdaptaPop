@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     txt = "E[w{0}]={1:.3g}, Var[w{0}]={2:.3g} for bin {3} ({4} level) set\n"
     f_sample = open(args.output + "bins.txt", 'w')
-    errors = open(args.tmp_folder + "/errors.txt", 'w')
+    errors = gzip.open(args.tmp_folder + "/errors.txt.gz", 'wt')
 
     for bin_id, dico in enumerate(dico_bins):
         w = filtered_table_omega(dico_omega, dico, gene)[:, 1]
