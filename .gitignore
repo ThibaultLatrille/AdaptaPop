@@ -5,9 +5,7 @@
 #   git config --global core.excludesfile '~/.gitignore_global'
 
 *~
-/papers
-/qsub
-/data
+/manuscript/papers
 .snakemake/
 /Enard
 /OrthoMam/Compressed/
@@ -41,10 +39,15 @@ rst1
 rub
 *.gz
 *.bed
+*.toc
 *.unmap
 *.aux
 *.log
 *.synctex.gz
 *.pdf
 *.gtf_to_bed_errors.txt
-
+*.out
+*.bbl
+*.blg
+*.indd
+*.svg
