@@ -4,4 +4,4 @@ CONTAINS: 'shapeit2_integrated_snvindels_v2a_27022019'
 ASSEMBLY: "GRCh38"
 ENSEMBL_RELEASE: 91
 SPECIES: "Homo_sapiens"
-PANEL: "integrated_call_samples_v3.20130502.ALL.panel"
+PANEL: "integrated_call_samples_v3.20130502.SUPERPOP.tsv"

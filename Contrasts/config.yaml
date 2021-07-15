@@ -8,5 +8,5 @@ NBR_BINS: 10
 NBR_REPETITIONS_PER_BIN: 10
 SAMPLE_LIST: "sample_all.tsv"
 SFS: ["unfolded", "folded"]
-DFE_MODELS: ["grapes"]
+DFE_MODELS: ["grapes", "polyDFE"]
 # DFE_MODELS: ["dfem", "grapes", "polyDFE"]

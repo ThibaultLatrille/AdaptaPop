@@ -203,7 +203,7 @@ def tex_f(x):
         return s
 
 
-def build_divergence_dico(folder, ensg_list, gene_level=True, ci="0.025"):
+def build_divergence_dico(folder, ensg_list, gene_level=True):
     print('Loading divergence results.')
     ci = "0.0025" if gene_level else "0.05"
     dico_omega_0, dico_omega = {}, {}
@@ -294,13 +294,19 @@ def table_omega(dico_omega, gene_level=True):
     return np.array(output, dtype=np.float)
 
 
-def snp_data_frame(vcf_path, is_unfolded):
+def snp_data_frame(vcf_path, is_unfolded, subsample):
     fixed_poly = dict()
     sample_size_set = set()
     snp_table = []
     df_snps = pd.read_csv(vcf_path, compression="gzip")
-    tot = {"FIXED": 0, "REF": 0, "ALT": 0, "UNDEFINED": 0}
+    tot = {"FIXED": 0, "REF": 0, "ALT": 0, "UNDEFINED": 0, "ABS": 0}
     for index, row in df_snps.iterrows():
+        if subsample > 0:
+            if subsample > row["SAMPLE_SIZE"]:
+                subsample = row["SAMPLE_SIZE"]
+            row["COUNT"] = np.random.hypergeometric(row["COUNT"], row["SAMPLE_SIZE"] - row["COUNT"], subsample)
+            row["SAMPLE_SIZE"] = subsample
+
         codon_pos = int(row["POS"] / 3)
         if is_unfolded:
             if row["ANC"] == row["REF"]:
@@ -316,7 +322,10 @@ def snp_data_frame(vcf_path, is_unfolded):
         else:
             tot["REF"] += 1
 
-        if row["COUNT"] == row["SAMPLE_SIZE"]:
+        if row["COUNT"] == 0:
+            tot["ABS"] += 1
+            continue
+        elif row["COUNT"] == row["SAMPLE_SIZE"]:
             if row["ENSG"] not in fixed_poly: fixed_poly[row["ENSG"]] = {}
             fixed_poly[row["ENSG"]][codon_pos] = row["POS"] % 3, row["REF"], row["ALT"]
             tot["FIXED"] += 1
@@ -454,7 +463,7 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         out = filepath + "_" + dfe_path.split("/")[-2]
         if "dfem" in dfe_path or "grapes" in dfe_path:
             os.system(
-                "{0} -in {1}.dofe -out {2}.csv -model GammaExpo 1> {2}.out 2> {2}.err".format(dfe_path, filepath, out))
+                "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_param 1> {2}.out 2> {2}.err".format(dfe_path, filepath, out))
     os.system("gzip {0}.fasta".format(filepath))
     return True
 

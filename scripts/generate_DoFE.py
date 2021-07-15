@@ -24,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--pickle', required=True, type=str, dest="pickle", help="Pickle file")
     parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
     parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
+    parser.add_argument('--subsample', required=False, type=int, default=-1, dest="subsample", help="Subsample SFS")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('--rep', required=True, type=int, dest="rep", help="Number of replicates")
     parser.add_argument('--tmp_folder', required=True, type=str, dest="tmp_folder", help="Temporary files path")
@@ -51,7 +52,7 @@ if __name__ == '__main__':
         print('{0} epistasis sites'.format(sum([len(v) for v in epistasis_dico.values()])))
         print('{0} nearly-neutral sites'.format(sum([len(v) for v in nearly_neutral_dico.values()])))
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded, args.subsample * 2)
     np.random.seed(args.seed)
 
     weigths_nearly_neutral = None

@@ -41,13 +41,12 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--folder', required=True, type=str, dest="folder",
                         help="folder containing OrthoMam results")
     parser.add_argument('-g', '--granularity', required=True, type=str, dest="granularity", help="Gene or site level")
-    parser.add_argument('-c', '--ci', required=False, type=str, dest="ci", default="0.025", metavar="<ci>",
-                        help="The confidence interval")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
     args = parser.parse_args()
 
     gene = args.granularity.lower() == "gene"
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, gene_level=gene, ci=args.ci)
+    list_ensg = [i[:-3] for i in os.listdir(args.folder)]
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene)
     strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
 
     unclass_omega_0 = filtered_table_omega(dico_omega_0, unclass_dico, gene_level=gene)
@@ -77,25 +76,25 @@ if __name__ == '__main__':
                      xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
                            unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
                      yerr=[unclass_omega[:, 1] - unclass_omega[:, 0], unclass_omega[:, 2] - unclass_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ unclassified CDS".format(len(unclass_dico)), c=GREY,
+                     alpha=0.75, label=r"${0}$ unclassified genes".format(len(unclass_dico)), c=GREY,
                      fmt='o', marker=None, mew=0, ecolor=GREY, **error_kwargs)
 
         plt.errorbar(epi_omega_0[:, 1], epi_omega[:, 1],
                      xerr=[epi_omega_0[:, 1] - epi_omega_0[:, 0], epi_omega_0[:, 2] - epi_omega_0[:, 1]],
                      yerr=[epi_omega[:, 1] - epi_omega[:, 0], epi_omega[:, 2] - epi_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ epistasis CDS".format(len(epi_dico)), c=BLUE,
+                     alpha=0.75, label=r"${0}$ epistasis genes".format(len(epi_dico)), c=BLUE,
                      fmt='o', marker=None, mew=0, ecolor=BLUE, **error_kwargs)
 
         plt.errorbar(ada_omega_0[:, 1], ada_omega[:, 1],
                      xerr=[ada_omega_0[:, 1] - ada_omega_0[:, 0], ada_omega_0[:, 2] - ada_omega_0[:, 1]],
                      yerr=[ada_omega[:, 1] - ada_omega[:, 0], ada_omega[:, 2] - ada_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ adaptive CDS".format(len(ada_dico)), c=RED,
+                     alpha=0.75, label=r"${0}$ adaptive genes".format(len(ada_dico)), c=RED,
                      fmt='o', marker=None, mew=0, ecolor=RED, **error_kwargs)
 
         plt.errorbar(nn_omega_0[:, 1], nn_omega[:, 1],
                      xerr=[nn_omega_0[:, 1] - nn_omega_0[:, 0], nn_omega_0[:, 2] - nn_omega_0[:, 1]],
                      yerr=[nn_omega[:, 1] - nn_omega[:, 0], nn_omega[:, 2] - nn_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ nearly-neutral CDS".format(len(nn_dico)), c=GREEN,
+                     alpha=0.75, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN,
                      fmt='o', marker=None, mew=0, ecolor=GREEN, **error_kwargs)
 
     else:

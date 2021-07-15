@@ -31,13 +31,16 @@ REPETITIONS_PER_BIN = list(range(1, NBR_REPETITIONS_PER_BIN + 1))
 
 EXP_LIST = []
 SPECIES = {}
+SUBSAMPlE_SFS = {}
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
     SPECIES[row["Species"]] = row["SisterSpecies"]
+    SPECIES[row["SampleName"]] = row["k"]
     for popu_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(row["Species"], row["SampleName"])):
         for granularity in GRANULARITY:
             dir = "{0}-{1}-{2}".format(row["Species"], row["SampleName"], granularity)
             for model in config['DFE_MODELS']:
                 for sfs in config['SFS']:
+                    if model == "polyDFE" and sfs == "folded": continue
                     if NBR_BATCHES > 0:
                         EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model, sfs))
                     if NBR_BINS > 1:
@@ -50,7 +53,8 @@ rule all:
     input:
         "Analysis/results.tex",
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
-        expand("ontology/{granularity}_{epistasis}_table.pdf", epistasis=["epistasis", "adaptive"], granularity=GRANULARITY)
+        "ontology/gene_adaptive_table.pdf", "ontology/gene_epistasis_table.pdf",
+        "ontology/site_adaptive_table.pdf", "ontology/site_epistasis_table.pdf", "ontology/site_strongly-adaptive_table.pdf"
 
 rule pickle:
     input:
@@ -76,7 +80,7 @@ rule generate_DoFE:
         time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-{2}-{3}".format(w.species, w.popu, w.granularity, w.batch),
         tmp_folder=lambda w: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(w.species, w.popu, w.granularity, w.batch),
         output=lambda w: FOLDER + "/{0}-{1}-{2}/{3}/".format(w.species, w.popu, w.granularity, w.sfs),
-        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
+        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(w.species, SPECIES[w.species], w.sfs, SPECIES[w.popu])
     output:
        touch( "{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
@@ -103,7 +107,7 @@ rule generate_bins_DoFE:
         time="4-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-bins".format(w.species, w.popu),
         tmp_folder=lambda w: FOLDER + "/{0}-{1}-{2}/tmpBins/".format(w.species, w.popu, w.granularity),
         output=lambda w:  FOLDER + "/{0}-{1}-{2}/{3}Bins/".format(w.species, w.popu, w.granularity, w.sfs),
-        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2}".format(w.species, SPECIES[w.species], w.sfs)
+        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(w.species, SPECIES[w.species], w.sfs, SPECIES[w.popu])
     output:
         touch("{species}-{popu}-{granularity}/{sfs}Bins/bins.txt")
     shell:
@@ -152,9 +156,7 @@ rule ontology_table:
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
         script=ROOT + '/scripts/ontology_table.py',
     output:
-        tex="ontology/{granularity}_{epistasis}_table.tex",
-        pdf="ontology/{granularity}_{epistasis}_table.pdf"
-    params:
-        epistasis=lambda wildcards: True if wildcards.epistasis == 'epistasis' else False
+        tex="ontology/{granularity}_{category}_table.tex",
+        pdf="ontology/{granularity}_{category}_table.pdf"
     shell:
-        'python3 {input.script} --folder {input.folder} --xml {input.xml} --granularity {wildcards.granularity} --epistasis {params.epistasis} --output {output.tex}'
+        'python3 {input.script} --folder {input.folder} --xml {input.xml} --granularity {wildcards.granularity} --category {wildcards.category} --output {output.tex}'

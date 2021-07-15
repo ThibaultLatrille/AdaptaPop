@@ -22,6 +22,7 @@ if __name__ == '__main__':
                         help="Seed for random generator")
     parser.add_argument('--pickle', required=True, type=str, dest="pickle", help="Annotation of ENSG")
     parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
+    parser.add_argument('--subsample', required=False, type=int, default=-1, dest="subsample",  help="Subsample SFS")
     parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('--rep', required=True, type=int, dest="rep", help="Number of replicates")
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     dico_bins = bin_dataset(nn_dico, dico_omega_0, args.nbr_bins, gene_level=gene)
     print("Data binned")
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded, args.subsample * 2)
     np.random.seed(args.seed)
 
     txt = "E[w{0}]={1:.3g}, Var[w{0}]={2:.3g} for bin {3} ({4} level) set\n"

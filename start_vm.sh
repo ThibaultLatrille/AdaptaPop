@@ -28,5 +28,5 @@ screen -dmS Snakemake bash -c "cd ~/data/mydatalocal/AdaptaPop/Contrasts && snak
 
 #### Local (copy results from remote)
 scp -r ${VM}:~/data/mydatalocal/AdaptaPop/Contrasts Contrasts
-rsync ${VM}:~/data/mydatalocal/AdaptaPop/Contrasts/*/histogram.pdf
+rsync -P -v ${VM}:~/data/mydatalocal/AdaptaPop/Contrasts/*/histogram.pdf
 scp ${VM}:~/data/mydatalocal/AdaptaPop/Contrasts/*/histogram.pdf ./Contrasts/Chlorocebus_sabaeus-Barbados-gene/histogram.pdf
