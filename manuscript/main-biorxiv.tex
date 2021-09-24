@@ -64,7 +64,7 @@ urlcolor=BLUELINK
 
 \linenumbers
 
-\title{Detecting adaptation at the phylogenetic and population-genetics scale.}
+\title{Reconciling methods for detecting adaptation from inter- and intra-specific data}
 
 %\date{September 9, 1985}	% Here you can change the date presented in the paper title
 %\date{} 					% Or removing it
@@ -92,17 +92,16 @@ urlcolor=BLUELINK
 
 \begin{abstract}
 	Adaptation in protein-coding sequences can be detected using multiple sequence alignments across species (inter-specific data).
-This method uses phylogenetic codon models, classically formulated in terms of the relative synonymous and non-synonymous substitution rates.
-However, because of the background of purifying selection, these models are limited in their sensitivity.
-Recent developments, have led to more sophisticated mutation-selection codon models aiming at making a more detailed quantitative assessment of the interplay between mutation, purifying and positive selection, leading to potentially more powerful and more quantitative detection of adaptation.
-	In this study, I first conducted an analysis on placental mammals protein-coding sequences, and assessed the performance of mutation-selection codon models to detect protein under adaptation.
-Out of the $1,355$ sequences of the dataset, the method detected $27$ proteins under adaptation.
-These proteins were enriched in ontology terms related to immune processes.
-	Adaptation in protein-coding sequences can also be detected by combining divergence and polymorphism (intra-specific) data.
-Thus, I developed a pipeline to integrate inter- and intra-specific data across the entire exome.
-This pipeline was applied to a dataset of \textit{Homo sapiens} polymorphism, and showed that the set of proteins detected to be under adaptation globally over mammals showed marginally significant increase in the rate of adaption inferred using \textit{Homo sapiens} polymorphism.
-This relatively weak correlation might just reflect reflect the limited statistical power of the analysis.
-However, it is also possible that the two methods are inherently testing for different patterns of adaptation.
+	This method uses phylogenetic codon models, classically formulated in terms of the ratio of synonymous and non-synonymous substitution rates.
+	However, because of the background of purifying selection, these models are potentially limited in their sensitivity.
+	Recent developments have led to more sophisticated mutation-selection codon models aiming at making a more detailed quantitative assessment of the interplay between mutation, purifying and positive selection, leading to potentially more powerful and more quantitative detection of adaptation.
+	However, these alternative codon models have not yet been assessed more extensively on empirical data.
+	In this study, we conducted a large-scale analysis on placental mammals protein-coding sequences, and assessed the performance of mutation-selection codon models to detect proteins and sites under adaptation.
+	Mutation-selection models detected up to 4\% of proteins to be under ongoing adaptation.
+	Proteins under adaptation were strongly enriched in ontology terms related to immune processes.
+	Finally, adaptation in protein-coding sequences can also be assessed by combining divergence and polymorphism (intra-specific data) in so-called McDonal \& Kreitman tests.
+	Taking advantage of this independent approach and leveraging intra-specific polymorphism from Chlorocebus Sabaeus (Green monkey), we integrated inter- and intra-specific data across the entire exome, and showed that proteins and sites detected to be under adaptation at the phylogenetic scale are also under adaptation at the population-genetic scale.
+	Altogether, our exome-wide analysis shows that phylogenetic mutation-selection codon models and population-genetics test of adaptation (McDonal \& Kreitman test) can be reconciled and are congruent.
 \end{abstract}
 
 \keywords{Adaptation \and phyogenetics \and population-genetics \and codon models}
@@ -128,16 +127,6 @@ In the following, this method will be called population-based method.
 Another method, stemming from phylogeny, uses multiple sequence alignment (inter-specific data) in different species to quantify adaptation.
 This method will be called phylogeny-based method.
 One goal of the present work is to confront these two types of approaches.
-\begin{figure*}[hb!]
-	\centering
-	\includegraphics[width=\textwidth]{artworks/codon_model.pdf}
-	\caption{ \textbf{$\omega_A$ estimation with mutation-selection codon model}.
-On the left panel, the codon site-model estimates $\omega$, the rate of non-synonymous over synonymous substitutions, as the average of $\omega^{(i)}$ at each site.
-On the right panel, the mutation-selection codon model estimates the fitness of each amino-acid at each site.
-From the set of site-specific amino-acid fitness profiles, one can compute $\omega_{0}$ which is the predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance and genuinely taking into account purifying selection.
-Both methods runs independently from the same alignment data.
-From these two independent runs, $\omega_A$ is computed as the difference $\omega - \omega_{0}$\label{fig:codon_model}}
-\end{figure*}
 
 In population-based method, one of the most widely used test for adaptation was proposed by McDonald and Kreitman~\citep{McDonald1991}.
 This method uses the substitutions (mutations that reach fixation) between two close species and polymorphism (sites with at least two alleles) inside on population.
@@ -177,177 +166,54 @@ The method estimated the rate of adaptation in each CDS, and extracted CDS with 
 Secondly, the population-based method was conducted using polymorphism available in \textit{Homo sapiens} and divergence to \textit{Pan troglodytes}.
 The pipeline then testes if the group of sequences detected with a high rate of adaption in the phylogeny-based method also display a high rate of adaptation in the population-based method.
 
-\section*{Materials and methods}
-
-
-\begin{figure*}[hb!]
-	\centering
-	\includegraphics[width=\textwidth]{pipeline.pdf}
-	\caption{ \textbf{The python pipeline for data analysis}.
-Tables in blue outlines are the input data necessary to run the pipeline.
-Tables in black outlines are the data produced by the analysis.
-The upper half of the figure depicts the steps necessary to estimate polymorphism and divergence statistics necessary to run population-based method.
-The lower half of the figures depicts the steps necessary to run the phylogeny-based method and to obtain figure~\ref{fig:omega_pb} and table~\ref{fig:ontology}, which can be obtained independently of the population-based analysis.
-Figure~\ref{fig:omega_snp} is obtained by merging the results of the population- and the phylogeny-based analysis.
-The code available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop} allows one to reproduce the figures of this study.
-\label{fig:pipeline}}
-\end{figure*}
-
-\begin{figure*}[hb!]
-	\centering
-	\includegraphics[width=\textwidth]{figure_1.pdf}
-	\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation}.
-\textbf{Panel A}: scatter plot of $\omega$ (y-axis), such as estimated by the site-model, against $\omega_{0}$ (x-axis), such as estimated by the mutation-selection model for $1,355$ CDS.
-The linear correlation shows a good empirical fit but outliers (in red) are CDS with significantly high $\omega_A = \omega - \omega_{0}$.
-\textbf{Panel B}: for the 27 outliers CDS, scatter plot of $\omega_A$ (y-axis) against $\omega_{0}$ (x-axis).
-The linear correlation is very poor suggesting that $\omega_A$ effectively extract the adaption regardless of the background of purifying selection ($\omega_0$)  \label{fig:omega_pb}}
-\end{figure*}
-
-
-\subsection*{Theoretical rate of adaption in phylogeny-based method }
-Classical codon models estimate a parameter $\omega=d_N/d_S$, namely the ratio of the non-synonymous over the synonymous substitution rates~\citep{Muse1994,Goldman1994}.
-In the so-called site-models, $\omega$ is allowed to vary across sites, either via a finite mixture~\citep{Yang2000}, an infinite mixture~\citep{Huelsenbeck2006}, or as random effects from a parametric distribution.
-In PhyloBayes, the latter option is used: site-specific $\omega^{(i)}$ are independent identically distributed from a gamma distribution~\citep{Lartillot2013}.
-This implementation is used in this study to infer the distribution of $\omega$ across sites on empirical alignments.
-In a second step, the average over site is calculated, giving estimates of $\omega$ for each protein-coding sequences (see figure~\ref{fig:codon_model}, left panel).
-
-In contrast, mutation-selection models assume that the protein-coding sequence (CDS) is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino-acid at each site~\citep{Yang2008, Halpern1998, Rodrigue2010}.
-Mathematically, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}^{(i)}$) at the $i^{\mathrm{th}}$ site of the sequence is equal to the rate of mutation at site $i$ ($\mu_{a \mapsto b}^{(i)}$) multiplied by the probability of fixation of the mutation ($p_{a \mapsto b}^{(i)}$).
-Crucially, the probability of fixation depends on the difference of fitness between the amino-acid encoded by the mutated codon ($f_b^{(i)}$) and the fitness of the amino-acid encoded by the original codon ($f_a^{(i)}$) of site $i$~\citep{wright_evolution_1931, fisher_genetical_1930}.
-Altogether, the rate of substitution from codon $a$ to $b$ at a given site $i$ is:
-\begin{equation}
-	q_{a \mapsto b}^{(i)} = \mu_{a \mapsto b}^{(i)} \dfrac{\mathrm{ln}(f_b^{(i)} / f_a^{(i)})}{1 - f_b^{(i)} / f_a^{(i)}}.
-\end{equation}
-
-Fitting the mutation-selection model on a sequence alignment leads, via equation (1), to an estimation of the mutation rate matrix ($\mu^{(i)}$) as well as the fitness landscape of the protein ($f^{(i)}$) at each site $i$ of the sequence.
-From these parameters, one can compute $\omega_{0}^{(i)}$, the site-specific predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance: 
-\begin{equation}
-\omega_{0}^{(i)} = \sum_{a \in  \mathcal{C}} \pi_a^{(i)}  \dfrac{\sum_{b \in  \mathcal{N}_a} q_{a \mapsto b}^{(i)}}{\sum_{b \in \mathcal{S}_a} q_{a \mapsto b}^{(i)}},
-\end{equation}
-where $\mathcal{C}$ is the set all the possible codons ($61$ by discarding stop codons), $\pi_a$ is the equilibrium frequency of codon $a$ at site $i$, and $\mathcal{N}_a$ (respectively $\mathcal{S}_a$) is the set of codons that are non-synonymous (respectively synonymous) to $a$~\citep{Spielman2015, Rodrigue2016}.
-In a second step, the average over site is calculated, giving estimates of $\omega_0$ for each protein-coding sequences (see figure~\ref{fig:codon_model}, right panel).
-
-Under the assumption that the protein is under a \textit{nearly-neutral} regime,  the predicted $\omega_0$ (mutation-selection model) and the estimated $\omega$ (site-model) should be the same.
-But if this assumption is violated, and the protein is under adaptation then $\omega > \omega_0$.
-From these consideration, the method can estimate $\omega_A$, namely the rate of adaptive substitution over neutral substitution as the deviation of $\omega$ from the quasi-neutral model $\omega_0$ (see figure~\ref{fig:codon_model}):
-\begin{equation}
-	\omega_A = \omega - \omega_0.
-\end{equation}
-
-With this protocol, a two-step procedure is needed and one needs to run independently the site-model and mutation-selection model.
-An alternative one-step method was proposed originally~\citep{Rodrigue2016}, in which a global deviation parameter ($\omega^*$) is directly introduced into the model.
-Thus equation (1) becomes:
-\begin{equation}
-q_{a \mapsto b}^{(i)} =  \mu_{a \mapsto b}^{(i)} \dfrac{\mathrm{ln}(f_b^{(i)} / f_a^{(i)})}{1 - f_b^{(i)} / f_a^{(i)}} \omega^* .
-\end{equation}
-The null hypothesis correspond to $\omega^*=1$, adaptive evolution to $\omega^*>1$.
-The rate of adaptive evolution is then:
-\begin{equation}
-	\omega_A^* = \omega_0 (\omega^* - 1 ).
-\end{equation}
-In the following, the two approaches will be compared.
-
-\subsection*{Phylogenetic dataset and experiments}
-Protein-coding sequences (CDS) alignments in $34$ placental mammals were extracted from the \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{Ranwez2007, Douzery2014, Scornavacca2019}.
-A first analysis on $500$ CDS gave inconsistent results since some alignment contained paralogs, frame-shifts and improperly aligned segments.
-Thus, this study used a dataset cleaned by Fidel Botero-Castro (Institut des Sciences de l'Evolution de Montpellier), where CDS were filtered by HmmCleaner with a threshold of $5$~\citep{di_franco_detecting_2017}.
-All the CDS with more than $50\%$ of masked nucleotides were discarded, and codon sites masked in more than $40\%$ of the species were also discarded.
-Finally, each of the $11,256$ CDS of the dataset is at least $500$ bp and includes at least $34$ mammalian species.
-CDS located on the X, Y and mitochondrial chromosome were also discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
-I ran the Bayesian software \href{https://github.com/bayesiancook/pbmpi2}{PhyloBayes MPI} on randomly chosen $1,355$ CDS from the dataset of Fidel Botero-Castro using the site-model~\citep{Lartillot2013, Rodrigue2016}.
-Each Monte-Carlo Markov-Chain was ran during $600$ points, with a burn-in of $100$ points.
-The convergence of the chain during the burn-in was assessed by running two independent chains on preliminary runs, and asserting that parameters of the models of the two chains converged during burn-in.
-The whole computation took approximately $254,000$ hours of CPU on the LBBE/PRABI cluster.
-The scripts used for analysis were written in python v3.5.
-
-\subsection*{Theoretical rate of adaption in population-based method}
-In the method proposed by McDonald and Kreitman~\citep{McDonald1991}, the ratio of non-synonymous over synonymous polymorphism ($\omega_{0}=p_N/p_S$) only contains non-adaptive polymorphisms.
-On the other hand, divergence data with regard to a close specie allows one to estimate the ratio of non-synonymous over synonymous substitutions ($\omega=d_N/d_S$) between these species.
-All the non-synonymous substitutions in the sequence are supposed to be a mixture of both advantageous mutation and non-adaptive substitution.
-Thus the difference $d_N/d_S - p_N/p_S$ is the rate of adaptive evolution:
-\begin{equation*}
-\omega_A^{MK}=\dfrac{d_N}{d_S} - \dfrac{p_N}{p_S}.
-\end{equation*}	\begin{table*}[hb!]
-	\centering
-	\begin{adjustbox}{width = 1\textwidth}
-		\small\begin{tabular}{|c|c|c|c|c|c|}
-			\hline
-			Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$		\\
-			\hline
-			plasma membrane & $12$ & $3.48$ & $3.45$ & $0.00232$ & $0.195$ \\
-			protein heterodimerization activity & $4$ & $0.459$ & $8.71$ & $0.00241$ & $0.202$  \\
-			regulation of immune response & $2$ & $0.0566$ & $35.3$ & $0.00369$ & $0.31$ \\
-			T cell differentiation & $2$ & $0.0755$ & $26.5$ & $0.00546$ & $0.459$  \\
-			immune system process & $6$ & $1.36$ & $4.4$ & $0.00584$ & $0.49$  \\
-			response to stress & $8$ & $2.24$ & $3.57$ & $0.00608$ & $0.511$  \\
-			innate immune response & $4$ & $0.659$ & $6.07$ & $0.00765$ & $0.643$  \\
-			receptor activity & $3$ & $0.348$ & $8.61$ & $0.00845$ & $0.71$  \\
-			metabolic process & $6$ & $1.51$ & $3.98$ & $0.00899$ & $0.755$	 \\
-			leukocyte migration & $2$ & $0.113$ & $17.6$ & $0.00995$ & $0.836$  \\
-			\hline
-		\end{tabular}
-	\end{adjustbox}
-	\caption{\textbf{Ontology enrichment in the outliers}.
-84 Fisher's exact test were performed with $27$ CDS detected as under adaptation and $1,328$ as under \textit{nearly-neutral} regime.
-In the table is solely shown the tests with $e_{\mathrm{value}} < 1$.
-$10$ ontology terms are detected, while one was expected on average, and the estimation of the false discoveries rate is $10\%$.
-Out of $10$ ontology terms, six terms related to immune processes.
-\label{fig:ontology}}
-\end{table*}
-
-However, $\omega_A^{MK}$ can be biased by moderately deleterious mutations~\citep{eyre-walker_quantifying_2002} and by the change in population size through time~\citep{eyre-walker_changing_2002}.
-To overcome this biases, the method of Galtier~\citep{Galtier2016} was used, which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
-The method use a maximum likelihood approach.
-The GammaExpo model was used, in which the fitness effect of weakly deleterious non-synonymous mutations is distributed according to a negative Gamma.
-The fitness effect of weakly advantageous mutations is distributed exponentially.
-This method is an extension of the methods introduced by Eyre-Walker and collaborators~\citep{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
-This estimation of the DFE than leads to a predicted $d_N/d_S$, under the \textit{nearly-neutral} regime, which can then be subtracted from the $d_N/d_S$ observed between the focal species and its sister group, giving another estimate of the rate of adaptive evolution: $\omega_A^{DFEM}$.
-\subsection*{Polymorphism dataset and experiments}
-
-Polymorphism in \textit{Homo sapiens} was downloaded from \href{http://www.ensembl.org/index.html}{ensembl.org}.
-This study relied on the GRCh38 assembly and mutations from the phase 3 of the 1000 genomes projects~\citep{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}.
-Mutations not inside CDS were discarded at the beginning of the analysis.
-Insertions and deletions were not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele were considered.
-Stop codon mutants were also discarded.
-Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} was extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{Ranwez2007, Douzery2014, Scornavacca2019}.
-The pipeline (figure~\ref{fig:pipeline}) for assembling and analyzing the data is written in python 3.5, the code is under GNU license and available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop}.
-
-One proposed correction for slightly deleterious polymorphism, in Mc-Donald and Kreitman test, is to drop rare polymorphisms, but this method has no clear cut.
-Dropping singletons provides a simple correction~\citep{templeton_contingency_1996}, while other authors have suggested to only include polymorphisms with minor allele frequencies above $10\%$~\citep{smith_adaptive_2002, fay_testing_2002, gojobori_adaptive_2007}.
-This correction was applied  to compute $\omega_A^{MK}$.
-In contrast, the model-based method of Galtier to compute $\omega_A^{DFEM}$ allows us to keep all polymorphisms, but since the folded site-frequency spectra (SFS) had $2504$ categories (The 1000G project sequenced $2504$ diploid individuals) the model was then over-parametrized, and the folded SFS were sub-sampled down to $12$ categories using by sampling without replacement (hyper-geometric distribution).
-The effect of sub-sampling is shown in figure~\ref{fig:omega_snp}, panel B.
-
 \section*{Results}
 
-\begin{figure*}[hb!]
-	\centering
-	\includegraphics[width=\textwidth]{figure_3.pdf}
-	\caption{ \textbf{Empirical distribution of $\omega_A^{MK}$}
-		\textbf{Panel A:} $\omega_A^{MK}$ was computed on the concatenate of the $27$ CDS having a high rate of adaptation (outliers, orange solid line), detected in phylogeny-based method.
-The result was compared to the empirical null distribution of $\omega_A^{MK}$ (green histogram), obtained by randomly sampling a subset of $27$ CDS from the $1,355$ CDS ($100,000$ replicates).
-The deviation is not significant ($p_{\mathrm{value}}=0.119$).
-		\textbf{Panel B:} Sub-sampling the site-frequency-spectrum (SFS) did not affect much the estimation of $\omega_A^{DFEM}$.
-The dashed line is the $95 \%$ confidence interval around the mean value computed for random sample of $27$ CDS.
-		\textbf{Panel C:} Synonymous versus non-synonymous folded SFS,  sub-sampled down to $12$ categories.
-On top the SFS in the $27$ outliers.
-On bottom the SFS of all CDS.
-		\textbf{Panel D:}.
-$\omega_A^{DFEM}$ was computed on the concatenate of the $27$ CDS having a high rate of adaptation (outliers, orange solid line), detected in phylogeny-based method.
-The result was compared to the null empirical distribution of $\omega_A^{DFEM}$ (green histogram), obtained by randomly sampling a subset of $27$ CDS from the $1,355$ CDS ($100,000$ replicates).
-\label{fig:omega_snp}}
-\end{figure*}
 \subsection*{Detecting protein-coding sequences under adaptation}
-Using a randomly chosen set of CDS, I first assessed the performance of the phylogeny-based method.
-Such as originally proposed~\citep{Rodrigue2016}, the mutation-selection model approach relies on a one-step method to jointly estimate the nearly neutral null model and the deviation from it (through a deviation parameter $\omega^*$ from which the method can estimate $\omega_A^*$, see methods).
-However the application of this one-step approach on the set of $1,355$ CDS led to results that were difficult to interpret.
-In particular, a reasonable expectation is that $\omega_A$ should be either close to zero (\textit{nearly-neutral} regime) or positive (adaptation).
-However, is should never be strongly negative.
-Yet this was observed for several CDS, suggesting a statistical artifact of the method.
-More specifically, $\omega^*$ captured part of the purifying process which is normally supposed to be modeled at the level of the amino-acid fitness profiles, for these proteins $\omega^*$ was very close to zero, thus resulting in $\omega_A^*<0$.
 
-Accordingly, I derived a two-step approach (see methods), which was applied to the set of CDS.
-In contrast to the one-step method, the results obtained here are more sensible.
+\begin{figure*}[h]
+	\centering
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{scatterplot_gene.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize A\hspace{0.35cm}}}\hfill
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{scatterplot_site.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
+	\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale}.
+		$\omega$ estimated by the site-model against $\omega_{0}$ predicted by the mutation-selection model.
+		Scatter plot of XXX CDS in panel A. Density plot of XXX sites in panel B.
+		Genes or sites are then classified into one the the four evolutionary regime: strongly adaptive ($\omega > 1$ in black), adaptive ($\omega > \omega_{0}$ in red), nearly-neutral ($\omega \simeq \omega_{0}$ in green) or epistasis  ($\omega < \omega_{0}$ in blue). }
+\end{figure*}
+
+\begin{figure*}[h]
+	\centering
+	\includegraphics[width=\linewidth, page=1]{polymorphism-method.pdf}
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{Chlorocebus_sabaeus/gene-folded-grapes/Saint_Kitts-histogram.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize A\hspace{0.35cm}}}\hfill
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{Chlorocebus_sabaeus/site-folded-grapes/Saint_Kitts-histogram.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
+	\caption{ \textbf{Enrichment of adaptation at the population-genetic scale}.
+		$\omega_A$ was computed on the concatenate of orthologous genes (panel B) or sites (panel C) having a high rate of adaptation, detected in phylogeny-based method (panel A).
+		The result was compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
+	}
+\end{figure*}
+
+\begin{figure*}[h]
+	\centering
+	\includegraphics[width=\linewidth, page=1]{results.pval.colors.pdf}
+	\caption{ \textbf{Congruence population-genetic scale}.
+	$\omega_A$ was computed on the concatenate of orthologs genes or sites having a high rate of adaptation, detected in phylogeny-based method.
+	The result was compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
+	}
+\end{figure*}
+
+
+We derived a two-step approach (see methods), which was applied to the set of CDS.
 The value of $\omega$ estimated by the site-model and of $\omega_{0}$ estimated by the mutation-selection model show a good linear correlation ($r^2=0.898$) indicating that, for most protein, the mutation-selection site-model effectively predicts the rate of non-synonymous substitutions over the rate synonymous substitutions.
 The \textit{nearly-neutral} assumption is thus not rejected for most proteins (see figure~\ref{fig:omega_pb}, left panel).
 On the other hand, a few proteins appear to have an actual $\omega$ substantially higher that of the $\omega_0$ predicted by the mutation-selection model (point above the regression line).
@@ -417,15 +283,160 @@ Especially since the purifying process is stronger on longer timescale, the fron
 Altogether, this preliminary study suggest that the integration between population and phylogeny-based methods raises theoretical and practical issues.
 I suggest that further investigating these methodological integration will provide biological understanding of the evolutionary constrain of protein-coding sequences.
 
-\section*{Author contributions and acknowledgments}
-I thank Nicolas Lartillot for his help, support and advises all along the internship and concerning this report, as well as for insightful discussions.
-I thank the team for the great atmosphere at the lab, and Fidel Botero-Castro for providing cleaned mammalian alignment data.
-The personal equipment was provided by ANR Dasire.
-This work was performed using the computing  facilities of the CC LBBE/PRABI.
-I wrote all the python code of the pipeline (figure~\ref{fig:pipeline}), and I designed the statistical tests and analyzed the data.
-The repository for the pipeline and this report is available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop}.
+
+\section*{Materials and methods}
+
+\subsection*{Theoretical rate of adaption in phylogeny-based method }
+Classical codon models estimate a parameter $\omega=d_N/d_S$, namely the ratio of the non-synonymous over the synonymous substitution rates~\citep{Muse1994,Goldman1994}.
+In the so-called site-models, $\omega$ is allowed to vary across sites, either via a finite mixture~\citep{Yang2000}, an infinite mixture~\citep{Huelsenbeck2006}, or as random effects from a parametric distribution.
+In PhyloBayes, the latter option is used: site-specific $\omega^{(i)}$ are independent identically distributed from a gamma distribution~\citep{Lartillot2013}.
+This implementation is used in this study to infer the distribution of $\omega$ across sites on empirical alignments.
+In a second step, the average over site is calculated, giving estimates of $\omega$ for each protein-coding sequences (see figure~\ref{fig:codon_model}, left panel).
+
+In contrast, mutation-selection models assume that the protein-coding sequence (CDS) is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino-acid at each site~\citep{Yang2008, Halpern1998, Rodrigue2010}.
+Mathematically, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}^{(i)}$) at the $i^{\mathrm{th}}$ site of the sequence is equal to the rate of mutation at site $i$ ($\mu_{a \mapsto b}^{(i)}$) multiplied by the probability of fixation of the mutation ($p_{a \mapsto b}^{(i)}$).
+Crucially, the probability of fixation depends on the difference of fitness between the amino-acid encoded by the mutated codon ($f_b^{(i)}$) and the fitness of the amino-acid encoded by the original codon ($f_a^{(i)}$) of site $i$~\citep{wright_evolution_1931, fisher_genetical_1930}.
+Altogether, the rate of substitution from codon $a$ to $b$ at a given site $i$ is:
+\begin{equation}
+	q_{a \mapsto b}^{(i)} = \mu_{a \mapsto b}^{(i)} \dfrac{\mathrm{ln}(f_b^{(i)} / f_a^{(i)})}{1 - f_b^{(i)} / f_a^{(i)}}.
+\end{equation}
+
+Fitting the mutation-selection model on a sequence alignment leads, via equation (1), to an estimation of the mutation rate matrix ($\mu^{(i)}$) as well as the fitness landscape of the protein ($f^{(i)}$) at each site $i$ of the sequence.
+From these parameters, one can compute $\omega_{0}^{(i)}$, the site-specific predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance:
+\begin{equation}
+	\omega_{0}^{(i)} = \sum_{a \in  \mathcal{C}} \pi_a^{(i)}  \dfrac{\sum_{b \in  \mathcal{N}_a} q_{a \mapsto b}^{(i)}}{\sum_{b \in \mathcal{S}_a} q_{a \mapsto b}^{(i)}},
+\end{equation}
+where $\mathcal{C}$ is the set all the possible codons ($61$ by discarding stop codons), $\pi_a$ is the equilibrium frequency of codon $a$ at site $i$, and $\mathcal{N}_a$ (respectively $\mathcal{S}_a$) is the set of codons that are non-synonymous (respectively synonymous) to $a$~\citep{Spielman2015, Rodrigue2016}.
+In a second step, the average over site is calculated, giving estimates of $\omega_0$ for each protein-coding sequences (see figure~\ref{fig:codon_model}, right panel).
+
+Under the assumption that the protein is under a \textit{nearly-neutral} regime,  the predicted $\omega_0$ (mutation-selection model) and the estimated $\omega$ (site-model) should be the same.
+But if this assumption is violated, and the protein is under adaptation then $\omega > \omega_0$.
+From these consideration, the method can estimate $\omega_A$, namely the rate of adaptive substitution over neutral substitution as the deviation of $\omega$ from the quasi-neutral model $\omega_0$ (see figure~\ref{fig:codon_model}):
+\begin{equation}
+	\omega_A = \omega - \omega_0.
+\end{equation}
+
+\subsection*{Phylogenetic dataset and experiments}
+Protein-coding sequences (CDS) alignments in $XXX$ placental mammals were extracted from the \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{Ranwez2007, Douzery2014, Scornavacca2019}.
+CDS located on the X, Y and mitochondrial chromosome were discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
+We ran the Bayesian software \href{https://github.com/bayesiancook/bayescode}{BayesCode} on each CDS using the site-model~\citep{Lartillot2013, Rodrigue2016}.
+Each Monte-Carlo Markov-Chain was ran during $2000$ points, with a burn-in of $1000$ points.
+The convergence of the chain during the burn-in was assessed by running two independent chains on preliminary runs, and asserting that parameters of the models of the two chains converged during burn-in.
+
+\subsection*{Theoretical rate of adaption in population-based method}
+In the method proposed by McDonald and Kreitman~\citep{McDonald1991}, the ratio of non-synonymous over synonymous polymorphism ($\omega_{0}=p_N/p_S$) only contains non-adaptive polymorphisms.
+On the other hand, divergence data with regard to a close specie allows one to estimate the ratio of non-synonymous over synonymous substitutions ($\omega=d_N/d_S$) between these species.
+All the non-synonymous substitutions in the sequence are supposed to be a mixture of both advantageous mutation and non-adaptive substitution.
+Thus the difference $d_N/d_S - p_N/p_S$ is the rate of adaptive evolution:
+\begin{equation*}
+	\omega_A^{MK}=\dfrac{d_N}{d_S} - \dfrac{p_N}{p_S}.
+\end{equation*}
+
+\begin{table*}[hb!]
+   \centering
+   \begin{adjustbox}{width = 1\textwidth}
+	   \small\begin{tabular}{|c|c|c|c|c|c|}
+				 \hline
+				 Ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio & $p_{\mathrm{value}}$ & $e_{\mathrm{value}}$		\\
+				 \hline
+				 plasma membrane & $12$ & $3.48$ & $3.45$ & $0.00232$ & $0.195$ \\
+				 protein heterodimerization activity & $4$ & $0.459$ & $8.71$ & $0.00241$ & $0.202$  \\
+				 regulation of immune response & $2$ & $0.0566$ & $35.3$ & $0.00369$ & $0.31$ \\
+				 T cell differentiation & $2$ & $0.0755$ & $26.5$ & $0.00546$ & $0.459$  \\
+				 immune system process & $6$ & $1.36$ & $4.4$ & $0.00584$ & $0.49$  \\
+				 response to stress & $8$ & $2.24$ & $3.57$ & $0.00608$ & $0.511$  \\
+				 innate immune response & $4$ & $0.659$ & $6.07$ & $0.00765$ & $0.643$  \\
+				 receptor activity & $3$ & $0.348$ & $8.61$ & $0.00845$ & $0.71$  \\
+				 metabolic process & $6$ & $1.51$ & $3.98$ & $0.00899$ & $0.755$	 \\
+				 leukocyte migration & $2$ & $0.113$ & $17.6$ & $0.00995$ & $0.836$  \\
+				 \hline
+	   \end{tabular}
+   \end{adjustbox}
+   \caption{\textbf{Ontology enrichment in the adapative CDS}.
+   84 Fisher's exact test were performed with $27$ CDS detected as under adaptation and $1,328$ as under \textit{nearly-neutral} regime.
+   In the table is solely shown the tests with $e_{\mathrm{value}} < 1$.
+	   $10$ ontology terms are detected, while one was expected on average, and the estimation of the false discoveries rate is $10\%$.
+	   Out of $10$ ontology terms, six terms related to immune processes.
+	   \label{fig:ontology}}
+\end{table*}
+
+However, $\omega_A^{MK}$ can be biased by moderately deleterious mutations~\citep{eyre-walker_quantifying_2002} and by the change in population size through time~\citep{eyre-walker_changing_2002}.
+To overcome this biases, the method of Galtier~\citep{Galtier2016} was used, which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
+The method use a maximum likelihood approach.
+The GammaExpo model was used, in which the fitness effect of weakly deleterious non-synonymous mutations is distributed according to a negative Gamma.
+The fitness effect of weakly advantageous mutations is distributed exponentially.
+This method is an extension of the methods introduced by Eyre-Walker and collaborators~\citep{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
+This estimation of the DFE than leads to a predicted $d_N/d_S$, under the \textit{nearly-neutral} regime, which can then be subtracted from the $d_N/d_S$ observed between the focal species and its sister group, giving another estimate of the rate of adaptive evolution: $\omega_A^{DFEM}$.
+
+\subsection*{Polymorphism dataset and experiments}
+
+Polymorphism datasets were downloaded from Ensembl v91 (\url{http://dec2017.archive.ensembl.org}).
+\textit{Homo sapiens} variants are called on the GRCh38 assembly in the 1000 genomes project~\citep{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}.
+\textit{Bos taurus} variants are called on the UMD3.1 assembly in the next gen project.
+\textit{Ovis aries} variants are called on the Oar\_v3.1 assembly in the next gen project.
+\textit{Chlorocebus sabaeus} variants are called on the ChlSab1.1 assembly in the EVA study PRJEB22989~\citep{svardal2017}.
+Mutations not inside CDS were discarded at the beginning of the analysis.
+Insertions and deletions were not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele were considered.
+Stop codon mutants were also discarded.
+Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} was extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{Ranwez2007, Douzery2014, Scornavacca2019}.
+The pipeline for assembling and analyzing the data is written in python 3.8.
+SFS were sub-sampled down to $12$ categories using by sampling without replacement (hyper-geometric distribution).
+
+\section{Data availability}
+The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments.
+
+\section{Author contributions}
+TL gathered and formatted the data, developed the new models in \texttt{BayesCode} and conducted the analyses.
+TL and NL both contributed to the writing of the manuscript.
+
+\section{Acknowledgements}
+We gratefully also acknowledge the help of Nicolas Rodrigue for his advice and review concerning this manuscript.
+This work was performed using the computing facilities of the CC LBBE/PRABI.
+Funding: French National Research Agency, Grant ANR-15-CE12-0010-01 / DASIRE.
 
 \bibliographystyle{natbib}
 \bibliography{references}
+
+%\begin{figure*}[hb!]
+%	\centering
+%	\includegraphics[width=\textwidth]{artworks/codon_model.pdf}
+%	\caption{ \textbf{$\omega_A$ estimation with mutation-selection codon model}.
+%	On the left panel, the codon site-model estimates $\omega$, the rate of non-synonymous over synonymous substitutions, as the average of $\omega^{(i)}$ at each site.
+%	On the right panel, the mutation-selection codon model estimates the fitness of each amino-acid at each site.
+%	From the set of site-specific amino-acid fitness profiles, one can compute $\omega_{0}$ which is the predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance and genuinely taking into account purifying selection.
+%	Both methods runs independently from the same alignment data.
+%	From these two independent runs, $\omega_A$ is computed as the difference $\omega - \omega_{0}$\label{fig:codon_model}}
+%\end{figure*}
+%
+%\begin{figure*}[hb!]
+%	\centering
+%	\includegraphics[width=\textwidth]{figure_3.pdf}
+%	\caption{ \textbf{Empirical distribution of $\omega_A^{MK}$}
+%	\textbf{Panel A:} $\omega_A^{MK}$ was computed on the concatenate of the $27$ CDS having a high rate of adaptation (outliers, orange solid line), detected in phylogeny-based method.
+%	The result was compared to the empirical null distribution of $\omega_A^{MK}$ (green histogram), obtained by randomly sampling a subset of $27$ CDS from the $1,355$ CDS ($100,000$ replicates).
+%	The deviation is not significant ($p_{\mathrm{value}}=0.119$).
+%	\textbf{Panel B:} Sub-sampling the site-frequency-spectrum (SFS) did not affect much the estimation of $\omega_A^{DFEM}$.
+%	The dashed line is the $95 \%$ confidence interval around the mean value computed for random sample of $27$ CDS.
+%	\textbf{Panel C:} Synonymous versus non-synonymous folded SFS,  sub-sampled down to $12$ categories.
+%	On top the SFS in the $27$ outliers.
+%	On bottom the SFS of all CDS.
+%	\textbf{Panel D:}.
+%		$\omega_A^{DFEM}$ was computed on the concatenate of the $27$ CDS having a high rate of adaptation (outliers, orange solid line), detected in phylogeny-based method.
+%		The result was compared to the null empirical distribution of $\omega_A^{DFEM}$ (green histogram), obtained by randomly sampling a subset of $27$ CDS from the $1,355$ CDS ($100,000$ replicates).
+%		\label{fig:omega_snp}}
+%\end{figure*}
+%
+%\begin{figure*}[hb!]
+%	\centering
+%	\includegraphics[width=\textwidth]{pipeline.pdf}
+%	\caption{ \textbf{The python pipeline for data analysis}.
+%	Tables in blue outlines are the input data necessary to run the pipeline.
+%	Tables in black outlines are the data produced by the analysis.
+%	The upper half of the figure depicts the steps necessary to estimate polymorphism and divergence statistics necessary to run population-based method.
+%	The lower half of the figures depicts the steps necessary to run the phylogeny-based method and to obtain figure~\ref{fig:omega_pb} and table~\ref{fig:ontology}, which can be obtained independently of the population-based analysis.
+%	Figure~\ref{fig:omega_snp} is obtained by merging the results of the population- and the phylogeny-based analysis.
+%	The code available at \href{https://github.com/ThibaultLatrille/AdaptaPop}{https://github.com/ThibaultLatrille/AdaptaPop} allows one to reproduce the figures of this study.
+%	\label{fig:pipeline}}
+%\end{figure*}
 
 \end{document}
