@@ -1,6 +1,7 @@
 import argparse
 from glob import glob
 import pandas as pd
+from Bio.Phylo.PAML import yn00
 
 
 def read_polyDFE(path):
@@ -13,6 +14,10 @@ def read_polyDFE(path):
                 k = k.replace(ch, "")
             dico_out[k] = float(v)
     return dico_out
+
+
+def read_yn(path):
+    return yn00.read(path)
 
 
 omega_dict = {"OMEGA_NA": [], "OMEGA_A": [], "OMEGA_0": [], "ALPHA": [], "ADAPTIVE": []}
@@ -33,9 +38,24 @@ if __name__ == '__main__':
             omega_dict["OMEGA_0"].append(float(filepath.split("/")[-1].split("_")[0]) if "Bins" in filepath else "NaN")
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
+        from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+
+        string = ''.join(open("postprocessing.R", "r").readlines())
+        postprocessing = SignatureTranslatedAnonymousPackage(string, "postprocessing")
+
         for filepath in glob(args.folder + "/*polyDFE.out"):
             polydfe_dico = read_polyDFE(filepath)
-            omega = polydfe_dico["D_sel"] / polydfe_dico["D_neut"]
+            if len(polydfe_dico) == 0: continue
+            if 'D_sel' in polydfe_dico and 'D_neut' in polydfe_dico:
+                omega = polydfe_dico["D_sel"] / polydfe_dico["D_neut"]
+            else:
+                yn00_results = read_yn(filepath.replace("_polyDFE.out", "_yn00.out"))
+                res = list(list(yn00_results.values())[0].values())[0]['YN00']
+                omega = res["omega"]
+
+            # estimates = postprocessing.parseOutput(filepath)[0]
+            # alpha = postprocessing.estimateAlpha(estimates, supLimit=5)[0]
+            # alpha_dfe = polydfe_dico["alpha_dfe"]
             alpha = polydfe_dico["alpha_div"]
             omega_dict["OMEGA_NA"].append(omega * (1 - alpha))
             omega_dict["OMEGA_A"].append(omega * alpha)

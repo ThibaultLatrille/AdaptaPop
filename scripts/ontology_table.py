@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
         if np.min(obs) > 1:
             oddsratio, p_value = st.fisher_exact(obs, alternative='greater')
-            dico_ouput["GO"].append(go_id2name[go_id].replace("_", "-").replace("[acyl-carrier-protein]", ""))
+            dico_ouput["GO"].append(go_id2name[go_id].replace("_", "-").replace("[", "").replace("]", ""))
             dico_ouput["obs"].append(int(obs[0, 0]))
             dico_ouput["exp"].append(float(obs[0, 0]) / oddsratio)
             dico_ouput["oddsratio"].append(oddsratio)
@@ -102,21 +102,28 @@ if __name__ == '__main__':
     df.sort_values(by="e_value", inplace=True)
     df.to_csv(args.output.replace(".tex", ".tsv"), index=False, sep="\t")
 
-    table_tex = open(args.output, 'w')
-    latex_in = open(os.path.dirname(args.output) + "/table-import.tex", 'r')
-    table_tex.write("\n".join(latex_in.readlines()))
-    latex_in.close()
+    text_core = "{0} tests performed with {1} {4}s detected as {2} and {3} as nearly-neutral." \
+                "\n".format(len(df["p_value"]), len(cds_focal_set), args.category.lower().replace("-", " "),
+                            len(cds_control_set), args.granularity)
+    text_core += "\\scriptsize\n"
+    text_core += df[df["e_value"] < 1.0].to_latex(index=False, escape=False, longtable=True, float_format=tex_f,
+                                                  header=header)
 
-    table_tex.write("\\begin{document}\n")
-    table_tex.write("{0} tests performed with {1} {4}s detected as {2} and {3} as nearly-neutral." \
-                    "\n".format(len(df["p_value"]), len(cds_focal_set), args.category.lower().replace("-", " "),
-                                len(cds_control_set), args.granularity))
-    table_tex.write("\\scriptsize\n")
-    table_tex.write(df.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=header))
-    table_tex.write("\\end{document}\n")
-    table_tex.close()
+    with open(args.output.replace(".tex", "") + ".core.tex", 'w') as core_f:
+        core_f.write(text_core)
+
+    with open(args.output, "w") as table_tex:
+        table_tex.write("\n".join(open(os.path.dirname(args.output) + "/table-import.tex", 'r').readlines()))
+        table_tex.write("\\begin{document}\n")
+        table_tex.write(text_core)
+        table_tex.write("\\end{document}\n")
+
     print('Table generated')
-    os.system("pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {1}".format(os.path.dirname(args.output), args.output))
+    tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {1}".format(
+        os.path.dirname(args.output),
+        args.output)
+    os.system(tex_to_pdf)
+    os.system(tex_to_pdf)
     print('Pdf generated')
 
     print('Ontology computed')

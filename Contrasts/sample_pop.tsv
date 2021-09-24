@@ -1,4 +1,19 @@
 Species	SisterSpecies	SampleName	Location	SampleSize	k
+Chlorocebus_sabaeus	Macaca_mulatta	Barbados	Barbados	5	8
+Chlorocebus_sabaeus	Macaca_mulatta	Central_African_Republic	Central_African_Republic	11	8
+Chlorocebus_sabaeus	Macaca_mulatta	Ethiopia	Ethiopia	16	8
+Chlorocebus_sabaeus	Macaca_mulatta	Gambia	Gambia	22	8
+Chlorocebus_sabaeus	Macaca_mulatta	Kenya	Kenya	4	8
+Chlorocebus_sabaeus	Macaca_mulatta	Nevis	Nevis	12	8
+Chlorocebus_sabaeus	Macaca_mulatta	Saint_Kitts	Saint_Kitts	22	8
+Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South_Africa	49	8
+Chlorocebus_sabaeus	Macaca_mulatta	Zambia	Zambia	16	8
+Bos_taurus	Bison_bison_bison	IRBT	Iran	9	8
+Bos_taurus	Bison_bison_bison	UGBT	Uganda	25	8
+Ovis_aries	Pantholops_hodgsonii	IROA	Iran	20	8
+Ovis_aries	Pantholops_hodgsonii	IROO	Iran	19	8
+Ovis_aries	Pantholops_hodgsonii	MOOA	Morocco	160	8
+Ovis_aries	Pantholops_hodgsonii	ISGC	Various	75	8
 Homo_sapiens	Pan_troglodytes	YRI	Yoruba in Ibadan, Nigeria	108	8
 Homo_sapiens	Pan_troglodytes	LWK	Luhya in Webuye, Kenya	99	8
 Homo_sapiens	Pan_troglodytes	GWD	Gambian in Western Divisions in the Gambia	113	8
@@ -25,5 +40,3 @@ Homo_sapiens	Pan_troglodytes	PJL	Punjabi from Lahore, Pakistan	96	8
 Homo_sapiens	Pan_troglodytes	BEB	Bengali from Bangladesh	86	8
 Homo_sapiens	Pan_troglodytes	STU	Sri Lankan Tamil from the UK	102	8
 Homo_sapiens	Pan_troglodytes	ITU	Indian Telugu from the UK	102	8
-Ovis_aries	Pantholops_hodgsonii	MODA	Morocco	160	19
-Ovis_aries	Pantholops_hodgsonii	ISGC	Various	75	19

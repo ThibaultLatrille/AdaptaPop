@@ -24,6 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--pickle', required=True, type=str, dest="pickle", help="Pickle file")
     parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
     parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
+    parser.add_argument('--gather', required=False, type=str, dest="gather", default="false", help="Gather SFS")
     parser.add_argument('--subsample', required=False, type=int, default=-1, dest="subsample", help="Subsample SFS")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('--rep', required=True, type=int, dest="rep", help="Number of replicates")
@@ -32,6 +33,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     gene = args.granularity.lower() == "gene"
+    gather_sfs = args.gather.lower() == "true"
     is_unfolded = args.sfs == "unfolded"
     pickle_file = bz2.BZ2File(args.pickle, 'rb')
     filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
@@ -111,10 +113,10 @@ if __name__ == '__main__':
 
             if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, subset, gene,
                          args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
-                         args.dfe_path, is_unfolded, sfs_polyDFE, errors):
+                         args.dfe_path, is_unfolded, sfs_polyDFE, errors, gather_sfs):
                 rep += 1
 
-        if sfs_polyDFE["SFSs"] != "":
+        if sfs_polyDFE["SFSs"] != "" and gather_sfs:
             sfs_file = open(prefix + ".sfs", 'w')
             sfs_file.write("#{0}+{1}".format(args.focal_species, args.sister_species) + "\n")
             sfs_file.write("{0} {0} {1}".format(args.rep, sample_size) + "\n")
@@ -122,7 +124,7 @@ if __name__ == '__main__':
             sfs_file.write(sfs_polyDFE["SFSn"])
             sfs_file.close()
             dfe_path = set([p for p in args.dfe_path if "polyDFE" in p]).pop()
-            os.system("{0} -d {1}.sfs -m C -e 1> {1}_polyDFE.out 2> {1}_polyDFE.err".format(dfe_path, prefix))
+            os.system(polyDFE_cmd.format(dfe_path, prefix, prefix + "_polyDFE"))
 
     errors.close()
     f_sample.close()

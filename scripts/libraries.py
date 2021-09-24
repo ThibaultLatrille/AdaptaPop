@@ -29,6 +29,9 @@ codontable.update({
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'X', 'TAG': 'X',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'X', 'TGG': 'W', '---': '-'})
 
+grapes_cmd = "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_data 1> {2}.out 2> {2}.err"
+polyDFE_cmd = "{0} -d {1}.sfs -w -m C -e 1> {2}.out 2> {2}.err"
+
 
 def translate(codon_seq, gap=False):
     prot = []
@@ -393,7 +396,7 @@ def run_yn00(seq1, seq2, tmp_path, filepath):
 
 
 def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, fixed_poly, tmp_path, dfe_models,
-              is_unfolded, polyDFE_dict, error_f):
+              is_unfolded, polyDFE_dict, error_f, gather):
     sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
     sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
     s1, s2 = [], []
@@ -442,7 +445,7 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         sfs_list = ["Summed", n]
         for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
             if is_unfolded:
-                sfs_list += [nbr_site] + [sfs_s[i] for i in range(1, n)]
+                sfs_list += [nbr_site] + [sfs[i] for i in range(1, n)]
             else:
                 range_sfs = range(1, int(floor(n // 2)) + 1)
                 assert len(range_sfs) * 2 == n
@@ -456,14 +459,25 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         dofe_file.close()
 
     if "polyDFE" in "".join(dfe_models) and is_unfolded:
-        polyDFE_dict["SFSs"] += " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
-        polyDFE_dict["SFSn"] += " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
+        SFS_s = " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
+        SFS_n = " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
+        if gather:
+            polyDFE_dict["SFSs"] += SFS_s
+            polyDFE_dict["SFSn"] += SFS_n
+        else:
+            sfs_file = open(filepath + ".sfs", 'w')
+            sfs_file.write("#{0}+{1}".format(sp_1, sp_2) + "\n")
+            sfs_file.write("1 1 {0}".format(n) + "\n")
+            sfs_file.write(SFS_s)
+            sfs_file.write(SFS_n)
+            sfs_file.close()
 
     for dfe_path in dfe_models:
         out = filepath + "_" + dfe_path.split("/")[-2]
         if "dfem" in dfe_path or "grapes" in dfe_path:
-            os.system(
-                "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_param 1> {2}.out 2> {2}.err".format(dfe_path, filepath, out))
+            os.system(grapes_cmd.format(dfe_path, filepath, out))
+        elif "polyDFE" in dfe_path:
+            os.system(polyDFE_cmd.format(dfe_path, filepath, out))
     os.system("gzip {0}.fasta".format(filepath))
     return True
 
