@@ -26,7 +26,7 @@ if __name__ == '__main__':
     dico_output = {"species": [], "pop": [], "sfs": [], "granularity": [], "model": [],
                    "wA_Selected": [], "wNA_Selected": [], "w_Selected": [], "alpha_Selected": [],
                    "wA_Neutral": [], "wNA_Neutral": [], "w_Neutral": [], "alpha_Neutral": [],
-                   "p_val": [], "a": [], "r2": []}
+                   "p_val": []}
 
     for filepath in args.tsv:
         df = pd.read_csv(filepath, sep="\t")
@@ -39,80 +39,45 @@ if __name__ == '__main__':
                                                     pop.replace(" ", "_"), plot)
 
         os.makedirs("{0}/{1}/{2}-{3}-{4}".format(args.output, sp.replace(" ", "_"), granu, sfs, model), exist_ok=True)
-        if plot == "histogram":
-            # p_val = len([1 for x in nearly_neutral if x > adaptive]) / len(nearly_neutral)
-            hist, _, _ = plt.hist(df[~df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=GREEN,
-                                  alpha=0.5, label='Nearly-neutral ({0} subsampling)'.format(sum(~df["ADAPTIVE"])))
-            y_max = 1.2 * max(hist)
-            hist, _, _ = plt.hist(df[df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=RED,
-                                  alpha=0.5, label='Adaptive ({0} bootstrap)'.format(sum(~df["ADAPTIVE"])))
-            y_max = max(y_max, 1.2 * max(hist))
-            plt.ylim((0, y_max))
+        assert plot == "histogram"
+        # p_val = len([1 for x in nearly_neutral if x > adaptive]) / len(nearly_neutral)
+        hist, _, _ = plt.hist(df[~df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=GREEN,
+                              alpha=0.5, label='Nearly-neutral ({0} subsampling)'.format(sum(~df["ADAPTIVE"])))
+        y_max = 1.2 * max(hist)
+        hist, _, _ = plt.hist(df[df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=RED,
+                              alpha=0.5, label='Adaptive ({0} bootstrap)'.format(sum(~df["ADAPTIVE"])))
+        y_max = max(y_max, 1.2 * max(hist))
+        plt.ylim((0, y_max))
 
-            mean_nearly_neutral = np.mean(df[~df["ADAPTIVE"]]["OMEGA_A"])
-            plt.plot((mean_nearly_neutral, mean_nearly_neutral), (0, y_max), linewidth=3, color=GREEN,
-                     label=(r'$\omega_{A}$' + '={0:3g}'.format(mean_nearly_neutral)))
-            mean_adaptive = np.mean(df[df["ADAPTIVE"]]["OMEGA_A"])
-            plt.plot((mean_adaptive, mean_adaptive), (0, y_max), linewidth=3, color=RED,
-                     label=(r'$\omega_{A}$' + '={0:3g}'.format(mean_adaptive)))
+        mean_nearly_neutral = np.mean(df[~df["ADAPTIVE"]]["OMEGA_A"])
+        plt.plot((mean_nearly_neutral, mean_nearly_neutral), (0, y_max), linewidth=3, color=GREEN,
+                 label=(r'$\omega_{A}$' + '={0:3g}'.format(mean_nearly_neutral)))
+        mean_adaptive = np.mean(df[df["ADAPTIVE"]]["OMEGA_A"])
+        plt.plot((mean_adaptive, mean_adaptive), (0, y_max), linewidth=3, color=RED,
+                 label=(r'$\omega_{A}$' + '={0:3g}'.format(mean_adaptive)))
 
-            smwu, p_val = mannwhitneyu(df[df["ADAPTIVE"]]["OMEGA_A"], df[~df["ADAPTIVE"]]["OMEGA_A"],
-                                       alternative="greater")
-            plt.title('{0} - {1}\n{2} level, {3} SFS, p-value={4:3g}'.format(sp, pop, granu, sfs, p_val),
-                      fontsize=fontsize)
-            plt.xlabel(r'$\omega_{A}$', fontsize=fontsize)
-            plt.ylabel('Density', fontsize=fontsize)
-            plt.legend(fontsize=fontsize_legend, loc='upper left')
-            plt.xticks(fontsize=fontsize_legend)
-            plt.tight_layout()
-            plt.savefig(name + ".pdf", format="pdf")
-            plt.savefig(name + ".png", format="png")
-            plt.close()
+        smwu, p_val = mannwhitneyu(df[df["ADAPTIVE"]]["OMEGA_A"], df[~df["ADAPTIVE"]]["OMEGA_A"],
+                                   alternative="greater")
+        plt.title('{0} - {1}\n{2} level, {3} SFS, p-value={4:3g}'.format(sp, pop, granu, sfs, p_val),
+                  fontsize=fontsize)
+        plt.xlabel(r'$\omega_{A}$', fontsize=fontsize)
+        plt.ylabel('Density', fontsize=fontsize)
+        plt.legend(fontsize=fontsize_legend, loc='upper left')
+        plt.xticks(fontsize=fontsize_legend)
+        plt.tight_layout()
+        plt.savefig(name + ".pdf", format="pdf")
+        plt.savefig(name + ".png", format="png")
+        plt.close()
 
-            dico_output["wA_Selected"].append(mean_adaptive)
-            dico_output["wNA_Selected"].append(np.mean(df[df["ADAPTIVE"]]["OMEGA_NA"]))
-            dico_output["w_Selected"].append(np.mean(df[df["ADAPTIVE"]]["OMEGA_NA"] + df[df["ADAPTIVE"]]["OMEGA_A"]))
-            dico_output["alpha_Selected"].append(np.mean(df[df["ADAPTIVE"]]["ALPHA"]))
-            dico_output["wA_Neutral"].append(mean_nearly_neutral)
-            dico_output["wNA_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["OMEGA_NA"]))
-            dico_output["w_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["OMEGA_NA"] + df[~df["ADAPTIVE"]]["OMEGA_A"]))
-            dico_output["alpha_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["ALPHA"]))
-            dico_output["p_val"].append(p_val)
-            dico_output["a"].append("NaN")
-            dico_output["r2"].append("NaN")
-
-        elif plot == "bins":
-            idf = np.linspace(min(df["OMEGA_0"]) - 0.05, max(df["OMEGA_0"]) + 0.05, 30)
-            results = sm.OLS(list(df["OMEGA_NA"]), sm.add_constant(list(df["OMEGA_0"]))).fit()
-            if len(results.params) < 2: continue
-            b, a = results.params[0:2]
-
-            plt.scatter(df["OMEGA_0"], df["OMEGA_NA"])
-            plt.plot(idf, a * idf + b, 'r-',
-                     label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(float(a), abs(float(b)), results.rsquared,
-                                                                              "+" if float(b) > 0 else "-"),
-                     color=GREEN)
-
-            plt.xlabel(r'$\omega_{0}$', fontsize=16)
-            plt.ylabel(r'$\omega_{NA}$', fontsize=16)
-            plt.title('{0} - {1}\n{2} level, {3} SFS'.format(sp, pop, granu, sfs), fontsize=fontsize)
-            plt.tight_layout()
-            plt.legend(fontsize=14, loc="upper left")
-            plt.savefig(name + ".pdf", format="pdf")
-            plt.savefig(name + ".png", format="png")
-            plt.close()
-
-            dico_output["wA_Selected"].append("NaN")
-            dico_output["wNA_Selected"].append("NaN")
-            dico_output["w_Selected"].append("NaN")
-            dico_output["alpha_Selected"].append("NaN")
-            dico_output["wA_Neutral"].append("NaN")
-            dico_output["wNA_Neutral"].append("NaN")
-            dico_output["w_Neutral"].append("NaN")
-            dico_output["alpha_Neutral"].append("NaN")
-            dico_output["p_val"].append("NaN")
-            dico_output["a"].append(a)
-            dico_output["r2"].append(results.rsquared)
+        dico_output["wA_Selected"].append(mean_adaptive)
+        dico_output["wNA_Selected"].append(np.mean(df[df["ADAPTIVE"]]["OMEGA_NA"]))
+        dico_output["w_Selected"].append(np.mean(df[df["ADAPTIVE"]]["OMEGA_NA"] + df[df["ADAPTIVE"]]["OMEGA_A"]))
+        dico_output["alpha_Selected"].append(np.mean(df[df["ADAPTIVE"]]["ALPHA"]))
+        dico_output["wA_Neutral"].append(mean_nearly_neutral)
+        dico_output["wNA_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["OMEGA_NA"]))
+        dico_output["w_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["OMEGA_NA"] + df[~df["ADAPTIVE"]]["OMEGA_A"]))
+        dico_output["alpha_Neutral"].append(np.mean(df[~df["ADAPTIVE"]]["ALPHA"]))
+        dico_output["p_val"].append(p_val)
         dico_output["species"].append(sp)
         dico_output["pop"].append(pop)
         dico_output["granularity"].append(granu)

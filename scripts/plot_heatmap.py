@@ -80,7 +80,6 @@ if __name__ == '__main__':
     df = pd.read_csv(args.tsv, sep="\t")
     df = df.groupby(["species", "pop", "sfs", "granularity", "model"]).max().reset_index()
     df.sort_values(by=["species", "pop", "granularity", "sfs", "model"], inplace=True)
-    df = df.drop(["a", "r2"], axis=1)
 
     dico_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict)
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
