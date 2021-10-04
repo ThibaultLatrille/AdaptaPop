@@ -16,6 +16,7 @@ NBR_BATCHES = config['NBR_BATCHES']
 SUBSAMPLING_WEIGHTED = config['SUBSAMPLING_WEIGHTED']
 
 DFE_DICT = {"dfem": ROOT + '/utils/dfem/dfem',
+            "MK": ROOT + '/utils/MK',
             "grapes": ROOT + '/utils/grapes/grapes/grapes',
             "polyDFE": ROOT + '/utils/polyDFE/polyDFE-2.0-linux-64-bit'}
 DFE_MODELS =  [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
@@ -23,8 +24,6 @@ assert(len(DFE_MODELS) > 0)
 
 BATCHES = range(1, NBR_BATCHES + 1)
 REPLICATES = [item for sublist in [["ADAPTIVE_{0}".format(rep), "NEARLY_NEUTRAL_{0}".format(rep)] for rep in range(1, NBR_REP + 1)] for item in sublist]
-BINS = list(range(1, NBR_BINS + 1))
-REPETITIONS_PER_BIN = list(range(1, NBR_REPETITIONS_PER_BIN + 1))
 
 EXP_LIST = []
 SPECIES = {}
@@ -41,7 +40,7 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
                     if NBR_BATCHES > 0:
                         EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model, sfs))
             
-        
+print(EXP_LIST)
 localrules: all, pickle, parse_wA_results, plot_histogram, plot_heatmap, plot_scatter, table_ontology
 
 rule all:
@@ -76,7 +75,7 @@ rule generate_DoFE:
         output=lambda w: FOLDER + "/{0}-{1}-{2}/{3}/".format(w.species, w.popu, w.granularity, w.sfs),
         species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(w.species, SPECIES[w.species], w.sfs, SPECIES[w.popu])
     output:
-       touch( "{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
+       touch("{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
         'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {input.script} --pickle {input.pickle} --dfe_path {input.dfe} --seed {wildcards.batch} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REP} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 

@@ -20,7 +20,7 @@ def read_yn(path):
     return yn00.read(path)
 
 
-omega_dict = {"OMEGA_NA": [], "OMEGA_A": [], "OMEGA_0": [], "ALPHA": [], "ADAPTIVE": []}
+omega_dict = {"OMEGA_NA": [], "OMEGA_A": [], "ALPHA": [], "ADAPTIVE": []}
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--folder', required=False, type=str, dest="folder", help="Folder path")
@@ -28,14 +28,26 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output path")
     args = parser.parse_args()
     if args.model in ["dfem", "grapes"]:
-        for filepath in glob(args.folder + "/*.csv"):
+        for filepath in glob(args.folder + "/*{0}.csv".format(args.model)):
             dfem_df = pd.read_csv(filepath)
-            omega_a = float(dfem_df[dfem_df["model"] == "GammaExpo"]["omegaA"])
-            alpha = float(dfem_df[dfem_df["model"] == "GammaExpo"]["alpha"])
+            ge_df = dfem_df[dfem_df["model"] == "GammaExpo"]
+            omega_a = float(ge_df["omegaA"])
+            alpha = float(ge_df["alpha"])
             omega_dict["OMEGA_A"].append(omega_a)
             omega_dict["ALPHA"].append(alpha)
             omega_dict["OMEGA_NA"].append(omega_a * (1 - alpha) / alpha if alpha != 0 else "NaN")
-            omega_dict["OMEGA_0"].append(float(filepath.split("/")[-1].split("_")[0]) if "Bins" in filepath else "NaN")
+            omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
+    elif args.model == "MK":
+        # for filepath in glob(args.folder + "/*grapes.csv"):
+        #     dfem_df = pd.read_csv(filepath)
+        #     df = dfem_df[dfem_df["model"] == "GammaExpo"]
+        for filepath in glob(args.folder + "/*{0}.tsv".format(args.model)):
+            df = pd.read_csv(filepath, sep='\t')
+            dnds = (float(df["dn"]) / float(df["Ldn"])) / (float(df["ds"]) / float(df["Lds"]))
+            pnps = (float(df["pn"]) / float(df["Lpn"])) / (float(df["ps"]) / float(df["Lps"]))
+            omega_dict["OMEGA_A"].append(dnds - pnps)
+            omega_dict["ALPHA"].append((dnds - pnps) / dnds)
+            omega_dict["OMEGA_NA"].append(pnps)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
         from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
@@ -60,7 +72,6 @@ if __name__ == '__main__':
             omega_dict["OMEGA_NA"].append(omega * (1 - alpha))
             omega_dict["OMEGA_A"].append(omega * alpha)
             omega_dict["ALPHA"].append(alpha)
-            omega_dict["OMEGA_0"].append(float(filepath.split("/")[-1].split("_")[0]) if "Bins" in filepath else "NaN")
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
 
     pd.DataFrame(omega_dict).to_csv(args.output, sep="\t", index=False)

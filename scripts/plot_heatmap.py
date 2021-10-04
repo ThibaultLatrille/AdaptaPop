@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     dico_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict)
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem"]):
+                                                     ["grapes", "polyDFE", "dfem", "MK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)]
         m = "{0}s with {1} on {2} SFS".format(granularity.capitalize(), model, sfs)
         for pop in ddf["pop"].values:
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem"]):
+                                                     ["grapes", "polyDFE", "dfem", "MK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)].drop(
             ["sfs", "granularity", "model"], axis=1)
         if len(ddf["species"]) == 0: continue
