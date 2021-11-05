@@ -4,9 +4,10 @@ SUBSAMPLING_GENES: -1
 NBR_REP: 50
 NBR_BATCHES: 20
 SUBSAMPLING_WEIGHTED: true
-NBR_BINS: 10
-NBR_REPETITIONS_PER_BIN: 10
-SAMPLE_LIST: "sample_all.tsv"
+GATHER_SFS: false
+NBR_BINS: 0
+NBR_REPETITIONS_PER_BIN: 0
+SAMPLE_LIST: "sample_superpop.tsv"
 SFS: ["unfolded", "folded"]
-DFE_MODELS: ["grapes", "polyDFE"]
+DFE_MODELS: ["grapes", "polyDFE", "MK"]
 # DFE_MODELS: ["dfem", "grapes", "polyDFE"]

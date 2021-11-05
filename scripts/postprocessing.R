@@ -1276,8 +1276,8 @@ getAICweights = function(estimates)
 	# calculate Delta AIC
 	aic[, "AIC"] = aic[, "AIC"] - min(aic[, "AIC"])
 	# now calculate the weights
-	w = exp(-0.5 * aic[, "AIC"])
-	aic = cbind(aic, "weight" = w / sum(w))
+	wildcards = exp(-0.5 * aic[, "AIC"])
+	aic = cbind(aic, "weight" = wildcards / sum(wildcards))
 	colnames(aic)[3] = "delta AIC"
 	return(aic)
 }

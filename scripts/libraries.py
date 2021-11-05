@@ -476,12 +476,6 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         out = filepath + "_" + dfe_path.split("/")[-2]
         if "dfem" in dfe_path or "grapes" in dfe_path:
             os.system(grapes_cmd.format(dfe_path, filepath, out))
-        elif "MK" in dfe_path:
-            sfs_list = [sites_n, dn, sites_n, sum(sfs_n), sites_s, ds, sites_s, sum(sfs_s)]
-            mk_file = open(filepath + "_" + "MK.tsv", 'w')
-            mk_file.write("\t".join(["Ldn", "dn", "Lpn", "pn", "Lds", "ds", "Lps", "ps"]) + "\n")
-            mk_file.write("\t".join(map(str, sfs_list)) + "\n")
-            mk_file.close()
         elif "polyDFE" in dfe_path:
             os.system(polyDFE_cmd.format(dfe_path, filepath, out))
     os.system("gzip --force {0}.fasta".format(filepath))

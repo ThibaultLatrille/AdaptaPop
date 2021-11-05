@@ -18,7 +18,7 @@ error_kwargs = {"lw": .5, "zorder": -1}
 my_dpi = 256
 fontsize = 14
 fontsize_legend = 12
-plt.figure(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
+plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
 plt.subplot(1, 1, 1)
 idf = np.linspace(0, 1, 30)
 plt.ylabel("$\\omega$", fontsize=fontsize)
@@ -65,7 +65,8 @@ if __name__ == '__main__':
         print('{0} epistasis genes'.format(len(epi_dico)))
         print('{0} nearly-neutral genes'.format(len(nn_dico)))
         print('{0} unclassified genes'.format(len(unclass_dico)))
-
+        t = sum([len(d) for d in [strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico]])
+        print(r'{0} total genes.'.format(t))
         # model = sm.OLS(list(nn_omega[:, 1]), sm.add_constant(list(nn_omega_0[:, 1])))
         # results = model.fit()
         # b, a = results.params[0:2]
@@ -117,7 +118,7 @@ if __name__ == '__main__':
 
             heatmaps.append((COLOR, extent, heatmap))
 
-        max_heatmap = max([h.max() for c, e, h in heatmaps])
+        max_heatmap = max([np.max(h) for c, e, h in heatmaps])
         for COLOR, extent, heatmap in heatmaps:
             if COLOR == GREY: continue
             colors[..., 0:3] = COLOR[0:3]
@@ -138,7 +139,9 @@ if __name__ == '__main__':
         plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])),
                     color=GREEN)
         plt.scatter(0, 0, label=r'{0} epistasis sites'.format(sum([len(v) for v in epi_dico.values()])), color=BLUE)
-
+        print(r'{0} unclassified sites'.format(sum([len(v) for v in unclass_dico.values()])))
+        t = sum([sum([len(v) for v in d.values()]) for d in [strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico]])
+        print(r'{0} total sites.'.format(t))
     plt.legend(fontsize=fontsize_legend, loc="lower right")
     plt.ylim((ymin, ymax))
     plt.xticks(fontsize=fontsize_legend)

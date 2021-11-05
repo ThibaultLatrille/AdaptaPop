@@ -6,14 +6,65 @@ from collections import defaultdict
 import itertools
 from libraries import tex_f
 import matplotlib
+import matplotlib.pyplot as plt
 
 matplotlib.rcParams["font.family"] = ["Latin Modern Sans"]
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 
-def heatmap(data, row_labels, col_labels, ax=None,
-            cbar_kw={}, cbarlabel="", **kwargs):
+def shiftedColorMap(cmap, start=0, midpoint=0.5, stop=1.0, name='shiftedcmap'):
+    '''
+    Function to offset the "center" of a colormap. Useful for
+    data with a negative min and positive max and you want the
+    middle of the colormap's dynamic range to be at zero.
+
+    Input
+    -----
+      cmap : The matplotlib colormap to be altered
+      start : Offset from lowest point in the colormap's range.
+          Defaults to 0.0 (no lower offset). Should be between
+          0.0 and `midpoint`.
+      midpoint : The new center of the colormap. Defaults to
+          0.5 (no shift). Should be between 0.0 and 1.0. In
+          general, this should be  1 - vmax / (vmax + abs(vmin))
+          For example if your data range from -15.0 to +5.0 and
+          you want the center of the colormap at 0.0, `midpoint`
+          should be set to  1 - 5/(5 + 15)) or 0.75
+      stop : Offset from highest point in the colormap's range.
+          Defaults to 1.0 (no upper offset). Should be between
+          `midpoint` and 1.0.
+    '''
+    cdict = {
+        'red': [],
+        'green': [],
+        'blue': [],
+        'alpha': []
+    }
+
+    # regular index to compute the colors
+    reg_index = np.linspace(start, stop, 257)
+
+    # shifted index to match the data
+    shift_index = np.hstack([
+        np.linspace(0.0, midpoint, 128, endpoint=False),
+        np.linspace(midpoint, 1.0, 129, endpoint=True)
+    ])
+
+    for ri, si in zip(reg_index, shift_index):
+        r, g, b, a = cmap(ri)
+
+        cdict['red'].append((si, r, r))
+        cdict['green'].append((si, g, g))
+        cdict['blue'].append((si, b, b))
+        cdict['alpha'].append((si, a, a))
+
+    newcmap = matplotlib.colors.LinearSegmentedColormap(name, cdict)
+    plt.register_cmap(cmap=newcmap)
+
+    return newcmap
+
+
+def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **kwargs):
     im = ax.imshow(data, **kwargs)
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw, orientation='horizontal')
     cbar.ax.set_xlabel(cbarlabel)
@@ -32,19 +83,18 @@ def heatmap(data, row_labels, col_labels, ax=None,
     return im, cbar
 
 
-def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
-                     textcolors=("black", "white"),
-                     **textkw):
+def annotate_heatmap(im, data=None, div=False, valfmt="{x:.2f}", textcolors=("white", "black"), **textkw):
     if not isinstance(data, (list, np.ndarray)):
         data = im.get_array()
-    threshold = im.norm(data.max()) / 2.
+    threshold_high = im.norm(data.max()) * (0.75 if div else 0.5)
+    threshold_low = (im.norm(data.max()) * 0.25) if div else 0.0
     kw = dict(horizontalalignment="center",
               verticalalignment="center")
     kw.update(textkw)
     texts = []
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+            kw.update(color=textcolors[int(threshold_high > im.norm(data[i, j]) > threshold_low)])
             text = im.axes.text(j, i, valfmt(data[i, j]), **kw)
             texts.append(text)
     return texts
@@ -58,10 +108,11 @@ def format_pop(t):
 
 
 def format_pval(p):
-    if abs(p) < 1e-1:
-        return "0"
-    else:
-        return "{0:.1g}".format(p)
+    return "0" if abs(p) < 1e-1 else "{0:.1g}".format(p)
+
+
+def format_domega(p):
+    return "{0:.2g}".format(p)
 
 
 header = ["Species", "Population", "SFS", "Level", "Model",
@@ -85,7 +136,7 @@ if __name__ == '__main__':
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
                                                      ["grapes", "polyDFE", "dfem", "MK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)]
-        m = "{0}s with {1} on {2} SFS".format(granularity.capitalize(), model, sfs)
+        m = "{0}s - {1} SFS - {2}".format(granularity.capitalize(), sfs, model)
         for pop in ddf["pop"].values:
             pop_ddf = ddf[ddf["pop"] == pop]
             if len(pop_ddf["pop"]) != 0:
@@ -109,17 +160,23 @@ if __name__ == '__main__':
             delta_wa_matrix[id_species, id_model_set] = dico_delta_wa[sp][model_set]
 
     fig, ax = plt.subplots()
-    im, cbar = heatmap(p_matrix.T, models, species, ax=ax, cmap="YlGn", cbarlabel=r"$p_{\mathrm{value}}$")
-    texts = annotate_heatmap(im, valfmt=format_pval, fontsize=6)
+
+    YlGn = matplotlib.cm.YlGn
+    im, cbar = heatmap(p_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=r"$p_{\mathrm{value}}$")
+    texts = annotate_heatmap(im, valfmt=lambda p: "0" if abs(p) < 1e-1 else "{0:.1g}".format(p), fontsize=6)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".pval.png"), format="png")
     plt.savefig(args.output.replace(".tex", ".pval.pdf"), format="pdf")
     plt.clf()
 
     fig, ax = plt.subplots()
-    im, cbar = heatmap(delta_wa_matrix.T, models, species, ax=ax, cmap="YlGn",
+    RdBu = matplotlib.cm.RdBu
+    start = np.min(delta_wa_matrix)
+    midpoint = - start / (np.max(delta_wa_matrix) - start)
+    shifted_RdBu = shiftedColorMap(RdBu, midpoint=midpoint, name='shifted')
+    im, cbar = heatmap(delta_wa_matrix.T, models, species, ax=ax, cmap=shifted_RdBu,
                        cbarlabel=r"$\Delta_{\omega_{\mathrm{A}}}$")
-    texts = annotate_heatmap(im, valfmt=format_pval, fontsize=6)
+    texts = annotate_heatmap(im, valfmt=lambda p: "{0:.2f}".format(p), div=True, fontsize=5)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".delta_wa.png"), format="png")
     plt.savefig(args.output.replace(".tex", ".delta_wa.pdf"), format="pdf")
@@ -127,17 +184,6 @@ if __name__ == '__main__':
     plt.close('all')
 
     o = open(args.output, 'w')
-    # o.write(df.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=header))
-    # o.write("\\newpage\n")
-
-    # for model in ["grapes", "polyDFE", "dfem"]:
-    #     ddf = df[df["model"] == model].drop(["model"], axis=1)
-    #     if len(ddf["species"]) == 0: continue
-    #     o.write("\\subsection{" + model + "} \n")
-    #     o.write(ddf.to_latex(index=False, escape=False, longtable=True, float_format=tex_f,
-    #                          header=[i for i in header if i != "Model"]))
-    #     o.write("\\newpage\n")
-
     sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
                                                      ["grapes", "polyDFE", "dfem", "MK"]):
@@ -146,7 +192,6 @@ if __name__ == '__main__':
         if len(ddf["species"]) == 0: continue
         o.write("\\subsection{" + "{0} SFS at {1} level - {2}".format(sfs.capitalize(), granularity, model) + "} \n")
         o.write(ddf.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=sub_header))
-        # o.write("\\newpage\n")
     o.close()
 
     tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {0}/main-table.tex".format(

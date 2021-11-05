@@ -2,6 +2,7 @@ import os
 from ete3 import Tree
 import pandas as pd
 from Bio import SeqIO
+from snakemake.io import expand, touch
 
 configfile: 'config.yaml'
 
@@ -48,15 +49,15 @@ rule filter:
 
 rule run_bayescode:
     input:
-        ali = rules.filter.output.ali,
-        tree = rules.filter.output.tree,
+        ali = experiment_folder + "/{CDS}/placnr.ali",
+        tree = experiment_folder + "/{CDS}/placnr.rootree",
         bayescode = bayescode_folder + "/mutselomega",
         config = "config.yaml"
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.run")
     params:
-        time="3-23:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
-        unzip = lambda w, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
-        cmd = lambda w, input: "-a {0} -t {1} -u {2} {3}".format(input.ali, input.tree, POINTS, MODELS[w.model]) if not config['RESTART'] else ""
+        time="3-23:00", mem=1000, threads=1, queue="normal", name=lambda wildcards: wildcards.CDS,
+        unzip = lambda wildcards, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
+        cmd = lambda wildcards, input: "-a {0} -t {1} -u {2} {3}".format(input.ali, input.tree, POINTS, MODELS[wildcards.model]) if not config['RESTART'] else ""
     shell: "{params.unzip} {input.bayescode} {params.cmd} {output} && gzip -f {output}.chain"
 
 rule inference:
@@ -64,11 +65,11 @@ rule inference:
 
 rule read_bayescode:
     input:
-        run = rules.run_bayescode.output,
+        run = experiment_folder + "/{CDS}/{model}_{chain}.run",
         bayescode = bayescode_folder + "/readmutselomega"
     params:
-        time="0-10:00", mem=1000, threads=1, queue="normal", name=lambda w: w.CDS,
-        ss=lambda w, input: "{0} -b {1} --ss {2} ".format(input.bayescode, BURN_IN, input.run),
-        read=lambda w, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN, "--omega_0" if w.model == "sitemutsel" else "", ci, input.run) for ci in [0.0, 0.25, 0.05, 0.025, 0.005, 0.0025]])
+        time="0-10:00", mem=1000, threads=1, queue="normal", name=lambda wildcards: wildcards.CDS,
+        ss=lambda wildcards, input: "{0} -b {1} --ss {2} ".format(input.bayescode, BURN_IN, input.run),
+        read=lambda wildcards, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN,"--omega_0" if wildcards.model == "sitemutsel" else "", ci, input.run) for ci in [0.0, 0.25, 0.05, 0.025, 0.005, 0.0025]])
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.read")
     shell: "gunzip {input.run}.chain.gz && {params.read} && {params.ss} && gzip -f {input.run}.chain"

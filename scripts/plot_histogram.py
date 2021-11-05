@@ -1,7 +1,6 @@
 import argparse
 import os
 import pandas as pd
-import statsmodels.api as sm
 import matplotlib as mpl
 
 mpl.use('Agg')
@@ -15,8 +14,6 @@ RED = "#EB6231"
 fontsize = 16
 fontsize_legend = 14
 my_dpi = 256
-fig = plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
-bins = 30
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, nargs="+", dest="tsv", help="Input tsv files")
@@ -29,6 +26,7 @@ if __name__ == '__main__':
                    "p_val": []}
 
     for filepath in args.tsv:
+        fig = plt.figure(figsize=(1920 / my_dpi, 960 / my_dpi), dpi=my_dpi)
         df = pd.read_csv(filepath, sep="\t")
         if len(df["OMEGA_A"]) == 0 or len(df[~df["ADAPTIVE"]]["OMEGA_A"]) == 0: continue
         df = df[df["OMEGA_NA"] != "None"]
@@ -41,10 +39,10 @@ if __name__ == '__main__':
         os.makedirs("{0}/{1}/{2}-{3}-{4}".format(args.output, sp.replace(" ", "_"), granu, sfs, model), exist_ok=True)
         assert plot == "histogram"
         # p_val = len([1 for x in nearly_neutral if x > adaptive]) / len(nearly_neutral)
-        hist, _, _ = plt.hist(df[~df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=GREEN,
+        hist, _, _ = plt.hist(df[~df["ADAPTIVE"]]["OMEGA_A"], bins='auto', density=1, facecolor=GREEN,
                               alpha=0.5, label='Nearly-neutral ({0} subsampling)'.format(sum(~df["ADAPTIVE"])))
         y_max = 1.2 * max(hist)
-        hist, _, _ = plt.hist(df[df["ADAPTIVE"]]["OMEGA_A"], bins, density=1, facecolor=RED,
+        hist, _, _ = plt.hist(df[df["ADAPTIVE"]]["OMEGA_A"], bins='auto', density=1, facecolor=RED,
                               alpha=0.5, label='Adaptive ({0} bootstrap)'.format(sum(~df["ADAPTIVE"])))
         y_max = max(y_max, 1.2 * max(hist))
         plt.ylim((0, y_max))
@@ -60,14 +58,15 @@ if __name__ == '__main__':
                                    alternative="greater")
         plt.title('{0} - {1}\n{2} level, {3} SFS, p-value={4:3g}'.format(sp, pop, granu, sfs, p_val),
                   fontsize=fontsize)
-        plt.xlabel(r'$\omega_{A}$', fontsize=fontsize)
+        plt.xlabel(r'$\omega_{A}$ ' + model, fontsize=fontsize)
         plt.ylabel('Density', fontsize=fontsize)
         plt.legend(fontsize=fontsize_legend, loc='upper left')
         plt.xticks(fontsize=fontsize_legend)
         plt.tight_layout()
         plt.savefig(name + ".pdf", format="pdf")
         plt.savefig(name + ".png", format="png")
-        plt.close()
+        plt.clf()
+        plt.close("all")
 
         dico_output["wA_Selected"].append(mean_adaptive)
         dico_output["wNA_Selected"].append(np.mean(df[df["ADAPTIVE"]]["OMEGA_NA"]))

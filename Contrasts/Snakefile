@@ -1,7 +1,7 @@
-import numpy
 import os
 import pandas as pd
 from glob import glob
+from snakemake.io import expand, touch
 
 configfile: 'config.yaml'
 
@@ -16,7 +16,6 @@ NBR_BATCHES = config['NBR_BATCHES']
 SUBSAMPLING_WEIGHTED = config['SUBSAMPLING_WEIGHTED']
 
 DFE_DICT = {"dfem": ROOT + '/utils/dfem/dfem',
-            "MK": ROOT + '/utils/MK',
             "grapes": ROOT + '/utils/grapes/grapes/grapes',
             "polyDFE": ROOT + '/utils/polyDFE/polyDFE-2.0-linux-64-bit'}
 DFE_MODELS =  [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
@@ -36,11 +35,10 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"], sep='\t').iterrows()):
             dir = "{0}-{1}-{2}".format(row["Species"], row["SampleName"], granularity)
             for model in config['DFE_MODELS']:
                 for sfs in config['SFS']:
-                    if model == "polyDFE" and sfs == "folded": continue
+                    if (model == "polyDFE" or model == "MK") and sfs == "folded": continue
                     if NBR_BATCHES > 0:
                         EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model, sfs))
-            
-print(EXP_LIST)
+
 localrules: all, pickle, parse_wA_results, plot_histogram, plot_heatmap, plot_scatter, table_ontology
 
 rule all:
@@ -55,25 +53,25 @@ rule pickle:
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
         div_folder=ROOT + '/OrthoMam/Experiments',
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
-        script=ROOT + '/scripts/annotation_ensg.py',
+        script=ROOT + '/scripts/annotation_ensg.py'
     output:
-        tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2",
+        tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2"
     params:
-        species=lambda w: "--focal_species {0} --sister_species {1}".format(w.species, SPECIES[w.species])
+        species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species, SPECIES[wildcards.species])
     shell:
         'python3 {input.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
 rule generate_DoFE:
     input:
-        vfc=lambda w: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(w.species, w.popu)),
-        pickle=lambda w: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(w.species, w.granularity),
+        vfc=lambda wildcards: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(wildcards.species, wildcards.popu)),
+        pickle=lambda wildcards: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(wildcards.species, wildcards.granularity),
         script=ROOT + '/scripts/generate_DoFE.py',
-        dfe=DFE_MODELS,
+        dfe=DFE_MODELS
     params:
-        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda w :"{0}-{1}-{2}-{3}".format(w.species, w.popu, w.granularity, w.batch),
-        tmp_folder=lambda w: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(w.species, w.popu, w.granularity, w.batch),
-        output=lambda w: FOLDER + "/{0}-{1}-{2}/{3}/".format(w.species, w.popu, w.granularity, w.sfs),
-        species=lambda w: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(w.species, SPECIES[w.species], w.sfs, SPECIES[w.popu])
+        time="2-00:00", mem=3000, threads=1, queue="normal", name=lambda wildcards : "{0}-{1}-{2}-{3}".format(wildcards.species, wildcards.popu, wildcards.granularity, wildcards.batch),
+        tmp_folder=lambda wildcards: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(wildcards.species, wildcards.popu, wildcards.granularity, wildcards.batch),
+        output=lambda wildcards: FOLDER + "/{0}-{1}-{2}/{3}/".format(wildcards.species, wildcards.popu, wildcards.granularity, wildcards.sfs),
+        species=lambda wildcards: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(wildcards.species, SPECIES[wildcards.species], wildcards.sfs, SPECIES[wildcards.popu])
     output:
        touch("{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
@@ -84,7 +82,7 @@ rule parse_wA_results:
         dfe_res=expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{batch}.txt", batch=BATCHES),
         script=ROOT + '/scripts/parse_results.py'
     params:
-        folder=lambda w: "--folder {0}-{1}-{2}/{3}".format(w.species, w.popu, w.granularity, w.sfs)
+        folder=lambda wildcards: "--folder {0}-{1}-{2}/{3}".format(wildcards.species, wildcards.popu, wildcards.granularity, wildcards.sfs)
     output:
         plot="{species}-{popu}-{granularity}/histogram-{model}-{sfs}.tsv"
     shell:
@@ -106,11 +104,10 @@ rule plot_heatmap:
     output: "Analysis/results.tex"
     shell: 'python3 {input.script} --tsv {input.tsv} --output {output}'
 
-
 rule plot_scatter:
     input:
         folder=ROOT + '/OrthoMam/Experiments',
-        script=ROOT + '/scripts/plot_scatter.py',
+        script=ROOT + '/scripts/plot_scatter.py'
     output:
         plot="scatterplot_{granularity}.pdf"
     shell:
@@ -120,7 +117,7 @@ rule table_ontology:
     input:
         folder=ROOT + '/OrthoMam/Experiments',
         xml=ROOT + '/OrthoMam/Datasets/omm_markers',
-        script=ROOT + '/scripts/table_ontology.py',
+        script=ROOT + '/scripts/table_ontology.py'
     output:
         tex="ontology/{granularity}_{category}_table.tex",
         pdf="ontology/{granularity}_{category}_table.pdf"

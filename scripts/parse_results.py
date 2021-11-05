@@ -38,23 +38,34 @@ if __name__ == '__main__':
             omega_dict["OMEGA_NA"].append(omega_a * (1 - alpha) / alpha if alpha != 0 else "NaN")
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     elif args.model == "MK":
-        # for filepath in glob(args.folder + "/*grapes.csv"):
-        #     dfem_df = pd.read_csv(filepath)
-        #     df = dfem_df[dfem_df["model"] == "GammaExpo"]
-        for filepath in glob(args.folder + "/*{0}.tsv".format(args.model)):
-            df = pd.read_csv(filepath, sep='\t')
-            dnds = (float(df["dn"]) / float(df["Ldn"])) / (float(df["ds"]) / float(df["Lds"]))
-            pnps = (float(df["pn"]) / float(df["Lpn"])) / (float(df["ps"]) / float(df["Lps"]))
+        for filepath in glob(args.folder + "/*.dofe"):
+            dofe = open(filepath, 'r')
+            dofe.readline()
+            dofeline = dofe.readline()
+            if "#unfolded" in dofeline:
+                dofeline = dofe.readline()
+            split_line = dofeline.strip().split("\t")
+            Ldn, dn, Lds, ds = split_line[-4:]
+            dnds = (int(dn) / float(Ldn)) / (int(ds) / float(Lds))
+            nbr_cat = (len(split_line) - 8) // 2
+            Lpn, Lps = split_line[2], split_line[nbr_cat + 3]
+            assert (Lpn == Ldn)
+            assert (Lps == Lds)
+            shift = 1
+            sfs_n = [int(i) for i in split_line[shift + 3:nbr_cat + 3]]
+            sfs_s = [int(i) for i in split_line[nbr_cat + shift + 4:nbr_cat * 2 + 4]]
+            pnps = (sum(sfs_n) / float(Lpn)) / (sum(sfs_s) / float(Lps))
             omega_dict["OMEGA_A"].append(dnds - pnps)
             omega_dict["ALPHA"].append((dnds - pnps) / dnds)
             omega_dict["OMEGA_NA"].append(pnps)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
+        '''
         from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
         string = ''.join(open("postprocessing.R", "r").readlines())
         postprocessing = SignatureTranslatedAnonymousPackage(string, "postprocessing")
-
+        '''
         for filepath in glob(args.folder + "/*polyDFE.out"):
             polydfe_dico = read_polyDFE(filepath)
             if len(polydfe_dico) == 0: continue
@@ -64,10 +75,11 @@ if __name__ == '__main__':
                 yn00_results = read_yn(filepath.replace("_polyDFE.out", "_yn00.out"))
                 res = list(list(yn00_results.values())[0].values())[0]['YN00']
                 omega = res["omega"]
-
-            # estimates = postprocessing.parseOutput(filepath)[0]
-            # alpha = postprocessing.estimateAlpha(estimates, supLimit=5)[0]
-            # alpha_dfe = polydfe_dico["alpha_dfe"]
+            '''
+            estimates = postprocessing.parseOutput(filepath)[0]
+            alpha = postprocessing.estimateAlpha(estimates, supLimit=5)[0]
+            alpha_dfe = polydfe_dico["alpha_dfe"]
+            '''
             alpha = polydfe_dico["alpha_div"]
             omega_dict["OMEGA_NA"].append(omega * (1 - alpha))
             omega_dict["OMEGA_A"].append(omega * alpha)

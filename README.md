@@ -49,7 +49,7 @@ cd Orthomam
 
 Install the compiling toolchains:
 ```
-sudo apt install -qq -y make cmake clang
+sudo apt install -qq -y make cmake clang openmpi-bin openmpi-common libopenmpi-dev
 ```
 Clone and compile the C++ code for *BayesCode*
 ```
@@ -67,55 +67,17 @@ Install PAML
 sudo apt install paml
 ```
 
-In folder `Contrasts` run `snakemake`:
+In folder `Contrasts` run `snakemake`, this requires access to large computation facilities:
 ```
 cd Contrasts
-snakemake
+snakemake -j 128
 ```
+Or use the script `snakeslurm.sh` if run on a cluster (slurm) to submit the jobs.
 
 ## 3. Add features or debug in the python scripts
 You made modifications to one of the python script, a notebook, this README.md, or you added new features.
 You wish this work benefits to all (futur) users of this repository?
 Please, feel free to open a [pull-request](https://github.com/ThibaultLatrille/AdaptaPop/pulls)
-
-## TO DO:
-- ~~Snakefile for generating gene specific SFS and run DFEM~~
-- ~~Aggregate sites (SFS, fasta)~~
-- ~~Histogram nearly-neutral (subsampling)~~
-- ~~Histogram adaptive (boostrap)~~
-- ~~Ontology test for genes~~
-- ~~Control for omega in the nearly-neutral set (weighted sampling)~~
-- ~~Detecting outliers based on CI~~*-
-- ~~Regression on w_NA versus w_0 only for the nearly-neutral~~
-- ~~Unfold SFS (needs polarization)~~
-- ~~Get Fj-Fi for polymorphisms~~
-- ~~Compress fasta results after DFEM runs~~
-- Run on all samples
-- Table with all statistics, each row is a population
-- Nearly-neutral should filter adaptive sites in close proximity
-- Run with w* (????)
-
-
-From Martin’s talk in the morning we saw that positive linked selection influences piN/piS.
-This means positive linked selection will influence the estimate of omega_NA in the MK setting.
-Do you think that will bias your results?
-Second/separate question, how do you think a fluctuation environment (fluctuating DFE) or recent change in population size will influence the congruence between the phylogenetic and the population genetic model?
-
-How do you think the choice of the two different species is influencing the analysis ?
-For example, for species within the same genus, or more distant.
-How to choose that. And how does that affect?
-
-Adaptation is actually computed using divergence in both approaches.
-So it seems that what is congruent between phylogeny and polymorphism is w0 more than wA.
-Am I right?
-
-Assuming that everything hold and is robust, what would be you interpretation of the congruence?
-Were you surprised by it?
-
-About epistasis in the second part: could you select the genes detected as nearly neutral in the first part to get better estimates of Ne?
-What you call epistatis is actually constraints on the evolution between sites, such as background selection would do, among other causes?
-
-On the first part of your talk, could you use incongruence between omega_0 and omega_NA to learn about changes in Ne or changes in the DFE over time?
 
 ## Licence
 

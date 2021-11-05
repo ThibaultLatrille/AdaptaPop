@@ -106,8 +106,8 @@ if __name__ == '__main__':
                 "\n".format(len(df["p_value"]), len(cds_focal_set), args.category.lower().replace("-", " "),
                             len(cds_control_set), args.granularity)
     text_core += "\\scriptsize\n"
-    text_core += df[df["e_value"] < 1.0].to_latex(index=False, escape=False, longtable=True, float_format=tex_f,
-                                                  header=header)
+    text_core += df[df["e_value"] < 1.0].head(500).to_latex(index=False, escape=False, longtable=True,
+                                                            float_format=tex_f, header=header)
 
     with open(args.output.replace(".tex", "") + ".core.tex", 'w') as core_f:
         core_f.write(text_core)

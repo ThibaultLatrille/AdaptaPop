@@ -1,5 +1,5 @@
 from ftplib import FTP
-import numpy
+from snakemake.io import expand, touch
 import os
 import pandas as pd
 
