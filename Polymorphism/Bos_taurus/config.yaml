@@ -1,5 +1,6 @@
 FTP: 'ftp.ebi.ac.uk'
 STUDY: '/pub/databases/nextgen/bos/variants/'
+CONTAINS_PREFIX: ""
 CONTAINS: '.genus_snps.UMD3_1'
 ASSEMBLY: "UMD3.1"
 ENSEMBL_RELEASE: 91

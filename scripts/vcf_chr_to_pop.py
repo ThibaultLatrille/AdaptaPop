@@ -37,6 +37,7 @@ if __name__ == '__main__':
 
         header_written = False
         for vcf_chr_path in sorted_chr:
+            if 'wgs' in vcf_chr_path: continue
             print("Chromosome " + vcf_chr_path)
             vcf_chr_file = gzip.open(vcf_chr_path, 'rt')
             for line in vcf_chr_file:

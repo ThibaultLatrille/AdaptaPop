@@ -1,5 +1,5 @@
 from ftplib import FTP
-from snakemake.io import expand, touch
+from snakemake.io import expand
 import os
 import pandas as pd
 
@@ -12,8 +12,8 @@ vfc_dico = {}
 for analysis in ftp.nlst(config['STUDY']):
     for file_path in ftp.nlst(analysis):
         file = file_path.split('/')[-1]
-        if file.endswith('vcf.gz') and config['CONTAINS'] in file:
-            vfc_dico[file.replace('ALL.', '').replace(config['CONTAINS'], '').replace('.vcf.gz', '').split('.')[0]] = file_path
+        if file.endswith('vcf.gz') and (config['CONTAINS'] in file) and (config['CONTAINS_PREFIX'] in file):
+            vfc_dico[file.replace(config['CONTAINS_PREFIX'], '').replace(config['CONTAINS'], '').replace('.vcf.gz', '').split('.')[0]] = file_path
 
 ftp_ensembl = FTP('ftp.ensembl.org')
 ftp_ensembl.login()
@@ -35,26 +35,30 @@ rule download_fasta:
         fa_gz=FASTA
     run:
         with open(output.fa_gz, 'wb') as fa_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/fasta/{1}/cds/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'], output.fa_gz), fa_gz.write)
+            ftp_ensembl.retrbinary('RETR /pub/release-{0}/fasta/{1}/cds/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'].lower(), output.fa_gz), fa_gz.write)
 
 rule download_gtf:
+    priority: 50
     output:
         gtf_gz=GTF + '.gtf.gz'
     run:
         with open(output.gtf_gz, 'wb') as gtf_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/gtf/{1}/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'], output.gtf_gz), gtf_gz.write)
+            ftp_ensembl.retrbinary('RETR /pub/release-{0}/gtf/{1}/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'].lower(), output.gtf_gz), gtf_gz.write)
 
 
 rule gtf_to_bed:
+    priority: 50
     input:
         gtf_gz=GTF + '.gtf.gz',
         gtf_to_bed=ROOT + '/scripts/gtf_to_bed.py'
     output:
         bed=GTF + '.bed',
         sorted_bed=GTF + '.sorted.bed',
-        merged_bed=GTF + '.merged.bed',
+        merged_bed=GTF + '.merged.bed'
+    params:
+        chr_prefix=config['CHR_PREFIX'] if 'CHR_PREFIX' in config else ""
     shell:
-        'python3 {input.gtf_to_bed} --gtf {input.gtf_gz} && bedtools sort -i {output.bed} > {output.sorted_bed} && bedtools merge -i {output.sorted_bed} -c 4 -o distinct > {output.merged_bed}'
+        "python3 {input.gtf_to_bed} --gtf {input.gtf_gz} --chr_prefix \"{params.chr_prefix}\" && bedtools sort -i {output.bed} > {output.sorted_bed} && bedtools merge -i {output.sorted_bed} -c 4 -o distinct > {output.merged_bed}"
 
 rule download_vcf:
     output:
@@ -75,6 +79,7 @@ if 'LIFT_OVER' in config:
             'CrossMap.py vcf {input.chain} {input.vfc_gz} {input.ref_genome} {output.vfc_gz} --compress'
 
 rule intersect:
+    priority: 50
     input:
         vfc_gz=NAME + '.{subset}.vcf.gz',
         bed=GTF + '.merged.bed'
@@ -84,6 +89,7 @@ rule intersect:
         'bedtools intersect -a {input.vfc_gz} -b {input.bed} -wb -header > {output.vfc}'
 
 rule zip:
+    priority: 50
     input:
         vfc_cds='CDS.' + NAME + '.{subset}.vcf',
         vfc_gz=NAME + '.{subset}.vcf.gz'
@@ -111,9 +117,9 @@ rule selcoeff:
     input:
         vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys())),
         script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
-        exp_folder=ROOT + '/OrthoMam/Experiments/',
+        exp_folder=ROOT + '/OrthoMam/Experiments/'
     output:
-        vcf='CDS.SELCOEFF.' + NAME + '.vcf.gz',
+        vcf='CDS.SELCOEFF.' + NAME + '.vcf.gz'
     shell:
         'python3 {input.script} --vcf {input.vcf} --folder {input.exp_folder} --output {output.vcf}'
 
@@ -124,9 +130,9 @@ if POPULATIONS:
             panel=config["PANEL"],
             script=ROOT + '/scripts/vcf_chr_to_pop.py'
         params:
-            output='CDS.ANNOT.' + NAME + '.POPULATION.vcf.gz',
+            output='CDS.ANNOT.' + NAME + '.POPULATION.vcf.gz'
         output:
-            vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=POPULATIONS),
+            vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=POPULATIONS)
         shell:
             'python3 {input.script} --panel {input.panel} --vcf {input.vcf} --output {params.output}'
 
@@ -136,8 +142,8 @@ rule est_sfs:
         script=ROOT + '/scripts/est_sfs.py',
         est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
         est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
-        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt',
+        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt'
     output:
-        tsv='CDS.ANNOT.' + NAME + '.{subset}.tsv.gz',
+        tsv='CDS.ANNOT.' + NAME + '.{subset}.tsv.gz'
     shell:
         'python3 {input.script} --vcf {input.vcf} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'

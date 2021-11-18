@@ -143,10 +143,11 @@ class Cds(object):
     def not_coding(self):
         return self.seq_length() % 3 != 0
 
-    def befile_lines(self):
+    def befile_lines(self, chr_prefix):
         lines = []
         for start, end in self.exons:
-            lines.append("{0}\t{1}\t{2}\t{3}\t0\t{4}\n".format(self.chromosome, start, end, self.name, self.strand))
+            lines.append("{0}{1}\t{2}\t{3}\t{4}\t0\t{5}\n".format(chr_prefix, self.chromosome, start, end, self.name,
+                                                                  self.strand))
         return lines
 
 
@@ -525,3 +526,28 @@ def bin_dataset(cds_dico, dico_omega_0, bins=10, gene_level=True):
                 if ensg not in bin_dicos[insert]: bin_dicos[insert][ensg] = list()
                 bin_dicos[insert][ensg].append(pos)
     return bin_dicos
+
+
+GREEN = "#8FB03E"
+RED = "#EB6231"
+YELLOW = "#E29D26"
+BLUE = "#5D80B4"
+LIGHTGREEN = "#6ABD9B"
+
+
+def format_pop(t):
+    if " " in t:
+        return "".join([s[0] for s in t.split(" ")])
+    else:
+        return t
+
+
+def sp_to_color(specie):
+    if "Homo" in specie:
+        return BLUE
+    elif "Ovis" in specie:
+        return YELLOW
+    elif "Bos" in specie:
+        return LIGHTGREEN
+    else:
+        return "black"

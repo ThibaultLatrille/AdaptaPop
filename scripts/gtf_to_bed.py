@@ -13,6 +13,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--include', required=False, type=str,
                         dest="i", metavar="<include>",
                         help="Information that must be contained in the CDS to be considered valid.")
+    parser.add_argument('-p', '--chr_prefix', required=False, type=str, default="",
+                        dest="chr_prefix", help="If the chromosome number is prefixed (e.g. chr1 instead of 1)")
     args = parser.parse_args()
     path = os.getcwd()
 
@@ -40,7 +42,7 @@ if __name__ == '__main__':
             dict_errors_cds["NotCoding"].append(transcript_id)
             continue
 
-        for exon in cds.befile_lines():
+        for exon in cds.befile_lines(args.chr_prefix):
             bedfile.write(exon)
 
     bedfile.truncate()

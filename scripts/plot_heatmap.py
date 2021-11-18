@@ -4,7 +4,7 @@ import os
 import numpy as np
 from collections import defaultdict
 import itertools
-from libraries import tex_f
+from libraries import tex_f, format_pop, sp_to_color
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -78,6 +78,8 @@ def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **k
              rotation_mode="anchor")
     ax.set_xticks(np.arange(data.shape[1] + 1) - .5, minor=True)
     ax.set_yticks(np.arange(data.shape[0] + 1) - .5, minor=True)
+    for tick_label in ax.axes.get_xticklabels():
+        tick_label.set_color(sp_to_color(tick_label.get_text()))
     ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
     ax.tick_params(which="minor", bottom=False, left=False)
     return im, cbar
@@ -98,13 +100,6 @@ def annotate_heatmap(im, data=None, div=False, valfmt="{x:.2f}", textcolors=("wh
             text = im.axes.text(j, i, valfmt(data[i, j]), **kw)
             texts.append(text)
     return texts
-
-
-def format_pop(t):
-    if " " in t:
-        return "".join([s[0] for s in t.split(" ")])
-    else:
-        return t
 
 
 def format_pval(p):
@@ -170,7 +165,7 @@ if __name__ == '__main__':
     plt.clf()
 
     fig, ax = plt.subplots()
-    RdBu = matplotlib.cm.RdBu
+    RdBu = matplotlib.cm.get_cmap('RdBu_r')
     start = np.min(delta_wa_matrix)
     midpoint = - start / (np.max(delta_wa_matrix) - start)
     shifted_RdBu = shiftedColorMap(RdBu, midpoint=midpoint, name='shifted')
@@ -191,7 +186,13 @@ if __name__ == '__main__':
             ["sfs", "granularity", "model"], axis=1)
         if len(ddf["species"]) == 0: continue
         o.write("\\subsection{" + "{0} SFS at {1} level - {2}".format(sfs.capitalize(), granularity, model) + "} \n")
-        o.write(ddf.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=sub_header))
+        o.write("\\begin{center}\n")
+        o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
+                "{0}-{1}-{2}.pdf".format(granularity, sfs, model) + "} \n")
+        o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
+        o.write(ddf.to_latex(index=False, escape=False, float_format=tex_f, header=sub_header))
+        o.write("\\end{adjustbox}\n")
+        o.write("\\end{center}\n")
     o.close()
 
     tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {0}/main-table.tex".format(

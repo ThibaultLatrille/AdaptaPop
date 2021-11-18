@@ -1,5 +1,6 @@
 FTP: 'ftp.sra.ebi.ac.uk'
 STUDY: '/vol1/ERZ479/'
+CONTAINS_PREFIX: ""
 CONTAINS: 'Svardal_et_al_2017_vervet_monkey_SNPs_incl_rhesus_macaque_diff_SnpEff_ensembl_1.1.78_CAE'
 ASSEMBLY: "ChlSab1.1"
 ENSEMBL_RELEASE: 91

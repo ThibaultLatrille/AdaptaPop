@@ -1,5 +1,6 @@
 FTP: 'ftp.ebi.ac.uk'
 STUDY: '/pub/databases/nextgen/capra/variants/'
+CONTAINS_PREFIX: ""
 CONTAINS: '.genus_snps.CHIR1_0'
 ASSEMBLY: "ARS1"
 ENSEMBL_RELEASE: 92

@@ -44,6 +44,7 @@ localrules: all, pickle, parse_wA_results, plot_histogram, plot_heatmap, plot_sc
 rule all:
     input:
         "Analysis/results.tex",
+        "Analysis/violin_plot",
         expand("scatterplot_{granularity}.pdf", granularity=GRANULARITY),
         "ontology/gene_adaptive_table.pdf", "ontology/gene_epistasis_table.pdf",
         "ontology/site_adaptive_table.pdf", "ontology/site_epistasis_table.pdf", "ontology/site_strongly-adaptive_table.pdf"
@@ -96,6 +97,16 @@ rule plot_histogram:
         tsv="Analysis/results.tsv"
     shell:
         'mkdir -p Analysis && python3 {input.script} --tsv {input.tsv} --output Analysis'
+
+rule plot_violin:
+    input:
+        tsv=EXP_LIST,
+        script=ROOT + '/scripts/plot_violin.py'
+    output:
+        tsv=touch("Analysis/violin_plot")
+    shell:
+        'mkdir -p Analysis/ViolinPlot && python3 {input.script} --tsv {input.tsv} --output Analysis/ViolinPlot'
+
 
 rule plot_heatmap:
     input:

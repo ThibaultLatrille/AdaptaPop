@@ -117,7 +117,7 @@ urlcolor=BLUELINK
 
 \keywords{Adaptation \and phyogenetics \and population-genetics \and codon models}
 
-\section*{Introduction}
+\section*{Main}
 
 Genetic sequences are informative of populations past evolutionary history and can carry signature of selection.
 Selection takes a variety of forms since a mutation in a molecular sequence can either be neutral, positively or negatively selected.
@@ -157,61 +157,13 @@ Accordingly, the goal of this study is assess whether the two signals are correl
 To this aim we develop a pipeline gathering divergence and polymorphism data for coding genes across species.
 Alignments in placentals are used to estimate the rate of adaptation in each gene and each site, and we extract genes and sites with a rate of adaptation significantly high.
 The pipeline then testes if the group of sequences detected with a high rate of adaption in the phylogeny-based method also display a high rate of adaptation in the population-based method.
-The population-based method was conducted using polymorphism available in \textit{Homo sapiens}, \textit{Bos taurus}, \textit{Ovis aries} and \textit{Chlorocebus sabaeus}.
+The population-based method is conducted using polymorphism available in \textit{Homo sapiens}, \textit{Bos taurus}, \textit{Ovis aries} and \textit{Chlorocebus sabaeus}.
 
 \section*{Results}
 
-\subsection*{Detecting protein-coding sequences under adaptation}
+\subsection*{Detecting genes and sites under adaptation}
 
-\begin{figure*}[h]
-	\centering
-	\begin{minipage}{0.49\linewidth}
-		\includegraphics[width=\linewidth, page=1]{scatterplot_gene.pdf}
-	\end{minipage}
-	\llap{\raisebox{-1.0cm}{\scriptsize A\hspace{0.35cm}}}\hfill
-	\begin{minipage}{0.49\linewidth}
-		\includegraphics[width=\linewidth, page=1]{scatterplot_site.pdf}
-	\end{minipage}
-	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
-	\label{fig:scatterplot}
-	\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale}.
-		$\omega$ estimated by the site-model against $\omega_{0}$ predicted by the mutation-selection model.
-		Scatter plot of $14475$ genes in panel A. Density plot of $2636948$ sites in panel B.
-		Genes or sites are then classified into one the the four evolutionary regime: strongly adaptive ($\omega > 1$ in black), adaptive ($\omega > \omega_{0}$ in red), nearly-neutral ($\omega \simeq \omega_{0}$ in green) or epistasis ($\omega < \omega_{0}$ in blue). }
-\end{figure*}
-
-\begin{figure*}[h]
-	\centering
-	\includegraphics[width=\linewidth, page=1]{polymorphism-method.pdf}
-	\llap{\raisebox{-1.0cm}{\scriptsize A\hspace{0.35cm}}}\hfill
-	\begin{minipage}{0.49\linewidth}
-		\includegraphics[width=\linewidth, page=1]{Chlorocebus_sabaeus/gene-folded-grapes/Saint_Kitts-histogram.pdf}
-	\end{minipage}
-	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
-	\begin{minipage}{0.49\linewidth}
-		\includegraphics[width=\linewidth, page=1]{Chlorocebus_sabaeus/site-folded-grapes/Saint_Kitts-histogram.pdf}
-	\end{minipage}
-	\label{fig:histogram}
-	\llap{\raisebox{-1.0cm}{\scriptsize C\hspace{0.35cm}}}\hfill
-	\caption{
-		Enrichment of adaptation at the population-genetic scale.
-		In the \textit{Saint Kitts} population of \textit{Chlorocebus sabaeus}, $\omega_A$ was computed on the concatenate of orthologous genes (panel B) or sites (panel C) having a high rate of adaptation, detected in phylogeny-based method (panel A).
-		The result was compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
-	}
-\end{figure*}
-
-\begin{figure*}[h]
-	\centering
-	\includegraphics[width=\linewidth, page=1]{results.pval.colors.pdf}
-	\label{fig:pvalues}
-	\caption{
-	Enrichment of adaptation at the population-genetic scale across different populations.
-	$\omega_A$ was computed on the concatenate of orthologs genes or sites having a high rate of adaptation, detected in phylogeny-based method.
-	The result was compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
-	}
-\end{figure*}
-
-We derived a two-step approach (see methods), which was applied to the set of genes and sites.
+We derived a two-step approach (see methods), which is applied to the set of genes and sites.
 The value of $\omega$ estimated by the site-model and of $\omega_{0}$ estimated by the mutation-selection model show a good linear correlation ($r^2=0.898$) indicating that, for most protein, the mutation-selection site-model effectively predicts the rate of non-synonymous substitutions over the rate synonymous substitutions.
 The \textit{nearly-neutral} assumption is thus not rejected for most proteins (figure~\ref{fig:scatterplot}A) and sites (figure~\ref{fig:scatterplot}B).
 On the other hand, some proteins and sites appear to have an actual $\omega$ substantially higher that of the $\omega_0$ predicted by the mutation-selection model (in red).
@@ -225,18 +177,15 @@ $10$ ontologies were observed with an $e_{\mathrm{value}} <1$, while in expectat
 The estimated false discovery rate is therefore around $10 \%$.
 Among these $10$ ontology terms, $60 \%$ were related to immune processes.
 An enrichment in genes involved in immune processes was also found in large scale analysis based on classical site codon-models ($16,529$ genes, Kosiol \textit{et al}~\citep{kosiol_patterns_2008}).
-
-
 Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
-
 
 \subsection*{Congruence between phylogeny- and population-based methods}
 Finally, I investigated whether the phylogeny-based and the population-based methods give congruent results in terms of detection of adaptive evolution.
 
-To do so, $\omega_A^{MK}$ was computed on the concatenate of the $564$ candidates genes inferred, by the phylogeny-based method, to have a high rate of adaptation.
-The result was compared to the empirical distribution of $\omega_A^{MK}$ over random sets of $564$ nearly-neutral genes.
+To do so, $\omega_A^{MK}$ is computed on the concatenate of the $564$ candidates genes inferred, by the phylogeny-based method, to have a high rate of adaptation.
+The result is compared to the empirical distribution of $\omega_A^{MK}$ over random sets of $564$ nearly-neutral genes.
 The average rate of adaptation over the $564$ candidates, such as estimated by Mc-Donald and Kreitman (see methods), is higher than the average rate of adaptation over nearly-neutral random samples.
-Similarly, using the site-frequency spectra of SNPs, $\omega_A^{\text{Grapes}}$ was computed in the same set of candidates by concatenating the $564$ site-frequency-spectrum.
+Similarly, using the site-frequency spectra of SNPs, $\omega_A^{\text{Grapes}}$ is computed in the same set of candidates by concatenating the $564$ site-frequency-spectrum.
 And compared it to the empirical null distribution of $\omega_A^{\text{Grapes}}$ over random sets of $564$ genes.
 The average rate of adaptation over the $564$ candidates, such as estimated using the GammaExpo model (see methods), is higher than the average rate of adaptation over random samples.
 In this case, the deviation is marginally significant ($p_{\mathrm{value}}=0.036$),
@@ -258,9 +207,9 @@ The set of genes detected to be under adaptation in phylogeny-based methods show
 It is also possible that the two methods are inherently testing for different patterns of adaptation, meaning that recent episode of adaptation in the \textit{Hominini} lineages do not reflect the long-term patterns of adaptation.
 Especially since the purifying process is stronger on longer timescale, the frontier between neutral and mildly deleterious mutation is blurred on short timescale~\citep{ho_time_2005}.
 
-\section*{Materials and methods}
+\section*{Methods}
 
-\subsection*{Theoretical rate of adaption in phylogeny-based method }
+\subsection*{Theoretical rate of adaption in phylogeny-based method}
 Classical codon models estimate a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates~\citep{muse_likelihood_1994,goldman_codon-based_1994}.
 In the so-called site-models, $\omega$ is allowed to vary across sites, either via a finite mixture~\citep{yang_codon-substitution_2000}, an infinite mixture~\citep{huelsenbeck_dirichlet_2006}, or as random effects from a parametric distribution.
 In \textit{Bayescode}, the latter option is used: site-specific $\omega^{(i)}$ are independent identically distributed from a gamma distribution~\citep{lartillot_phylobayes_2013}.
@@ -293,8 +242,8 @@ From these consideration, the method can estimate $\omega_A$, namely the rate of
 Protein-coding sequences (genes) alignments in placental mammals were extracted from the \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
 genes located on the X, Y and mitochondrial chromosome were discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
 We ran the Bayesian software \href{https://github.com/bayesiancook/bayescode}{BayesCode} on each genes using the site-model~\citep{lartillot_phylobayes_2013, rodrigue_detecting_2016}.
-Each Monte-Carlo Markov-Chain was ran during $2000$ points, with a burn-in of $1000$ points.
-The convergence of the chain during the burn-in was assessed by running two independent chains on preliminary runs, and asserting that parameters of the models of the two chains converged during burn-in.
+Each Monte-Carlo Markov-Chain is ran during $2000$ points, with a burn-in of $1000$ points.
+The convergence of the chain during the burn-in is assessed by running two independent chains on preliminary runs, and asserting that parameters of the models of the two chains converged during burn-in.
 
 \subsection*{Theoretical rate of adaption in population-based method}
 In the method proposed by McDonald and Kreitman~\citep{mcdonald_adaptative_1991}, the ratio of non-synonymous over synonymous polymorphism ($\omega_{0}=\pnps$) only contains non-adaptive polymorphisms.
@@ -305,55 +254,13 @@ Thus the difference $\dnds - \pnps$ is the rate of adaptive evolution:
 	\omega_A^{MK}=\dfrac{d_N}{d_S} - \dfrac{p_N}{p_S}.
 \end{equation*}
 
-\begin{table*}[hb!]
-\centering
-\begin{adjustbox}{width = 1\textwidth}
-\small
-\begin{tabular}{|c|c|c|c|c|c|}
-	\hline
-	\textbf{Ontology} & $\bm{n_{\mathrm{Observed}}}$ & $\bm{n_{\mathrm{Expected}}}$ & \textbf{Odds ratio} & $\bm{p_{\mathrm{value}}}$ & $\bm{e_{\mathrm{value}}}$		\\
-	\hline
-	immune system process & 38 & 4.868 & 7.806 & 1.6e$^{-14}$ & 7.9e$^{-12}$ \\
-	innate immune response & 32 & 4.253 & 7.524 & 3e$^{-12}$ & 1.5e$^{-9}$ \\
-	extracellular space & 60 & 20.3 & 2.962 & 4.3e$^{-9}$ & 2.1e$^{-6}$ \\
-	extracellular region & 73 & 29.3 & 2.494 & 4.3e$^{-8}$ & 2.1e$^{-5}$ \\
-	cell surface & 29 & 6.634 & 4.371 & 8e$^{-8}$ & 3.9e$^{-5}$ \\
-	external side of plasma membrane & 17 & 2.354 & 7.221 & 4.7e$^{-7}$ & 0.00023 \\
-	blood microparticle & 14 & 1.385 & 10.1 & 5.5e$^{-7}$ & 0.00027 \\
-	regulation of complement activation & 10 & 0.401 & 24.9 & 9.6e$^{-7}$ & 0.00047 \\
-	defense response to virus & 12 & 0.997 & 12.0 & 1.5e$^{-6}$ & 0.00074 \\
-	plasma membrane & 98 & 48.8 & 2.009 & 2.2e$^{-6}$ & 0.001 \\
-	immune response & 22 & 5.447 & 4.039 & 6.2e$^{-6}$ & 0.003 \\
-	platelet degranulation & 11 & 1.001 & 11.0 & 6.5e$^{-6}$ & 0.003 \\
-	integral component of plasma membrane & 46 & 19.5 & 2.355 & 1.6e$^{-5}$ & 0.008 \\
-	chemotaxis & 11 & 1.404 & 7.837 & 3.4e$^{-5}$ & 0.017 \\
-	proteolysis & 25 & 7.959 & 3.141 & 3.5e$^{-5}$ & 0.017 \\
-	receptor-mediated endocytosis & 10 & 1.207 & 8.283 & 6e$^{-5}$ & 0.030 \\
-	positive regulation of ERK1 and ERK2 cascade & 13 & 2.396 & 5.426 & 6.6e$^{-5}$ & 0.032 \\
-	cell surface receptor signaling pathway & 17 & 4.354 & 3.905 & 8.8e$^{-5}$ & 0.043 \\
-	extracellular exosome & 66 & 34.5 & 1.912 & 8.9e$^{-5}$ & 0.044 \\
-	adaptive immune response & 12 & 2.204 & 5.445 & 0.00012 & 0.060 \\
-	serine-type endopeptidase activity & 14 & 3.192 & 4.386 & 0.00016 & 0.076 \\
-	inflammatory response & 20 & 6.304 & 3.173 & 0.00017 & 0.085 \\
-	\hline
-\end{tabular}
-\end{adjustbox}
-\label{table:ontology}
-\caption{
- Ontology enrichment in the adapative genes.
- 490 ontology Fisher's exact test were performed with $243$ genes detected as under adaptation and $1164$ as under \textit{nearly-neutral} regime.
- $32$ ontology terms are detected with $e_{\mathrm{value}} < 1$, while one was expected on average, and the estimation of the false discoveries rate is $3\%$.
-}
-\end{table*}
-
 However, $\omega_A^{MK}$ can be biased by moderately deleterious mutations~\citep{eyre-walker_quantifying_2002} and by the change in population size through time~\citep{eyre-walker_changing_2002}.
-To overcome this biases, both Grapes~\citep{galtier_adaptive_2016} and polyDFE~\citep{tataru_polydfe_2020} was used, which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
-In Grapes, GammaExpo model was used, in which the fitness effect of weakly deleterious non-synonymous mutations is distributed according to a negative Gamma and the fitness effect of weakly advantageous mutations is distributed exponentially.
+To overcome this biases, both Grapes~\citep{galtier_adaptive_2016} and polyDFE~\citep{tataru_polydfe_2020} is used, which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
+In Grapes, GammaExpo model is used, in which the fitness effect of weakly deleterious non-synonymous mutations is distributed according to a negative Gamma and the fitness effect of weakly advantageous mutations is distributed exponentially.
 This method is an extension of the methods introduced by Eyre-Walker and collaborators~\citep{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
 This estimation of the DFE than leads to a predicted $\dnds$, under the \textit{nearly-neutral} regime, which can then be subtracted from the $\dnds$ observed between the focal species and its sister group, giving another estimate of the rate of adaptive evolution: $\omega_A^{\text{Grapes}}$.
 
 \subsection*{Polymorphism dataset and experiments}
-
 Polymorphism datasets were downloaded from Ensembl v91 (\url{http://dec2017.archive.ensembl.org}).
 \textit{Homo sapiens} variants are called on the GRCh38 assembly in the 1000 genomes project~\citep{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}.
 \textit{Bos taurus} variants are called on the UMD3.1 assembly in the next gen project.
@@ -362,22 +269,113 @@ Polymorphism datasets were downloaded from Ensembl v91 (\url{http://dec2017.arch
 Mutations not inside genes were discarded at the beginning of the analysis.
 Insertions and deletions were not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele were considered.
 Stop codon mutants were also discarded.
-Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} was extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
+Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} is extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database~\citep{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
 The pipeline for assembling and analyzing the data is written in python 3.8.
 SFS were sub-sampled down to $12$ categories using by sampling without replacement (hyper-geometric distribution).
 
 \section{Data availability}
 The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments.
 
-\section{Author contributions}
-TL gathered and formatted the data, developed the new models in \texttt{BayesCode} and conducted the analyses.
-TL and NL both contributed to the writing of the manuscript.
+\section{Code availability}
+The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments.
 
 \section{Acknowledgements}
 We gratefully also acknowledge the help of Nicolas Rodrigue for his advice and review concerning this manuscript.
 This work was performed using the computing facilities of the CC LBBE/PRABI.
 Funding: French National Research Agency, Grant ANR-15-CE12-0010-01 / DASIRE.
 
+\section{Author information}
+TL gathered and formatted the data, developed the new models in \texttt{BayesCode} and conducted the analyses.
+TL and NL both contributed to the writing of the manuscript.
+
 \bibliographystyle{natbib}
 \bibliography{codon_models}
+
+\begin{figure*}[h!]
+	\centering
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{scatterplot_gene.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize A\hspace{0.35cm}}}\hfill
+	\begin{minipage}{0.49\linewidth}
+		\includegraphics[width=\linewidth, page=1]{scatterplot_site.pdf}
+	\end{minipage}
+	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
+	\label{fig:scatterplot}
+	\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale}.
+		$\omega$ estimated by the site-model against $\omega_{0}$ predicted by the mutation-selection model.
+		Scatter plot of $14475$ genes in panel A. Density plot of $2636948$ sites in panel B.
+		Genes or sites are then classified into one the the four evolutionary regime: strongly adaptive ($\omega > 1$ in black), adaptive ($\omega > \omega_{0}$ in red), nearly-neutral ($\omega \simeq \omega_{0}$ in green) or epistasis ($\omega < \omega_{0}$ in blue). }
+\end{figure*}
+
+\begin{figure*}[h!]
+	\centering
+	\includegraphics[width=\linewidth, page=1]{polymorphism-method.pdf}
+	\caption{
+		$\omega_A$ is computed on the concatenate of orthologs sites having a high rate of adaptation, detected in phylogeny-based method.
+		The result is compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
+	}
+\end{figure*}
+
+\begin{figure*}[h!]
+	\centering
+	
+	\includegraphics[width=\linewidth, page=1]{unfolded-MK.pdf}
+	
+	\caption{
+		Enrichment of adaptation at the population-genetic scale across different populations at the gene (top row) and site (bottom row) level.
+		$\omega_A$ is computed on the concatenate of orthologs genes (sites) having a high rate of adaptation, detected in phylogeny-based method.
+		The result is compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
+	}
+\end{figure*}
+
+\begin{figure*}[h!]
+	\centering
+	\includegraphics[width=\linewidth, page=1]{results.delta_wa.pdf}
+	\label{fig:pvalues}
+	\caption{Enrichment of adaptation at the population-genetic scale across different methods.}
+\end{figure*}
+
+
+\begin{table*}[h!]
+	\centering
+	\begin{adjustbox}{width = 1\textwidth}
+		\small
+		\begin{tabular}{|c|c|c|c|c|c|}
+			\hline
+			\textbf{Ontology} & $\bm{n_{\mathrm{Observed}}}$ & $\bm{n_{\mathrm{Expected}}}$ & \textbf{Odds ratio} & $\bm{p_{\mathrm{value}}}$ & $\bm{e_{\mathrm{value}}}$		\\
+			\hline
+			immune system process & 38 & 4.868 & 7.806 & 1.6e$^{-14}$ & 7.9e$^{-12}$ \\
+			innate immune response & 32 & 4.253 & 7.524 & 3e$^{-12}$ & 1.5e$^{-9}$ \\
+			extracellular space & 60 & 20.3 & 2.962 & 4.3e$^{-9}$ & 2.1e$^{-6}$ \\
+			extracellular region & 73 & 29.3 & 2.494 & 4.3e$^{-8}$ & 2.1e$^{-5}$ \\
+			cell surface & 29 & 6.634 & 4.371 & 8e$^{-8}$ & 3.9e$^{-5}$ \\
+			external side of plasma membrane & 17 & 2.354 & 7.221 & 4.7e$^{-7}$ & 0.00023 \\
+			blood microparticle & 14 & 1.385 & 10.1 & 5.5e$^{-7}$ & 0.00027 \\
+			regulation of complement activation & 10 & 0.401 & 24.9 & 9.6e$^{-7}$ & 0.00047 \\
+			defense response to virus & 12 & 0.997 & 12.0 & 1.5e$^{-6}$ & 0.00074 \\
+			plasma membrane & 98 & 48.8 & 2.009 & 2.2e$^{-6}$ & 0.001 \\
+			immune response & 22 & 5.447 & 4.039 & 6.2e$^{-6}$ & 0.003 \\
+			platelet degranulation & 11 & 1.001 & 11.0 & 6.5e$^{-6}$ & 0.003 \\
+			integral component of plasma membrane & 46 & 19.5 & 2.355 & 1.6e$^{-5}$ & 0.008 \\
+			chemotaxis & 11 & 1.404 & 7.837 & 3.4e$^{-5}$ & 0.017 \\
+			proteolysis & 25 & 7.959 & 3.141 & 3.5e$^{-5}$ & 0.017 \\
+			receptor-mediated endocytosis & 10 & 1.207 & 8.283 & 6e$^{-5}$ & 0.030 \\
+			positive regulation of ERK1 and ERK2 cascade & 13 & 2.396 & 5.426 & 6.6e$^{-5}$ & 0.032 \\
+			cell surface receptor signaling pathway & 17 & 4.354 & 3.905 & 8.8e$^{-5}$ & 0.043 \\
+			extracellular exosome & 66 & 34.5 & 1.912 & 8.9e$^{-5}$ & 0.044 \\
+			adaptive immune response & 12 & 2.204 & 5.445 & 0.00012 & 0.060 \\
+			serine-type endopeptidase activity & 14 & 3.192 & 4.386 & 0.00016 & 0.076 \\
+			inflammatory response & 20 & 6.304 & 3.173 & 0.00017 & 0.085 \\
+			\hline
+		\end{tabular}
+	\end{adjustbox}
+	\label{table:ontology}
+	\caption{
+		Ontology enrichment in the adapative genes.
+		490 ontology Fisher's exact test were performed with $243$ genes detected as under adaptation and $1164$ as under \textit{nearly-neutral} regime.
+		$32$ ontology terms are detected with $e_{\mathrm{value}} < 1$, while one is expected on average, and the estimation of the false discoveries rate is $3\%$.
+	}
+\end{table*}
+
 \end{document}

@@ -224,6 +224,8 @@ if __name__ == '__main__':
         snp_types = dict()
         transcript_id_list = vcf_line[vcf_line.rfind('\t') + 1:-1].split(",")
         for transcript_id in transcript_id_list:
+            if transcript_id not in dict_cds or transcript_id not in dict_fasta:
+                continue
             snp_type, c_ref, c_alt = dict_cds[transcript_id].snp_type(dict_fasta[transcript_id], int(pos), ref, alt)
             snp_types[transcript_id] = (snp_type, c_ref, c_alt)
 
@@ -270,10 +272,11 @@ if __name__ == '__main__':
     annot_file.close()
 
     nbr_snp_total = sum(dict_cat_nbr.values())
-    error_file.write("{0} SNPs in total".format(nbr_snp_total))
-    for cat, nbr in dict_cat_nbr.items():
-        error_file.write("\n\n" + dict_cat_info[cat].format(nbr) + " ({0:.3f}%)".format(nbr * 100. / nbr_snp_total))
-    error_file.close()
+    if nbr_snp_total != 0:
+        error_file.write("{0} SNPs in total".format(nbr_snp_total))
+        for cat, nbr in dict_cat_nbr.items():
+            error_file.write("\n\n" + dict_cat_info[cat].format(nbr) + " ({0:.3f}%)".format(nbr * 100. / nbr_snp_total))
+        error_file.close()
 
     print("{0} variants analyzed in total".format(nbr_snp_total))
     print("File containing {0} stop variants".format(dict_cat_nbr["Stop"]))
