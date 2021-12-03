@@ -226,12 +226,6 @@ def build_divergence_dico(folder, ensg_list, gene_level=True):
         else:
             dico_omega_0[engs] = pd.read_csv(sitemutsel_path, sep="\t", skiprows=1).values[:, 1:]
             dico_omega[engs] = pd.read_csv(siteomega_path, sep="\t", skiprows=1).values[:, 1:]
-            '''
-            assert ((dico_omega_0[engs][:, 0] <= dico_omega_0[engs][:, 1]).all())
-            assert ((dico_omega_0[engs][:, 1] <= dico_omega_0[engs][:, 2]).all())
-            assert ((dico_omega[engs][:, 1] <= dico_omega[engs][:, 2]).all())
-            assert ((dico_omega[engs][:, 1] <= dico_omega[engs][:, 2]).all())
-            '''
     print('Divergence results loaded.')
     return dico_omega_0, dico_omega
 
@@ -302,7 +296,9 @@ def snp_data_frame(vcf_path, is_unfolded, subsample):
     fixed_poly = dict()
     sample_size_set = set()
     snp_table = []
-    df_snps = pd.read_csv(vcf_path, compression="gzip")
+    dtype = {"CHR": 'string', "REF": 'string', "ALT": 'string', "ANC": 'string', "COUNT": int,
+             "SAMPLE_SIZE": int, "ENSG": 'string', "POS": int, "TYPE": 'string'}
+    df_snps = pd.read_csv(vcf_path, compression="gzip", dtype=dtype)
     tot = {"FIXED": 0, "REF": 0, "ALT": 0, "UNDEFINED": 0, "ABS": 0}
     for index, row in df_snps.iterrows():
         if subsample > 0:
@@ -375,7 +371,8 @@ def filter_positions(sister_focal_seqs, sp_focal, fixed_poly, gene_level, positi
                 frame, ref, alt = fixed_poly[pos]
                 codon = codon[:frame] + alt + codon[frame + 1:]
 
-            if codontable[codon] == "X": codon = "---"
+            if codontable[codon] == "X" or codontable[codon] == "-":
+                codon = "---"
             s_list.append(codon)
 
         seq_dico[sp_id] = "".join(s_list)
@@ -397,7 +394,14 @@ def run_yn00(seq1, seq2, tmp_path, filepath):
 
 
 def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, fixed_poly, tmp_path, dfe_models,
-              is_unfolded, polyDFE_dict, error_f, gather):
+              is_unfolded, error_f):
+    if dfe_models is None:
+        dfe_models = []
+    out_list = [os.path.isfile(filepath + "_" + dfe_path.split("/")[-2] + (".csv" if "grapes" in dfe_path else ".out"))
+                for dfe_path in dfe_models]
+    if np.all(out_list) and len(dfe_models) > 0:
+        print("Output files already exists, not computing and exiting")
+        return True
     sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
     sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
     s1, s2 = [], []
@@ -409,7 +413,8 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
         s1.append(seq_dico[sp_1])
         s2.append(seq_dico[sp_2])
 
-        if ensg not in df.groups: continue
+        if ensg not in df.groups:
+            continue
 
         dff = df.get_group(ensg)
         if not gene_level:
@@ -439,45 +444,41 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
     sites_n, dn, sites_s, ds = run_yn00(seq1, seq2, tmp_path, filepath)
 
     if sites_n == dn == sites_s == ds == 0:
+        print('error in Yn00')
         error_f.write("ER2: Yn00 failed. Sequences are:\n" + "".join(s1) + "\n" + "".join(s2) + "\n")
         return False
 
-    if "dfem" in "".join(dfe_models) or "grapes" in "".join(dfe_models):
-        sfs_list = ["Summed", n]
-        for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
-            if is_unfolded:
-                sfs_list += [nbr_site] + [sfs[i] for i in range(1, n)]
-            else:
-                range_sfs = range(1, int(floor(n // 2)) + 1)
-                assert len(range_sfs) * 2 == n
-                sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
-        sfs_list += [sites_n, dn, sites_s, ds]
-
-        dofe_file = open(filepath + ".dofe", 'w')
-        dofe_file.write("{0}+{1} ({2} sites)".format(sp_1, sp_2, len(seq1.seq)) + "\n")
-        if is_unfolded: dofe_file.write("#unfolded\n")
-        dofe_file.write("\t".join(map(str, sfs_list)) + "\n")
-        dofe_file.close()
-
-    if "polyDFE" in "".join(dfe_models) and is_unfolded:
-        SFS_s = " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
-        SFS_n = " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
-        if gather:
-            polyDFE_dict["SFSs"] += SFS_s
-            polyDFE_dict["SFSn"] += SFS_n
+    sfs_list = ["Summed", n]
+    for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
+        if is_unfolded:
+            sfs_list += [nbr_site] + [sfs[i] for i in range(1, n)]
         else:
-            sfs_file = open(filepath + ".sfs", 'w')
-            sfs_file.write("#{0}+{1}".format(sp_1, sp_2) + "\n")
-            sfs_file.write("1 1 {0}".format(n) + "\n")
-            sfs_file.write(SFS_s)
-            sfs_file.write(SFS_n)
-            sfs_file.close()
+            range_sfs = range(1, int(floor(n // 2)) + 1)
+            assert len(range_sfs) * 2 == n
+            sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
+    sfs_list += [sites_n, dn, sites_s, ds]
+
+    dofe_file = open(filepath + ".dofe", 'w')
+    dofe_file.write("{0}+{1} ({2} sites)".format(sp_1, sp_2, len(seq1.seq)) + "\n")
+    if is_unfolded:
+        dofe_file.write("#unfolded\n")
+    dofe_file.write("\t".join(map(str, sfs_list)) + "\n")
+    dofe_file.close()
+
+    sfs_s_str = " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
+    sfs_n_str = " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
+    sfs_file = open(filepath + ".sfs", 'w')
+    sfs_file.write("#{0}+{1}".format(sp_1, sp_2) + "\n")
+    sfs_file.write("1 1 {0}".format(n) + "\n")
+    sfs_file.write(sfs_s_str)
+    sfs_file.write(sfs_n_str)
+    sfs_file.close()
 
     for dfe_path in dfe_models:
         out = filepath + "_" + dfe_path.split("/")[-2]
-        if "dfem" in dfe_path or "grapes" in dfe_path:
+        if "grapes" in dfe_path:
             os.system(grapes_cmd.format(dfe_path, filepath, out))
-        elif "polyDFE" in dfe_path:
+        elif "polyDFE" in dfe_path and is_unfolded:
             os.system(polyDFE_cmd.format(dfe_path, filepath, out))
     os.system("gzip --force {0}.fasta".format(filepath))
     return True
@@ -508,26 +509,6 @@ def subsample_genes(cds_dico, nbr_genes, weights, replace=False):
     return {k: None for k in np.random.choice(list(cds_dico), nbr_genes, replace=replace, p=weights)}
 
 
-def bin_dataset(cds_dico, dico_omega_0, bins=10, gene_level=True):
-    bin_dicos = [dict() for _ in range(bins)]
-    sort_w_0 = np.sort(filtered_table_omega(dico_omega_0, cds_dico, gene_level)[:, 1])
-    split_w_0 = np.array_split(sort_w_0, bins)
-    interval = [split_w_0[0][0]] + [s[-1] for s in split_w_0]
-    interval[-1] += 0.01
-    if gene_level:
-        for ensg in cds_dico.keys():
-            omega_0 = dico_omega_0[ensg][1]
-            insert = np.searchsorted(interval, omega_0, side='right') - 1
-            bin_dicos[insert][ensg] = None
-    else:
-        for ensg, pos_list in cds_dico.items():
-            for pos in pos_list:
-                insert = np.searchsorted(interval, dico_omega_0[ensg][pos][1], side='right') - 1
-                if ensg not in bin_dicos[insert]: bin_dicos[insert][ensg] = list()
-                bin_dicos[insert][ensg].append(pos)
-    return bin_dicos
-
-
 GREEN = "#8FB03E"
 RED = "#EB6231"
 YELLOW = "#E29D26"
@@ -545,9 +526,25 @@ def format_pop(t):
 def sp_to_color(specie):
     if "Homo" in specie:
         return BLUE
+    elif "Chloro" in specie:
+        return "black"
     elif "Ovis" in specie:
         return YELLOW
     elif "Bos" in specie:
         return LIGHTGREEN
     else:
-        return "black"
+        return "grey"
+
+
+def sp_sorted(pop, sp):
+    out = sp + "_" + pop
+    if "Homo" in out:
+        return "Z" + out
+    elif "Chloro" in out:
+        return "Y" + out
+    elif "Ovis" in out:
+        return "X" + out
+    elif "Bos" in out:
+        return "W" + out
+    else:
+        return out

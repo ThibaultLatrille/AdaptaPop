@@ -1,7 +1,14 @@
 import argparse
 from glob import glob
 import pandas as pd
+import numpy as np
 from Bio.Phylo.PAML import yn00
+from collections import defaultdict
+from scipy.optimize import curve_fit
+
+
+def exp_curve(x, a, b, c):
+    return a - b * np.exp(-c * x)
 
 
 def read_polyDFE(path):
@@ -20,7 +27,7 @@ def read_yn(path):
     return yn00.read(path)
 
 
-omega_dict = {"OMEGA_NA": [], "OMEGA_A": [], "ALPHA": [], "ADAPTIVE": []}
+omega_dict = defaultdict(list)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--folder', required=False, type=str, dest="folder", help="Folder path")
@@ -37,7 +44,7 @@ if __name__ == '__main__':
             omega_dict["ALPHA"].append(alpha)
             omega_dict["OMEGA_NA"].append(omega_a * (1 - alpha) / alpha if alpha != 0 else "NaN")
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
-    elif args.model == "MK":
+    elif args.model in ["MK", "aMK"]:
         for filepath in glob(args.folder + "/*.dofe"):
             dofe = open(filepath, 'r')
             dofe.readline()
@@ -54,11 +61,32 @@ if __name__ == '__main__':
             shift = 1
             sfs_n = [int(i) for i in split_line[shift + 3:nbr_cat + 3]]
             sfs_s = [int(i) for i in split_line[nbr_cat + shift + 4:nbr_cat * 2 + 4]]
-            pnps = (sum(sfs_n) / float(Lpn)) / (sum(sfs_s) / float(Lps))
-            omega_dict["OMEGA_A"].append(dnds - pnps)
-            omega_dict["ALPHA"].append((dnds - pnps) / dnds)
-            omega_dict["OMEGA_NA"].append(pnps)
-            omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
+            if args.model == "MK":
+                pnps = (sum(sfs_n) / float(Lpn)) / (sum(sfs_s) / float(Lps))
+                omega_dict["P_S"].append(sum(sfs_s) / float(Lps))
+                omega_dict["OMEGA_A"].append(dnds - pnps)
+                omega_dict["ALPHA"].append((dnds - pnps) / dnds)
+                omega_dict["OMEGA_NA"].append(pnps)
+                omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
+            else:
+                assert args.model == "aMK"
+                alpha_array = [((dnds - (pn_x / float(Lpn)) / (ps_x / float(Lps))) / dnds) if ps_x != 0 else np.nan for
+                               pn_x, ps_x in zip(sfs_n, sfs_s)]
+                alpha_array = np.array([a if a > 0 else np.nan for a in alpha_array])
+                mask = np.isfinite(alpha_array)
+                delta = 1.0 / len(alpha_array)
+                freq_array = np.linspace(delta, 1.0 - delta, len(alpha_array))
+                if len(alpha_array[mask]) < 4:
+                    continue
+                popt, pcov = curve_fit(exp_curve, xdata=freq_array[mask], ydata=alpha_array[mask], check_finite=False,
+                                       maxfev=32000, bounds=(0, np.inf))
+                aMK = exp_curve(1.0, *popt)
+                if aMK < 0.0:
+                    continue
+                omega_dict["OMEGA_A"].append(aMK * dnds)
+                omega_dict["ALPHA"].append(aMK)
+                omega_dict["OMEGA_NA"].append((1.0 - aMK) * dnds)
+                omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
         '''
         from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage

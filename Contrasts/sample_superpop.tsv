@@ -1,20 +1,21 @@
 Species	SisterSpecies	SampleName	Location	SampleSize	k
 Chlorocebus_sabaeus	Macaca_mulatta	Barbados	Barbados	5	8
-Chlorocebus_sabaeus	Macaca_mulatta	Central_African_Republic	Central_African_Republic	11	8
+Chlorocebus_sabaeus	Macaca_mulatta	Central_African_Republic	Central African Republic	11	8
 Chlorocebus_sabaeus	Macaca_mulatta	Ethiopia	Ethiopia	16	8
 Chlorocebus_sabaeus	Macaca_mulatta	Gambia	Gambia	22	8
 Chlorocebus_sabaeus	Macaca_mulatta	Kenya	Kenya	4	8
 Chlorocebus_sabaeus	Macaca_mulatta	Nevis	Nevis	12	8
-Chlorocebus_sabaeus	Macaca_mulatta	Saint_Kitts	Saint_Kitts	22	8
-Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South_Africa	49	8
+Chlorocebus_sabaeus	Macaca_mulatta	Saint_Kitts	Saint Kitts	22	8
+Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South Africa	49	8
 Chlorocebus_sabaeus	Macaca_mulatta	Zambia	Zambia	16	8
 Bos_taurus	Bison_bison_bison	IRBT	Iran	9	8
 Bos_taurus	Bison_bison_bison	UGBT	Uganda	25	8
 Ovis_aries	Pantholops_hodgsonii	IROA	Iran	20	8
 Ovis_aries	Pantholops_hodgsonii	IROO	Iran	19	8
+Ovis_aries	Pantholops_hodgsonii	MOOA	Morocco	160	8
 Ovis_aries	Pantholops_hodgsonii	ISGC	Various	75	8
-Homo_sapiens	Pan_troglodytes	AFR	AFR	661	8
-Homo_sapiens	Pan_troglodytes	AMR	AMR	347	8
-Homo_sapiens	Pan_troglodytes	EAS	EAS	504	8
-Homo_sapiens	Pan_troglodytes	EUR	Europeans	503	8
-Homo_sapiens	Pan_troglodytes	SAS	SAS	489	8
+Homo_sapiens	Pan_troglodytes	AFR	African	661	8
+Homo_sapiens	Pan_troglodytes	AMR	Ad Mixed American	347	8
+Homo_sapiens	Pan_troglodytes	EAS	East Asian	504	8
+Homo_sapiens	Pan_troglodytes	EUR	European	503	8
+Homo_sapiens	Pan_troglodytes	SAS	South Asian	489	8

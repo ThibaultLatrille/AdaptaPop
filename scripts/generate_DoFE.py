@@ -22,9 +22,8 @@ if __name__ == '__main__':
     parser.add_argument('--seed', required=False, type=int, default=123456789, dest="seed",
                         help="Seed for random generator")
     parser.add_argument('--pickle', required=True, type=str, dest="pickle", help="Pickle file")
-    parser.add_argument('--dfe_path', required=True, type=str, dest="dfe_path", nargs="+", help="Executable path")
+    parser.add_argument('--dfe_path', required=False, type=str, dest="dfe_path", nargs="+", help="Executable path")
     parser.add_argument('--sfs', required=False, type=str, dest="sfs", default="folded", help="unfolded or folded")
-    parser.add_argument('--gather', required=False, type=str, dest="gather", default="false", help="Gather SFS")
     parser.add_argument('--subsample', required=False, type=int, default=-1, dest="subsample", help="Subsample SFS")
     parser.add_argument('--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('--rep', required=True, type=int, dest="rep", help="Number of replicates")
@@ -33,7 +32,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     gene = args.granularity.lower() == "gene"
-    gather_sfs = args.gather.lower() == "true"
     is_unfolded = args.sfs == "unfolded"
     pickle_file = bz2.BZ2File(args.pickle, 'rb')
     filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
@@ -75,6 +73,12 @@ if __name__ == '__main__':
     f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "all adaptive", args.granularity))
 
     errors = gzip.open(args.tmp_folder + "/errors.txt.gz", 'wt')
+    if args.output.split("/")[-1] == "1":
+        print("{0}_ADAPTIVE".format(args.output))
+        dfe_alpha("{0}_ADAPTIVE".format(args.output), df_snp, sample_size, adaptive_dico, gene,
+                  args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
+                  args.dfe_path, is_unfolded, errors)
+
     if args.weighted.lower() == "true":
         print("Weighted sampling controlling for w")
         adaptive_table = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]
@@ -85,46 +89,28 @@ if __name__ == '__main__':
         weigths_nearly_neutral /= norm.pdf(x, loc=np.mean(x), scale=np.std(x))
         weigths_nearly_neutral /= np.sum(weigths_nearly_neutral)
 
-    for adapt in [True, False]:
-        txt_set = "ADAPTIVE" if adapt else "NEARLY_NEUTRAL"
-        prefix = "{0}_{1}".format(args.output, txt_set)
-        sfs_polyDFE = {"SFSn": "", "SFSs": ""}
-        rep = 1
+    prefix = "{0}_NEARLY_NEUTRAL".format(args.output)
+    rep, nbr_errors = 1, 1
+    while rep < args.rep + 1 and nbr_errors < args.rep + 1:
+        print("{0}_{1}".format(prefix, rep))
+        if gene:
+            subset = subsample_genes(nearly_neutral_dico, args.nbr_genes, weigths_nearly_neutral, replace=False)
+        else:
+            subset = subsample_sites(nearly_neutral_dico, args.nbr_sites, weigths_nearly_neutral, replace=False)
 
-        while rep < args.rep + 1:
-            print("{0}_{1}".format(prefix, rep))
-            if gene:
-                if adapt:
-                    subset = subsample_genes(adaptive_dico, args.nbr_genes, None, replace=True)
-                else:
-                    subset = subsample_genes(nearly_neutral_dico, args.nbr_genes, weigths_nearly_neutral, replace=False)
-            else:
-                if adapt:
-                    subset = subsample_sites(adaptive_dico, args.nbr_sites, None, replace=True)
-                else:
-                    subset = subsample_sites(nearly_neutral_dico, args.nbr_sites, weigths_nearly_neutral, replace=False)
+        w = filtered_table_omega(dico_omega, subset, gene)[:, 1]
+        w_0 = filtered_table_omega(dico_omega_0, subset, gene)[:, 1]
+        w_A = w - w_0
+        f_sample.write(txt.format("", np.mean(w), np.std(w), "resampled nearly-neutral", args.granularity))
+        f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled nearly-neutral", args.granularity))
+        f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled nearly-neutral", args.granularity))
 
-            w = filtered_table_omega(dico_omega, subset, gene)[:, 1]
-            w_0 = filtered_table_omega(dico_omega_0, subset, gene)[:, 1]
-            w_A = w - w_0
-            f_sample.write(txt.format("", np.mean(w), np.std(w), "resampled " + txt_set.lower(), args.granularity))
-            f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled " + txt_set.lower(), args.granularity))
-            f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled " + txt_set.lower(), args.granularity))
-
-            if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, subset, gene,
-                         args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
-                         args.dfe_path, is_unfolded, sfs_polyDFE, errors, gather_sfs):
-                rep += 1
-
-        if sfs_polyDFE["SFSs"] != "" and gather_sfs:
-            sfs_file = open(prefix + ".sfs", 'w')
-            sfs_file.write("#{0}+{1}".format(args.focal_species, args.sister_species) + "\n")
-            sfs_file.write("{0} {0} {1}".format(args.rep, sample_size) + "\n")
-            sfs_file.write(sfs_polyDFE["SFSs"])
-            sfs_file.write(sfs_polyDFE["SFSn"])
-            sfs_file.close()
-            dfe_path = set([p for p in args.dfe_path if "polyDFE" in p]).pop()
-            os.system(polyDFE_cmd.format(dfe_path, prefix, prefix + "_polyDFE"))
+        if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, subset, gene,
+                     args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
+                     args.dfe_path, is_unfolded, errors):
+            rep += 1
+        else:
+            nbr_errors += 1
 
     errors.close()
     f_sample.close()

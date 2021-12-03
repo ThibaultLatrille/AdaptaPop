@@ -4,7 +4,7 @@ import os
 import numpy as np
 from collections import defaultdict
 import itertools
-from libraries import tex_f, format_pop, sp_to_color
+from libraries import tex_f, format_pop, sp_to_color, sp_sorted
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -96,7 +96,7 @@ def annotate_heatmap(im, data=None, div=False, valfmt="{x:.2f}", textcolors=("wh
     texts = []
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            kw.update(color=textcolors[int(threshold_high > im.norm(data[i, j]) > threshold_low)])
+            kw.update(color=textcolors[int(threshold_high >= im.norm(data[i, j]) >= threshold_low)])
             text = im.axes.text(j, i, valfmt(data[i, j]), **kw)
             texts.append(text)
     return texts
@@ -110,42 +110,58 @@ def format_domega(p):
     return "{0:.2g}".format(p)
 
 
+def extend_pop(p, sample):
+    fp = format_pop(p)
+    if sample[p] == fp:
+        return p
+    else:
+        return f"{sample[p]} ({fp})"
+
+
 header = ["Species", "Population", "SFS", "Level", "Model",
           "$\\omega_{\\textrm{A}}^{\\textrm{S}}$", "$\\omega_{\\textrm{NA}}^{\\textrm{S}}$",
           "$\\omega^{\\textrm{S}}$", "$\\alpha^{\\textrm{S}}$",
           "$\\omega_{\\textrm{A}}^{\\textrm{N}}$", "$\\omega_{\\textrm{NA}}^{\\textrm{N}}$",
           "$\\omega^{\\textrm{N}}$", "$\\alpha^{\\textrm{N}}$",
-          "p-value"]
+          "p-value", "$\\pi_{\\textrm{N}}$"]
+
+header = ["Species", "Population", "SFS", "Level", "Model",
+          "$\\color{RED}{\\omega_{\\mathrm{A}}^{\\mathrm{AR}}}\\color{black}$",
+          "$\\color{GREEN}{\\omega_{\\mathrm{A}}^{\\mathrm{NNR}}}\\color{black}$",
+          "$\\Delta_{\\omega_{\\mathrm{A}}}$",
+          "p-value", "$\\pi_{\\textrm{S}}$"]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, dest="tsv", help="Input tsv file")
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output tex file")
+    parser.add_argument('-s', '--sample_list', required=False, type=str, dest="sample_list", help="Sample list file")
     args = parser.parse_args()
 
     df = pd.read_csv(args.tsv, sep="\t")
     df = df.groupby(["species", "pop", "sfs", "granularity", "model"]).max().reset_index()
-    df.sort_values(by=["species", "pop", "granularity", "sfs", "model"], inplace=True)
 
     dico_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict)
+    pop2sp = {}
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem", "MK"]):
+                                                     ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)]
         m = "{0}s - {1} SFS - {2}".format(granularity.capitalize(), sfs, model)
         for pop in ddf["pop"].values:
             pop_ddf = ddf[ddf["pop"] == pop]
             if len(pop_ddf["pop"]) != 0:
                 assert len(pop_ddf["pop"]) == 1
-                sp = "{0}-{1}".format(pop_ddf["species"].values[0].split(" ")[0],
-                                      format_pop(pop_ddf["pop"].values[0]))
-                dico_matrix[sp][m] = pop_ddf["p_val"].values[0]
-                dico_delta_wa[sp][m] = pop_ddf["wA_Selected"].values[0] - pop_ddf["wA_Neutral"].values[0]
+                fpop = format_pop(pop)
+                pop2sp[fpop] = pop_ddf["species"].values[0]
+                dico_matrix[fpop][m] = pop_ddf["p_val"].values[0]
+                dico_delta_wa[fpop][m] = pop_ddf["wA_Selected"].values[0] - pop_ddf["wA_Neutral"].values[0]
 
     models = set()
     for s in dico_matrix.values():
         models = models.union(s.keys())
     models = list(sorted(models))
-    species = [str(i) for i in dico_matrix.keys()]
+
+    species = [pop for pop, sp in sorted(pop2sp.items(), key=lambda kv: sp_sorted(*kv))]
     p_matrix, delta_wa_matrix = np.ones((len(species), len(models))), np.ones((len(species), len(models)))
     p_matrix[:], delta_wa_matrix[:] = np.NaN, np.NaN
 
@@ -166,11 +182,11 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     RdBu = matplotlib.cm.get_cmap('RdBu_r')
-    start = np.min(delta_wa_matrix)
-    midpoint = - start / (np.max(delta_wa_matrix) - start)
+    start = np.nanmin(delta_wa_matrix)
+    midpoint = - start / (np.nanmax(delta_wa_matrix) - start)
     shifted_RdBu = shiftedColorMap(RdBu, midpoint=midpoint, name='shifted')
     im, cbar = heatmap(delta_wa_matrix.T, models, species, ax=ax, cmap=shifted_RdBu,
-                       cbarlabel=r"$\Delta_{\omega_{\mathrm{A}}}$")
+                       cbarlabel="$\\Delta_{\\omega_{\\mathrm{A}}}$")
     texts = annotate_heatmap(im, valfmt=lambda p: "{0:.2f}".format(p), div=True, fontsize=5)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".delta_wa.png"), format="png")
@@ -178,10 +194,18 @@ if __name__ == '__main__':
     plt.clf()
     plt.close('all')
 
+    df = df.iloc[df.apply(lambda r: sp_sorted(format_pop(r["pop"]), r["species"]), axis=1).argsort()]
+    df["species"] = df.apply(lambda r: "Ovis orientalis" if r["pop"] == "IROO" else r["species"], axis=1)
+
+    dico_sample = {r["SampleName"].replace("_", " "): r["Location"] for _, r in
+                   list(pd.read_csv(args.sample_list, sep='\t').iterrows())}
+
+    df["pop"] = df.apply(lambda r: extend_pop(r["pop"], dico_sample), axis=1)
+
     o = open(args.output, 'w')
     sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem", "MK"]):
+                                                     ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)].drop(
             ["sfs", "granularity", "model"], axis=1)
         if len(ddf["species"]) == 0: continue
