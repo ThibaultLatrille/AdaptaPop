@@ -5,5 +5,5 @@ CONTAINS: '.genus_snps.CHIR1_0'
 ASSEMBLY: "ARS1"
 ENSEMBL_RELEASE: 92
 SPECIES: "Capra_hircus"
-LIFT_OVER: "flo/run/CHIR1_0ToARS1"
-REF_GENOME: "flo/Capra_hircus.ARS1.dna.toplevel.fa"
+LIFT_OVER_DBSNP: "GCA_000317765.1_current_ids.vcf.gz"
+LIFT_OVER_ENSEMBL: "capra_hircus.vcf.gz"

@@ -13,20 +13,21 @@ for analysis in ftp.nlst(config['STUDY']):
     for file_path in ftp.nlst(analysis):
         file = file_path.split('/')[-1]
         if file.endswith('vcf.gz') and (config['CONTAINS'] in file) and (config['CONTAINS_PREFIX'] in file):
-            vfc_dico[file.replace(config['CONTAINS_PREFIX'], '').replace(config['CONTAINS'], '').replace('.vcf.gz', '').split('.')[0]] = file_path
+            vfc_dico[file.replace(config['CONTAINS_PREFIX'],'').replace(
+                config['CONTAINS'],'').replace('.vcf.gz','').split('.')[0]] = file_path
 
 ftp_ensembl = FTP('ftp.ensembl.org')
 ftp_ensembl.login()
 
-GTF = '{0}.{1}'.format(NAME, config['ENSEMBL_RELEASE'])
+GTF = '{0}.{1}'.format(NAME,config['ENSEMBL_RELEASE'])
 FASTA = '{0}.cds.all.fa.gz'.format(NAME)
 ROOT = os.path.abspath('../..')
 
-POPULATIONS = set(pd.read_csv(config["PANEL"], sep='\t')["pop"]) if 'PANEL' in config else False
+POPULATIONS = set(pd.read_csv(config["PANEL"],sep='\t')["pop"]) if 'PANEL' in config else False
 
 rule all:
     input:
-        expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz', subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
+        expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz',subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
         'CDS.SELCOEFF.' + NAME + '.vcf.gz'
 
 
@@ -34,16 +35,18 @@ rule download_fasta:
     output:
         fa_gz=FASTA
     run:
-        with open(output.fa_gz, 'wb') as fa_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/fasta/{1}/cds/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'].lower(), output.fa_gz), fa_gz.write)
+        with open(output.fa_gz,'wb') as fa_gz:
+            ftp_ensembl.retrbinary('RETR /pub/release-{0}/fasta/{1}/cds/{2}'.format(
+                config['ENSEMBL_RELEASE'],config['SPECIES'].lower(),output.fa_gz),fa_gz.write)
 
 rule download_gtf:
     priority: 50
     output:
         gtf_gz=GTF + '.gtf.gz'
     run:
-        with open(output.gtf_gz, 'wb') as gtf_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/gtf/{1}/{2}'.format(config['ENSEMBL_RELEASE'], config['SPECIES'].lower(), output.gtf_gz), gtf_gz.write)
+        with open(output.gtf_gz,'wb') as gtf_gz:
+            ftp_ensembl.retrbinary('RETR /pub/release-{0}/gtf/{1}/{2}'.format(
+                config['ENSEMBL_RELEASE'],config['SPECIES'].lower(),output.gtf_gz),gtf_gz.write)
 
 
 rule gtf_to_bed:
@@ -62,21 +65,25 @@ rule gtf_to_bed:
 
 rule download_vcf:
     output:
-        vfc_gz=(config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz') if 'LIFT_OVER' in config else (NAME + '.{subset}.vcf.gz')
+        vfc_gz=(config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz') if (
+                    'LIFT_OVER_DBSNP' in config and 'LIFT_OVER_ENSEMBL' in config) else (NAME + '.{subset}.vcf.gz')
     run:
-        with open(output.vfc_gz, 'wb') as vfc_gz:
-            ftp.retrbinary('RETR ' + vfc_dico[wildcards.subset], vfc_gz.write)
+        with open(output.vfc_gz,'wb') as vfc_gz:
+            print(vfc_dico[wildcards.subset])
+            ftp.retrbinary('RETR ' + vfc_dico[wildcards.subset],vfc_gz.write)
 
-if 'LIFT_OVER' in config:
+if 'LIFT_OVER_DBSNP' in config and 'LIFT_OVER_ENSEMBL' in config:
     rule lift_over_vcf:
+        priority: 50
         input:
-            vfc_gz=config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz',
-            chain=config['LIFT_OVER'],
-            ref_genome=config['REF_GENOME']
+            vcf=config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz',
+            dbSNP=config['LIFT_OVER_DBSNP'],
+            ensembl=config['LIFT_OVER_ENSEMBL'],
+            script_liftover=ROOT + '/scripts/vcf_liftover_dbSNP.py'
         output:
             vfc_gz=NAME + '.{subset}.vcf.gz'
         shell:
-            'CrossMap.py vcf {input.chain} {input.vfc_gz} {input.ref_genome} {output.vfc_gz} --compress'
+            'python3 {input.script_liftover} --ensembl {input.ensembl} --dbSNP {input.dbSNP} --nextgen {input.vcf} --output {output.vfc_gz}'
 
 rule intersect:
     priority: 50
@@ -107,7 +114,7 @@ rule annotate_vcf:
         xml_folder=ROOT + '/OrthoMam/Datasets/omm_markers',
         script_vcf=ROOT + '/scripts/vcf_annotate_positions.py'
     params:
-        specie = config["SPECIES"]
+        specie=config["SPECIES"]
     output:
         vfc_gz='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz'
     shell:
@@ -115,7 +122,7 @@ rule annotate_vcf:
 
 rule selcoeff:
     input:
-        vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys())),
+        vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=list(vfc_dico.keys())),
         script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
         exp_folder=ROOT + '/OrthoMam/Experiments/'
     output:
@@ -126,13 +133,13 @@ rule selcoeff:
 if POPULATIONS:
     rule chr_to_pop:
         input:
-            vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=list(vfc_dico.keys())),
+            vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=list(vfc_dico.keys())),
             panel=config["PANEL"],
             script=ROOT + '/scripts/vcf_chr_to_pop.py'
         params:
             output='CDS.ANNOT.' + NAME + '.POPULATION.vcf.gz'
         output:
-            vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz', subset=POPULATIONS)
+            vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=POPULATIONS)
         shell:
             'python3 {input.script} --panel {input.panel} --vcf {input.vcf} --output {params.output}'
 
