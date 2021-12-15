@@ -3,6 +3,8 @@ STUDY: '/vol1/ERZ479/'
 CONTAINS_PREFIX: ""
 CONTAINS: 'Svardal_et_al_2017_vervet_monkey_SNPs_incl_rhesus_macaque_diff_SnpEff_ensembl_1.1.78_CAE'
 ASSEMBLY: "ChlSab1.1"
-ENSEMBL_RELEASE: 91
 SPECIES: "Chlorocebus_sabaeus"
 PANEL: "sample.panel"
+DOWNLOAD:
+  Chlorocebus_sabaeus.ChlSab1.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/chlorocebus_sabaeus/Chlorocebus_sabaeus.ChlSab1.1.91.gtf.gz"
+  Chlorocebus_sabaeus.ChlSab1.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/chlorocebus_sabaeus/cds/Chlorocebus_sabaeus.ChlSab1.1.cds.all.fa.gz"

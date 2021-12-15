@@ -3,5 +3,7 @@ STUDY: '/pub/databases/nextgen/ovis/variants/'
 CONTAINS_PREFIX: ""
 CONTAINS: '.genus_snps.OARv3_1'
 ASSEMBLY: "Oar_v3.1"
-ENSEMBL_RELEASE: 91
 SPECIES: "Ovis_aries"
+DOWNLOAD:
+  Ovis_aries.Oar_v3.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/ovis_aries/Ovis_aries.Oar_v3.1.91.gtf.gz"
+  Ovis_aries.Oar_v3.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/ovis_aries/cds/Ovis_aries.Oar_v3.1.cds.all.fa.gz"

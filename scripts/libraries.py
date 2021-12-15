@@ -71,9 +71,6 @@ class Cds(object):
                 self.exons.append((int(start_exon), int(end_exon)))
             else:
                 self.exons.insert(0, (int(start_exon), int(end_exon)))
-            for i in range(len(self.exons) - 1):
-                if not self.exons[i][1] < self.exons[i + 1][0]:
-                    print("At least one exon is overlapping with an other")
 
     def nt_position(self, position):
         """
@@ -143,6 +140,12 @@ class Cds(object):
     def not_coding(self):
         return self.seq_length() % 3 != 0
 
+    def overlapping(self):
+        for i in range(len(self.exons) - 1):
+            if not self.exons[i][1] < self.exons[i + 1][0]:
+                return True
+        return False
+
     def befile_lines(self, chr_prefix):
         lines = []
         for start, end in self.exons:
@@ -151,19 +154,29 @@ class Cds(object):
         return lines
 
 
-def build_dict_cds(data_path, file_name):
+def build_dict_cds(data_path, file_name, chr2acc=""):
+    dico_chr2acc = dict()
+    if chr2acc != "":
+        chr2acc_file = open("{0}/{1}".format(data_path, chr2acc), 'rt')
+        chr2acc_file.readline()
+        for line in chr2acc_file:
+            splitline = line.strip().split("\t")
+            dico_chr2acc[splitline[1]] = splitline[0]
+
     print('Loading GTF file...')
     gtf_file = gzip.open("{0}/{1}".format(data_path, file_name), 'rt')
-    dico_cds = dict()
+    dico_cds, pr2tr_id = dict(), dict()
     nf_tr_id = set()
     for gtf_line in gtf_file:
         if gtf_line.startswith('#'):
             continue
 
-        seqname, source, feature, start, end, score, strand, frame, comments = gtf_line.replace('\n', '').split('\t')
+        chromosome, source, feature, start, end, score, strand, frame, comments = gtf_line.replace('\n', '').split('\t')
         if feature != 'CDS':
             continue
 
+        if chromosome in dico_chr2acc:
+            chromosome = dico_chr2acc[chromosome]
         transcript_find = comments.find('transcript_id')
         # comments.find('CCDS') != -1 and comments.find('ccds_id') != -1
         if transcript_find != -1:
@@ -172,11 +185,17 @@ def build_dict_cds(data_path, file_name):
                 if tr_id not in nf_tr_id:
                     nf_tr_id.add(tr_id)
             if tr_id not in dico_cds:
-                dico_cds[tr_id] = Cds(seqname, strand, tr_id)
+                dico_cds[tr_id] = Cds(chromosome, strand, tr_id)
             dico_cds[tr_id].add_exon(start, end)
+            protein_find = comments.find('protein_id')
+            if protein_find != -1:
+                pr_id = comments[protein_find + 12:].split("\"")[0]
+                if pr_id in pr2tr_id:
+                    assert pr2tr_id[pr_id] == tr_id
+                pr2tr_id[pr_id] = tr_id
     gtf_file.close()
     print('GTF file loaded.')
-    return dico_cds, nf_tr_id
+    return dico_cds, nf_tr_id, pr2tr_id
 
 
 def build_dict_trID(xml_folder, specie):
@@ -517,7 +536,11 @@ LIGHTGREEN = "#6ABD9B"
 
 
 def format_pop(t):
-    if " " in t:
+    if "up" == t:
+        return "Equus"
+    elif "dogs" == t:
+        return "Canis"
+    elif " " in t:
         return "".join([s[0] for s in t.split(" ")])
     else:
         return t
@@ -525,15 +548,17 @@ def format_pop(t):
 
 def sp_to_color(specie):
     if "Homo" in specie:
-        return BLUE
+        return "#5D80B4"
     elif "Chloro" in specie:
-        return "black"
+        return "#9399BE"
     elif "Ovis" in specie:
-        return YELLOW
+        return "#8D9968"
+    elif "Capra" in specie:
+        return "#A0B55E"
     elif "Bos" in specie:
-        return LIGHTGREEN
+        return "#B5A95E"
     else:
-        return "grey"
+        return "black"
 
 
 def sp_sorted(pop, sp):
@@ -544,7 +569,9 @@ def sp_sorted(pop, sp):
         return "Y" + out
     elif "Ovis" in out:
         return "X" + out
-    elif "Bos" in out:
+    elif "Capra" in out:
         return "W" + out
+    elif "Bos" in out:
+        return "V" + out
     else:
         return out

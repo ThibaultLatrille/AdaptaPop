@@ -1,9 +1,0 @@
-FTP: 'ftp.1000genomes.ebi.ac.uk'
-STUDY: 'vol1/ftp/data_collections/1000_genomes_project/release/'
-CHR_PREFIX: "chr"
-CONTAINS_PREFIX: 'ALL.'
-CONTAINS: 'shapeit2_integrated_v1a.GRCh38.20181129'
-ASSEMBLY: "GRCh38"
-ENSEMBL_RELEASE: 91
-SPECIES: "Homo_sapiens"
-PANEL: "integrated_call_samples_v3.20130502.SUPERPOP.tsv"

@@ -3,5 +3,7 @@ STUDY: '/pub/databases/nextgen/bos/variants/'
 CONTAINS_PREFIX: ""
 CONTAINS: '.genus_snps.UMD3_1'
 ASSEMBLY: "UMD3.1"
-ENSEMBL_RELEASE: 91
 SPECIES: "Bos_taurus"
+DOWNLOAD:
+  Bos_taurus.UMD3.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/bos_taurus/Bos_taurus.UMD3.1.91.gtf.gz"
+  Bos_taurus.UMD3.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/bos_taurus/cds/Bos_taurus.UMD3.1.cds.all.fa.gz"

@@ -7,6 +7,7 @@ configfile: 'config.yaml'
 
 ROOT = os.path.abspath('..')
 FOLDER = os.path.abspath('.')
+ANALYSIS_FOLDER = FOLDER + "/analysis_" + config["SAMPLE_LIST"].replace(".tsv", "")
 GRANULARITY = config['GRANULARITY']
 SUBSAMPLING_SITES = config['SUBSAMPLING_SITES']
 SUBSAMPLING_GENES = config['SUBSAMPLING_GENES']
@@ -34,7 +35,6 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
             for model in config['DFE_MODELS']:
                 for sfs in config['SFS']:
                     if (model == "polyDFE" or model == "MK" or model == "aMK") and sfs == "folded": continue
-                    if (model == "polyDFE" or model == "grapes") and (row["SampleName"] == "MOOA"): continue
                     if NBR_BATCHES > 0:
                         EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model,sfs))
 
@@ -42,8 +42,8 @@ localrules: all,pickle,parse_results,parse_results_gathered,plot_heatmap,plot_vi
 
 rule all:
     input:
-        "Analysis/results.tex",
-        "Analysis/violin_plot",
+        ANALYSIS_FOLDER + "/results.tex",
+        ANALYSIS_FOLDER + "/violin_plot",
         expand("scatterplot_{granularity}.pdf",granularity=GRANULARITY),
         "ontology/gene_adaptive_table.pdf","ontology/gene_epistasis_table.pdf",
         "ontology/site_adaptive_table.pdf","ontology/site_epistasis_table.pdf","ontology/site_strongly-adaptive_table.pdf"
@@ -52,22 +52,22 @@ rule pickle:
     input:
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116',
         div_folder=ROOT + '/OrthoMam/Experiments',
-        xml=ROOT + '/OrthoMam/Datasets/omm_markers',
-        script=ROOT + '/scripts/annotation_ensg.py'
+        xml=ROOT + '/OrthoMam/Datasets/omm_markers'
     output:
         tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2"
     params:
+        script=ROOT + '/scripts/annotation_ensg.py',
         species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species,
             SPECIES[wildcards.species])
     shell:
-        'python3 {input.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
+        'python3 {params.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
 rule generate_DoFE:
     input:
         vfc=lambda wildcards: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(wildcards.species,wildcards.popu)),
         pickle=lambda wildcards: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(wildcards.species,wildcards.granularity),
     params:
-        dfe=f"--dfe_path {DFE_MODELS}" if len(DFE_MODELS) > 0 else "",
+        dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
         script=ROOT + '/scripts/generate_DoFE.py',
         time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: "{0}-{1}-{2}-{3}".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
         tmp_folder=lambda wildcards: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
@@ -95,28 +95,28 @@ rule parse_results_gathered:
         tsv=EXP_LIST,
         script=ROOT + '/scripts/parse_results_gathered.py'
     output:
-        tsv="Analysis/results.tsv"
+        tsv=ANALYSIS_FOLDER + "/results.tsv"
     shell:
-        'mkdir -p Analysis && python3 {input.script} --tsv {input.tsv} --output Analysis'
+        'mkdir -p {ANALYSIS_FOLDER} && python3 {input.script} --tsv {input.tsv} --output {ANALYSIS_FOLDER}'
 
 rule plot_violin:
     input:
         tsv=EXP_LIST,
         script=ROOT + '/scripts/plot_violin.py'
     output:
-        tsv=touch("Analysis/violin_plot")
+        tsv=touch(ANALYSIS_FOLDER + "/violin_plot")
     shell:
-        'mkdir -p Analysis/ViolinPlot && python3 {input.script} --tsv {input.tsv} --output Analysis/ViolinPlot'
+        'mkdir -p {ANALYSIS_FOLDER}/ViolinPlot && python3 {input.script} --tsv {input.tsv} --output {ANALYSIS_FOLDER}/ViolinPlot'
 
 
 rule plot_heatmap:
     input:
         sample_list=FOLDER + "/" + config["SAMPLE_LIST"],
-        violin="Analysis/violin_plot",
-        tsv="Analysis/results.tsv",
+        violin=ANALYSIS_FOLDER + "/violin_plot",
+        tsv=ANALYSIS_FOLDER + "/results.tsv",
         script=ROOT + '/scripts/plot_heatmap.py'
-    output: "Analysis/results.tex"
-    shell: 'python3 {input.script} --tsv {input.tsv} --sample_list {input.sample_list} --output {output}'
+    output: ANALYSIS_FOLDER + "/results.tex"
+    shell: 'cp -f main-table.tex {ANALYSIS_FOLDER}/ && python3 {input.script} --tsv {input.tsv} --sample_list {input.sample_list} --output {output}'
 
 rule plot_scatter:
     input:

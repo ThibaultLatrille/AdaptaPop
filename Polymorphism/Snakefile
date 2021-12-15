@@ -1,11 +1,11 @@
 from ftplib import FTP
-from snakemake.io import expand
 import os
 import pandas as pd
 
 configfile: 'config.yaml'
 
 NAME = config['SPECIES'] + "." + config['ASSEMBLY']
+ROOT = os.path.abspath('../..')
 ftp = FTP(config['FTP'])
 ftp.login()
 vfc_dico = {}
@@ -13,83 +13,64 @@ for analysis in ftp.nlst(config['STUDY']):
     for file_path in ftp.nlst(analysis):
         file = file_path.split('/')[-1]
         if file.endswith('vcf.gz') and (config['CONTAINS'] in file) and (config['CONTAINS_PREFIX'] in file):
-            vfc_dico[file.replace(config['CONTAINS_PREFIX'],'').replace(
-                config['CONTAINS'],'').replace('.vcf.gz','').split('.')[0]] = file_path
-
-ftp_ensembl = FTP('ftp.ensembl.org')
-ftp_ensembl.login()
-
-GTF = '{0}.{1}'.format(NAME,config['ENSEMBL_RELEASE'])
-FASTA = '{0}.cds.all.fa.gz'.format(NAME)
-ROOT = os.path.abspath('../..')
+            key_vcf = file.replace(config['CONTAINS_PREFIX'],'').replace(config['CONTAINS'],'').replace('.vcf.gz','')
+            key_vcf = key_vcf.split('.')[0]
+            vfc_dico[key_vcf] = file_path
 
 POPULATIONS = set(pd.read_csv(config["PANEL"],sep='\t')["pop"]) if 'PANEL' in config else False
+LIFTOVER = 'liftover_source.vcf.gz' in config["DOWNLOAD"] and 'liftover_target.vcf.gz' in config["DOWNLOAD"]
 
 rule all:
     input:
         expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz',subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
-        'CDS.SELCOEFF.' + NAME + '.vcf.gz'
+        'CDS.SELCOEFF.' + NAME + '.vcf.gz',
+        expand('dl.{filename}', filename=config["DOWNLOAD"].keys())
 
-
-rule download_fasta:
-    output:
-        fa_gz=FASTA
-    run:
-        with open(output.fa_gz,'wb') as fa_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/fasta/{1}/cds/{2}'.format(
-                config['ENSEMBL_RELEASE'],config['SPECIES'].lower(),output.fa_gz),fa_gz.write)
-
-rule download_gtf:
+rule download:
     priority: 50
-    output:
-        gtf_gz=GTF + '.gtf.gz'
-    run:
-        with open(output.gtf_gz,'wb') as gtf_gz:
-            ftp_ensembl.retrbinary('RETR /pub/release-{0}/gtf/{1}/{2}'.format(
-                config['ENSEMBL_RELEASE'],config['SPECIES'].lower(),output.gtf_gz),gtf_gz.write)
-
+    output: 'dl.{filename}'
+    params: lambda wildcards: config["DOWNLOAD"][wildcards.filename]
+    shell:
+        "wget -c {params} -O {output}"
 
 rule gtf_to_bed:
     priority: 50
     input:
-        gtf_gz=GTF + '.gtf.gz',
+        gtf_gz=f"dl.{NAME}.gtf.gz",
         gtf_to_bed=ROOT + '/scripts/gtf_to_bed.py'
     output:
-        bed=GTF + '.bed',
-        sorted_bed=GTF + '.sorted.bed',
-        merged_bed=GTF + '.merged.bed'
+        bed=NAME + '.bed',
+        sorted_bed=NAME + '.sorted.bed',
+        merged_bed=NAME + '.merged.bed'
     params:
-        chr_prefix=config['CHR_PREFIX'] if 'CHR_PREFIX' in config else ""
+        chr_prefix=config['CHR_PREFIX'] if 'CHR_PREFIX' in config else "",
+        chr2acc='--chr2acc ' + config['CHR2ACC'] if 'CHR2ACC' in config else ""
     shell:
-        "python3 {input.gtf_to_bed} --gtf {input.gtf_gz} --chr_prefix \"{params.chr_prefix}\" && bedtools sort -i {output.bed} > {output.sorted_bed} && bedtools merge -i {output.sorted_bed} -c 4 -o distinct > {output.merged_bed}"
+        "python3 {input.gtf_to_bed} --gtf {input.gtf_gz} {params.chr2acc} --chr_prefix \"{params.chr_prefix}\" --output {output.bed} && bedtools sort -i {output.bed} > {output.sorted_bed} && bedtools merge -i {output.sorted_bed} -c 4 -o distinct > {output.merged_bed}"
 
 rule download_vcf:
-    output:
-        vfc_gz=(config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz') if (
-                    'LIFT_OVER_DBSNP' in config and 'LIFT_OVER_ENSEMBL' in config) else (NAME + '.{subset}.vcf.gz')
-    run:
-        with open(output.vfc_gz,'wb') as vfc_gz:
-            print(vfc_dico[wildcards.subset])
-            ftp.retrbinary('RETR ' + vfc_dico[wildcards.subset],vfc_gz.write)
+    output: (config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz') if LIFTOVER else (NAME + '.{subset}.vcf.gz')
+    params: lambda wildcards: config['FTP'] + vfc_dico[wildcards.subset]
+    shell:
+        "wget -c {params} -O {output}"
 
-if 'LIFT_OVER_DBSNP' in config and 'LIFT_OVER_ENSEMBL' in config:
+if LIFTOVER:
     rule lift_over_vcf:
         priority: 50
         input:
             vcf=config['SPECIES'] + config['CONTAINS'] + '.{subset}.vcf.gz',
-            dbSNP=config['LIFT_OVER_DBSNP'],
-            ensembl=config['LIFT_OVER_ENSEMBL'],
-            script_liftover=ROOT + '/scripts/vcf_liftover_dbSNP.py'
-        output:
-            vfc_gz=NAME + '.{subset}.vcf.gz'
+            source='dl.liftover_source.vcf.gz',
+            target='dl.liftover_target.vcf.gz',
+            script_liftover=ROOT + '/scripts/vcf_liftover.py'
+        output: NAME + '.{subset}.vcf.gz'
         shell:
-            'python3 {input.script_liftover} --ensembl {input.ensembl} --dbSNP {input.dbSNP} --nextgen {input.vcf} --output {output.vfc_gz}'
+            'python3 {input.script_liftover} --target {input.target} --source {input.source} --vcf {input.vcf} --output {output}'
 
 rule intersect:
     priority: 50
     input:
-        vfc_gz=NAME + '.{subset}.vcf.gz',
-        bed=GTF + '.merged.bed'
+        vfc_gz=rules.lift_over_vcf.output if LIFTOVER else rules.download_vcf.output,
+        bed=rules.gtf_to_bed.output.merged_bed
     output:
         vfc='CDS.' + NAME + '.{subset}.vcf'
     shell:
@@ -98,31 +79,31 @@ rule intersect:
 rule zip:
     priority: 50
     input:
-        vfc_cds='CDS.' + NAME + '.{subset}.vcf',
-        vfc_gz=NAME + '.{subset}.vcf.gz'
+        vfc_cds=rules.intersect.output.vfc
     output: 'CDS.' + NAME + '.{subset}.vcf.gz'
     shell:
-        'gzip -k {input.vfc_cds} && rm -rf {input.vfc_cds} && rm -rf {input.vfc_gz}'
+        'gzip -k {input.vfc_cds}'
 
 rule annotate_vcf:
     input:
-        vfc_gz='CDS.' + NAME + '.{subset}.vcf.gz',
-        gtf_gz=GTF + '.gtf.gz',
-        fa_gz=FASTA,
+        vfc_gz=rules.zip.output,
+        gtf_gz=f"dl.{NAME}.gtf.gz",
+        fa_gz=f"dl.{NAME}.fa.gz",
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116/',
         tree_folder=ROOT + '/OrthoMam/Datasets/omm_RooTree.v10b_116/',
         xml_folder=ROOT + '/OrthoMam/Datasets/omm_markers',
         script_vcf=ROOT + '/scripts/vcf_annotate_positions.py'
     params:
-        specie=config["SPECIES"]
+        specie=config["SPECIES"],
+        chr2acc='--chr2acc ' + config['CHR2ACC'] if 'CHR2ACC' in config else ""
     output:
         vfc_gz='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz'
     shell:
-        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --tree {input.tree_folder} --xml {input.xml_folder} --specie {params.specie} --output {output.vfc_gz}'
+        'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --tree {input.tree_folder} --xml {input.xml_folder} --specie {params.specie} {params.chr2acc} --output {output.vfc_gz}'
 
 rule selcoeff:
     input:
-        vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=list(vfc_dico.keys())),
+        vcf=expand(rules.annotate_vcf.output.vfc_gz,subset=list(vfc_dico.keys())),
         script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
         exp_folder=ROOT + '/OrthoMam/Experiments/'
     output:
@@ -133,19 +114,19 @@ rule selcoeff:
 if POPULATIONS:
     rule chr_to_pop:
         input:
-            vcf=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=list(vfc_dico.keys())),
+            vcf=expand(rules.annotate_vcf.output.vfc_gz,subset=list(vfc_dico.keys())),
             panel=config["PANEL"],
             script=ROOT + '/scripts/vcf_chr_to_pop.py'
         params:
             output='CDS.ANNOT.' + NAME + '.POPULATION.vcf.gz'
         output:
-            vcf_pop=expand('CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',subset=POPULATIONS)
+            vcf_pop=expand(rules.annotate_vcf.output.vfc_gz,subset=POPULATIONS)
         shell:
             'python3 {input.script} --panel {input.panel} --vcf {input.vcf} --output {params.output}'
 
 rule est_sfs:
     input:
-        vcf='CDS.ANNOT.' + NAME + '.{subset}.vcf.gz',
+        vcf=rules.annotate_vcf.output.vfc_gz,
         script=ROOT + '/scripts/est_sfs.py',
         est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
         est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',

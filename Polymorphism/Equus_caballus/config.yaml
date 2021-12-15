@@ -1,0 +1,10 @@
+FTP: 'ftp.sra.ebi.ac.uk'
+STUDY: '/vol1/ERZ780/ERZ780739/'
+CONTAINS_PREFIX: ""
+CONTAINS: 'datedfixed2'
+CHR_PREFIX: "chr"
+ASSEMBLY: "EquCab2"
+SPECIES: "Equus_caballus"
+DOWNLOAD:
+  Equus_caballus.EquCab2.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/equus_caballus/Equus_caballus.EquCab2.91.gtf.gz"
+  Equus_caballus.EquCab2.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/equus_caballus/cds/Equus_caballus.EquCab2.cds.all.fa.gz"

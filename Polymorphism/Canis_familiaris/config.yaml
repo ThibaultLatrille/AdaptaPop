@@ -1,0 +1,9 @@
+FTP: 'ftp.sra.ebi.ac.uk'
+STUDY: '/vol1/ERZ483/ERZ483497/'
+CONTAINS_PREFIX: ""
+CONTAINS: '.557.publicSamples.ann'
+ASSEMBLY: "CanFam3.1"
+SPECIES: "Canis_familiaris"
+DOWNLOAD:
+  Canis_familiaris.CanFam3.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/canis_familiaris/Canis_familiaris.CanFam3.1.91.gtf.gz"
+  Canis_familiaris.CanFam3.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/canis_familiaris/cds/Canis_familiaris.CanFam3.1.cds.all.fa.gz"

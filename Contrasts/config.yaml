@@ -4,6 +4,6 @@ SUBSAMPLING_GENES: -1
 NBR_BATCHES: 50
 NBR_REPLICATES_PER_BATCH: 20
 SUBSAMPLING_WEIGHTED: true
-SAMPLE_LIST: "sample_superpop.tsv"
+SAMPLE_LIST: "sample_supplementary.tsv"
 SFS: ["unfolded", "folded"]
 DFE_MODELS: ["grapes", "polyDFE", "MK", "aMK"]

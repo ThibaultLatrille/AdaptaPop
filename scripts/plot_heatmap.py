@@ -167,8 +167,9 @@ if __name__ == '__main__':
 
     for id_species, sp in enumerate(species):
         for id_model_set, model_set in enumerate(models):
-            p_matrix[id_species, id_model_set] = dico_matrix[sp][model_set]
-            delta_wa_matrix[id_species, id_model_set] = dico_delta_wa[sp][model_set]
+            if sp in dico_matrix and model_set in dico_matrix[sp]:
+                p_matrix[id_species, id_model_set] = dico_matrix[sp][model_set]
+                delta_wa_matrix[id_species, id_model_set] = dico_delta_wa[sp][model_set]
 
     fig, ax = plt.subplots()
 
@@ -196,6 +197,8 @@ if __name__ == '__main__':
 
     df = df.iloc[df.apply(lambda r: sp_sorted(format_pop(r["pop"]), r["species"]), axis=1).argsort()]
     df["species"] = df.apply(lambda r: "Ovis orientalis" if r["pop"] == "IROO" else r["species"], axis=1)
+    df["species"] = df.apply(lambda r: "Ovis vignei" if r["pop"] == "IROV" else r["species"], axis=1)
+    df["species"] = df.apply(lambda r: "Capra aegagrus" if r["pop"] == "IRCA" else r["species"], axis=1)
 
     dico_sample = {r["SampleName"].replace("_", " "): r["Location"] for _, r in
                    list(pd.read_csv(args.sample_list, sep='\t').iterrows())}

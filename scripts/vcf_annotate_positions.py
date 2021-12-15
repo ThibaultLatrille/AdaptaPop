@@ -47,7 +47,8 @@ class Alignment(object):
                self.omm_seq_aligned + '\n' + translate(self.omm_seq_aligned, True) + '\n' + self.omm_seq
 
     def cds_pos_to_omm_pos(self, cds_pos, ref_nuc):
-        if self.error != "": return self.error
+        if self.error != "":
+            return self.error
 
         cds_pos_ali = self.pos_add_gap(cds_pos, self.cds_seq_aligned)
         if self.cds_seq_aligned[cds_pos_ali] != ref_nuc:
@@ -149,43 +150,44 @@ def extract_fasta(file_path, specie):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-f', '--fasta', required=True, type=str,
-                        dest="f", metavar="<fasta>",
+    parser.add_argument('-f', '--fasta', required=True, type=str, dest="f", metavar="<fasta>",
                         help="The relative name of the .fasta file")
-    parser.add_argument('-g', '--gtf', required=True, type=str,
-                        dest="g", metavar="<gtf>",
+    parser.add_argument('-c', '--chr2acc', required=False, type=str, default="", dest="chr2acc", metavar="<chr2acc>",
+                        help="The relative name of the chr2acc file")
+    parser.add_argument('-g', '--gtf', required=True, type=str, dest="g", metavar="<gtf>",
                         help="The relative name of the .gtf file")
-    parser.add_argument('-v', '--vcf', required=True, type=str,
-                        dest="v", metavar="<vcf>",
+    parser.add_argument('-v', '--vcf', required=True, type=str, dest="v", metavar="<vcf>",
                         help="The relative name of the .vcf file")
-    parser.add_argument('-a', '--ali', required=True, type=str,
-                        dest="ali", metavar="<ali>",
+    parser.add_argument('-a', '--ali', required=True, type=str, dest="ali", metavar="<ali>",
                         help="The alignment folder")
-    parser.add_argument('-x', '--xml', required=True, type=str,
-                        dest="xml", metavar="<xml>",
+    parser.add_argument('-x', '--xml', required=True, type=str, dest="xml", metavar="<xml>",
                         help="The xml folder")
-    parser.add_argument('-t', '--tree', required=True, type=str,
-                        dest="tree", metavar="<tree>",
+    parser.add_argument('-t', '--tree', required=True, type=str, dest="tree", metavar="<tree>",
                         help="The tree folder")
-    parser.add_argument('-s', '--species', required=True, type=str,
-                        dest="species", metavar="<species>",
+    parser.add_argument('-s', '--species', required=True, type=str, dest="species", metavar="<species>",
                         help="The species name")
-    parser.add_argument('-o', '--output', required=True, type=str,
-                        dest="output", metavar="<output>",
+    parser.add_argument('-o', '--output', required=True, type=str, dest="output", metavar="<output>",
                         help="The output file")
     args = parser.parse_args()
 
     path = os.getcwd()
 
     dict_alignment, dict_outgroup = {}, {}
-    dict_cds, not_confirmed_tr = build_dict_cds(path, args.g)
-    dict_tr_id = build_dict_trID(args.xml, args.species)
+    dict_cds, not_confirmed_tr, pr2tr_id = build_dict_cds(path, args.g, args.chr2acc)
 
     print('Loading fasta file...')
     dict_fasta = {}
     for fasta in SeqIO.parse(gzip.open("{0}/{1}".format(path, args.f), 'rt'), 'fasta'):
-        dict_fasta[fasta.id.split(".")[0]] = str(fasta.seq[:-3])
+        pr_id_pos = fasta.description.find("protein_id")
+        if pr_id_pos != -1:
+            pr_id = fasta.description[pr_id_pos:].split("]")[0].replace("protein_id=", "")
+            tr_id = pr2tr_id[pr_id]
+        else:
+            tr_id = fasta.id.split(".")[0]
+        dict_fasta[tr_id] = str(fasta.seq[:-3])
     print('Fasta file loaded.')
+
+    dict_tr_id = build_dict_trID(args.xml, args.species)
 
     annot_file = gzip.open(args.output, 'wt')
     error_file = open(args.output.replace(".vcf.gz", ".errors.tsv"), 'w')
@@ -193,15 +195,16 @@ if __name__ == '__main__':
     dict_cat_info = {"Syn": "{0} SNPs are synonymous variations",
                      "NonSyn": "{0} SNPs are non-synonymous variations",
                      "Stop": "{0} SNPs are stop variations",
+                     "NotNucleotide": "{0} SNPs are not nucleotides (ref or alt)",
                      "RefStop": "{0} SNPs have stop codon as reference amino-acid",
                      "RefDiff": "{0} SNPs retrieved from the fasta are not equal to the reference",
                      "NotIdentified": "{0} SNPs have non-identified reference or alternate amino-acid",
                      "NotInCds": "{0} SNPs are not inside the CDS",
-                     "TrIdNotInOMM": "{0} transcript are not in OrthoMam",
-                     "SeqOMMEmpty": "{0} fasta sequences from OrthoMam MSA are empy",
-                     "SeqOMMnotMultiple3": "{0} fasta sequences from OrthoMam MSA are not multiple of 3",
-                     "SeqCDSnotMultiple3": "{0} fasta sequences from CDS are not multiple of 3",
-                     "NoAlignment": "{0} fasta sequences could not be aligned",
+                     "TrIdNotInOMM": "{0} SNPs with transcript are not in OrthoMam",
+                     "SeqOMMEmpty": "{0} SNPs with fasta sequences from OrthoMam MSA are empy",
+                     "SeqOMMnotMultiple3": "{0} SNPs with fasta sequences from OrthoMam MSA are not multiple of 3",
+                     "SeqCDSnotMultiple3": "{0} SNPs with fasta sequences from CDS are not multiple of 3",
+                     "NoAlignment": "{0} SNPs fasta sequences could not be aligned",
                      "NotConvertible": "{0} SNPs positions are not convertible",
                      "RefOMMDiff": "{0} SNPs retrieved from OMM are not equal to the reference"
                      }
@@ -219,6 +222,7 @@ if __name__ == '__main__':
 
         chromo, pos, snp_id, ref, alt = vcf_line.split("\t", maxsplit=5)[:5]
         if (ref not in nucleotides) or (alt not in nucleotides):
+            dict_cat_nbr["NotNucleotide"] += 1
             continue
 
         snp_types = dict()
@@ -251,16 +255,12 @@ if __name__ == '__main__':
         vcf_line = vcf_line.strip()
         if len(ali_pos_not_errors) == 0:
             dict_cat_nbr[most_common([v for v in ali_pos.values() if v in cat_errors])] += 1
-            snp_type = most_common([snp_type for snp_type, _, _ in type_not_errors.values()])
-            c_ref = most_common([c_ref for _, c_ref, _ in type_not_errors.values()])
-            c_alt = most_common([c_alt for _, _, c_alt in type_not_errors.values()])
-            vcf_line += "\t" + "\t".join(["None"] * 7) + "\t{0}\t{1}\t{2}\n".format(snp_type, c_ref, c_alt)
-            annot_file.write(vcf_line)
-            dict_cat_nbr[snp_type] += 1
+            continue
         else:
             set_snp = set([(dict_tr_id[tr_id], pos, type_not_errors[tr_id], dict_cds[tr_id].strand) for tr_id, pos in
                            ali_pos_not_errors.items()])
             for ensg, pos, (snp_type, c_ref, c_alt), strand in set_snp:
+                dict_cat_nbr[snp_type] += 1
                 if ensg not in dict_outgroup:
                     dict_outgroup[ensg] = Outgroup("{0}{1}_NT.fasta".format(args.ali, ensg), args.species,
                                                    "{0}{1}_NT.rootree".format(args.tree, ensg))

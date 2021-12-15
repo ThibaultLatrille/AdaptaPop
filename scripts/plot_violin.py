@@ -43,12 +43,15 @@ if __name__ == '__main__':
 
         df_nn = pd.DataFrame(dico_nn)
         df_ada = pd.DataFrame(dico_ada)
-        nbr_pop = len(set(df_nn["pop"]))
+        sub_pop = set(df_nn["pop"])
+        nbr_pop = len(sub_pop)
+        sub_order = [pop for pop in order if pop in sub_pop]
+
         fig, ax = plt.subplots(figsize=(210 * (nbr_pop + 1) / my_dpi, 1080 / my_dpi), dpi=my_dpi)
-        graph = sns.violinplot(x="pop", y="wA", data=df_nn, ax=ax, color=GREEN, inner="quartile", order=order,
+        graph = sns.violinplot(x="pop", y="wA", data=df_nn, ax=ax, color=GREEN, inner="quartile", order=sub_order,
                                label=f"Nearly-neutral {granu}s (subsampled)")
-        sns.stripplot(x="pop", y="wA", data=df_ada, ax=ax, color=RED, edgecolor="gray", size=10, jitter=0, order=order,
-                      label=f"Adaptive {granu}s")
+        sns.stripplot(x="pop", y="wA", data=df_ada, ax=ax, color=RED, edgecolor="gray", size=10, jitter=0,
+                      order=sub_order, label=f"Adaptive {granu}s")
         # plt.legend(fontsize=fontsize)
 
         ax.set_xlabel("", fontsize=fontsize_legend)
