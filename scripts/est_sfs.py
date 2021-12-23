@@ -37,7 +37,8 @@ if __name__ == '__main__':
                      ("|" in s) or ("/" in s)]
         count = sum(genotypes)
         n = len(genotypes) * 2
-        if count == 0: continue
+        if count == 0:
+            continue
 
         nuc_pos = int(line_list[header["ENSG_POS"]])
         codon_pos = int(nuc_pos / 3)

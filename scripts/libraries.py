@@ -31,6 +31,11 @@ codontable.update({
 
 grapes_cmd = "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_data 1> {2}.out 2> {2}.err"
 polyDFE_cmd = "{0} -d {1}.sfs -w -m C -e 1> {2}.out 2> {2}.err"
+GREEN = "#8FB03E"
+RED = "#EB6231"
+YELLOW = "#E29D26"
+BLUE = "#5D80B4"
+LIGHTGREEN = "#6ABD9B"
 
 
 def translate(codon_seq, gap=False):
@@ -213,7 +218,9 @@ def build_dict_trID(xml_folder, specie):
 
 
 def tex_f(x):
-    if 0.001 < abs(x) < 10:
+    if x == 0:
+        return "0.0"
+    elif 0.001 < abs(x) < 10:
         return "{:6.3f}".format(x)
     elif 10 <= abs(x) < 10000:
         return "{:6.1f}".format(x)
@@ -221,9 +228,27 @@ def tex_f(x):
         s = "{:6.2g}".format(x)
         if "e" in s:
             mantissa, exp = s.split('e')
-            s = mantissa + 'e$^{' + str(int(exp)) + '}$'
-            s = " " * (5 + 6 - len(s)) + s
+            s = mantissa + '$\\times 10^{' + str(int(exp)) + '}$'
         return s
+
+
+def format_pval(d, alpha=0.05):
+    d["pval_adj"] = d.apply(lambda r: tex_f(r["pval_adj"]) + ("$\\bm{^*}$" if r["pval_adj"] < alpha else "~~"), axis=1)
+    return d
+
+
+def adjusted_holm_pval(d, alpha=0.05, format_p=True):
+    n = len(d["p_val"])
+    sorted_pval = sorted(zip(d["p_val"], d.index))
+    sorted_adjpval = [[min(1, p_val * (n - i)), p] for i, (p_val, p) in enumerate(sorted_pval)]
+    for i in range(1, len(sorted_adjpval)):
+        if sorted_adjpval[i][0] <= sorted_adjpval[i - 1][0]:
+            sorted_adjpval[i][0] = sorted_adjpval[i - 1][0]
+    holm = {p: p_val for p_val, p in sorted_adjpval}
+    d["pval_adj"] = [holm[p] for p in d.index]
+    if format_p:
+        d = format_pval(d, alpha)
+    return d
 
 
 def build_divergence_dico(folder, ensg_list, gene_level=True):
@@ -332,7 +357,8 @@ def snp_data_frame(vcf_path, is_unfolded, subsample):
                 tot["REF"] += 1
             elif row["ANC"] == row["ALT"]:
                 row["COUNT"] = row["SAMPLE_SIZE"] - row["COUNT"]
-                if row["ENSG"] not in fixed_poly: fixed_poly[row["ENSG"]] = {}
+                if row["ENSG"] not in fixed_poly:
+                    fixed_poly[row["ENSG"]] = {}
                 fixed_poly[row.ENSG][codon_pos] = row["POS"] % 3, row["REF"], row["ALT"]
                 tot["ALT"] += 1
             else:
@@ -345,7 +371,8 @@ def snp_data_frame(vcf_path, is_unfolded, subsample):
             tot["ABS"] += 1
             continue
         elif row["COUNT"] == row["SAMPLE_SIZE"]:
-            if row["ENSG"] not in fixed_poly: fixed_poly[row["ENSG"]] = {}
+            if row["ENSG"] not in fixed_poly:
+                fixed_poly[row["ENSG"]] = {}
             fixed_poly[row["ENSG"]][codon_pos] = row["POS"] % 3, row["REF"], row["ALT"]
             tot["FIXED"] += 1
             continue
@@ -416,10 +443,8 @@ def dfe_alpha(filepath, df, n, ensg_dico_pos, gene_level, sp_1, sp_2, ali_dico, 
               is_unfolded, error_f):
     if dfe_models is None:
         dfe_models = []
-    out_list = [os.path.isfile(filepath + "_" + dfe_path.split("/")[-2] + (".csv" if "grapes" in dfe_path else ".out"))
-                for dfe_path in dfe_models]
-    if np.all(out_list) and len(dfe_models) > 0:
-        print("Output files already exists, not computing and exiting")
+    if "NEARLY_NEUTRAL" in filepath:
+        print(f"{filepath} files already exists, not computing and exiting")
         return True
     sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
     sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
@@ -528,13 +553,6 @@ def subsample_genes(cds_dico, nbr_genes, weights, replace=False):
     return {k: None for k in np.random.choice(list(cds_dico), nbr_genes, replace=replace, p=weights)}
 
 
-GREEN = "#8FB03E"
-RED = "#EB6231"
-YELLOW = "#E29D26"
-BLUE = "#5D80B4"
-LIGHTGREEN = "#6ABD9B"
-
-
 def format_pop(t):
     if "up" == t:
         return "Equus"
@@ -544,21 +562,6 @@ def format_pop(t):
         return "".join([s[0] for s in t.split(" ")])
     else:
         return t
-
-
-def sp_to_color(specie):
-    if "Homo" in specie:
-        return "#5D80B4"
-    elif "Chloro" in specie:
-        return "#9399BE"
-    elif "Ovis" in specie:
-        return "#8D9968"
-    elif "Capra" in specie:
-        return "#A0B55E"
-    elif "Bos" in specie:
-        return "#B5A95E"
-    else:
-        return "black"
 
 
 def sp_sorted(pop, sp):
@@ -573,5 +576,9 @@ def sp_sorted(pop, sp):
         return "W" + out
     elif "Bos" in out:
         return "V" + out
+    elif "Canis" in out:
+        return "U" + out
+    elif "Equus" in out:
+        return "T" + out
     else:
         return out

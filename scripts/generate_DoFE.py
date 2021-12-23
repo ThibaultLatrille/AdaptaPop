@@ -52,7 +52,7 @@ if __name__ == '__main__':
         print('{0} epistasis sites'.format(sum([len(v) for v in epistasis_dico.values()])))
         print('{0} nearly-neutral sites'.format(sum([len(v) for v in nearly_neutral_dico.values()])))
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded, args.subsample * 2)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded, args.subsample)
     np.random.seed(args.seed)
 
     weigths_nearly_neutral = None

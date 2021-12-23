@@ -4,7 +4,7 @@ import os
 import numpy as np
 from collections import defaultdict
 import itertools
-from libraries import tex_f, format_pop, sp_to_color, sp_sorted
+from libraries import tex_f, format_pop, sp_sorted, adjusted_holm_pval
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -78,8 +78,6 @@ def heatmap(data, row_labels, col_labels, ax=None, cbar_kw={}, cbarlabel="", **k
              rotation_mode="anchor")
     ax.set_xticks(np.arange(data.shape[1] + 1) - .5, minor=True)
     ax.set_yticks(np.arange(data.shape[0] + 1) - .5, minor=True)
-    for tick_label in ax.axes.get_xticklabels():
-        tick_label.set_color(sp_to_color(tick_label.get_text()))
     ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
     ax.tick_params(which="minor", bottom=False, left=False)
     return im, cbar
@@ -118,18 +116,14 @@ def extend_pop(p, sample):
         return f"{sample[p]} ({fp})"
 
 
-header = ["Species", "Population", "SFS", "Level", "Model",
-          "$\\omega_{\\textrm{A}}^{\\textrm{S}}$", "$\\omega_{\\textrm{NA}}^{\\textrm{S}}$",
-          "$\\omega^{\\textrm{S}}$", "$\\alpha^{\\textrm{S}}$",
-          "$\\omega_{\\textrm{A}}^{\\textrm{N}}$", "$\\omega_{\\textrm{NA}}^{\\textrm{N}}$",
-          "$\\omega^{\\textrm{N}}$", "$\\alpha^{\\textrm{N}}$",
-          "p-value", "$\\pi_{\\textrm{N}}$"]
+omega_a = "$\\omega_{\\mathrm{A}}$"
+omega_a_mean = "$\\left< \\omega_{\\mathrm{A}} \\right>$"
+pv = "$p_{\\mathrm{value}}$"
+pv_adj = "$p_{\\mathrm{value}}^{\\mathrm{adjusted}}$"
+pi_s = "$\\pi_{\\textrm{S}}$"
 
-header = ["Species", "Population", "SFS", "Level", "Model",
-          "$\\color{RED}{\\omega_{\\mathrm{A}}^{\\mathrm{AR}}}\\color{black}$",
-          "$\\color{GREEN}{\\omega_{\\mathrm{A}}^{\\mathrm{NNR}}}\\color{black}$",
-          "$\\Delta_{\\omega_{\\mathrm{A}}}$",
-          "p-value", "$\\pi_{\\textrm{S}}$"]
+header = ["Species", "Population", "SFS", "Level", "Model", omega_a, omega_a_mean, pv, pv_adj, pi_s]
+header_main = ["Species", "Population", omega_a, omega_a_mean, pv, pv_adj, omega_a, omega_a_mean, pv, pv_adj, pi_s]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -206,18 +200,52 @@ if __name__ == '__main__':
     df["pop"] = df.apply(lambda r: extend_pop(r["pop"], dico_sample), axis=1)
 
     o = open(args.output, 'w')
-    sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
+
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
                                                      ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)].drop(
             ["sfs", "granularity", "model"], axis=1)
-        if len(ddf["species"]) == 0: continue
+        if len(ddf["species"]) == 0:
+            continue
+
+        sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
+        ddf = adjusted_holm_pval(ddf)
+        ps = ddf["P_S"]
+        ddf.drop(["P_S"], axis=1, inplace=True)
+        ddf["P_S"] = ps
+
+        o.write("\\newpage\n")
         o.write("\\subsection{" + "{0} SFS at {1} level - {2}".format(sfs.capitalize(), granularity, model) + "} \n")
         o.write("\\begin{center}\n")
         o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
                 "{0}-{1}-{2}.pdf".format(granularity, sfs, model) + "} \n")
         o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
-        o.write(ddf.to_latex(index=False, escape=False, float_format=tex_f, header=sub_header))
+        o.write(ddf.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|",
+                             header=sub_header))
+        o.write("\\end{adjustbox}\n")
+        o.write("\\end{center}\n")
+
+    sub_header_main = [i for i in header_main if i not in ["SFS", "Level", "Model"]]
+    for sfs, model in itertools.product(["folded", "unfolded"], ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
+        ddf = df[(df["sfs"] == sfs) & (df["model"] == model)].drop(["sfs", "model"], axis=1)
+        if len(ddf["species"]) == 0:
+            continue
+
+        ddg = []
+        for granularity in ["gene", "site"]:
+            ddf_g = ddf[ddf["granularity"] == granularity].drop(["granularity"], axis=1)
+            ps = ddf_g["P_S"].values
+            ddf_g.drop(["P_S"], axis=1, inplace=True)
+            ddg.append(adjusted_holm_pval(ddf_g))
+
+        merge = pd.merge(ddg[0], ddg[1], how="inner", on=["pop", "species"])
+        merge["P_S"] = ps
+        o.write("\\newpage\n")
+        o.write("\\subsection{" + "{0} SFS - {1}".format(sfs.capitalize(), model) + "} \n")
+        o.write("\\begin{center}\n")
+        o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
+        o.write(merge.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|r|r|r|r|",
+                               header=sub_header_main))
         o.write("\\end{adjustbox}\n")
         o.write("\\end{center}\n")
     o.close()

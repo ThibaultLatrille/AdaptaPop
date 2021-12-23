@@ -57,8 +57,7 @@ rule pickle:
         tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2"
     params:
         script=ROOT + '/scripts/annotation_ensg.py',
-        species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species,
-            SPECIES[wildcards.species])
+        species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species, SPECIES[wildcards.species])
     shell:
         'python3 {params.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
@@ -72,8 +71,7 @@ rule generate_DoFE:
         time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: "{0}-{1}-{2}-{3}".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
         tmp_folder=lambda wildcards: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
         output=lambda wildcards: FOLDER + "/{0}-{1}-{2}/{3}/".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.sfs),
-        species=lambda wildcards: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(wildcards.species,
-            SPECIES[wildcards.species],wildcards.sfs,SPECIES[wildcards.popu])
+        species=lambda wildcards: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(wildcards.species, SPECIES[wildcards.species],wildcards.sfs,SPECIES[wildcards.popu])
     output:
         touch("{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
@@ -82,6 +80,7 @@ rule generate_DoFE:
 rule parse_results:
     input:
         dfe_res=expand("{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{batch}.txt",batch=BATCHES),
+        script=ROOT + '/scripts/parse_results.py'
     params:
         script=ROOT + '/scripts/parse_results.py',
         folder=lambda wildcards: "--folder {0}-{1}-{2}/{3}".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.sfs)

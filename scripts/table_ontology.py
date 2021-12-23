@@ -1,6 +1,6 @@
 import pandas as pd
 import scipy.stats as st
-from libraries import build_divergence_dico, split_outliers, tex_f
+from libraries import build_divergence_dico, split_outliers, tex_f, adjusted_holm_pval, format_pval
 import os
 from lxml import etree
 import numpy as np
@@ -26,7 +26,7 @@ def ontology_table(xml_folder):
 
 
 header = ["Gene Ontology", "$n_{\\mathrm{Observed}}$", "$n_{\\mathrm{Expected}}$", "Odds ratio",
-          "$p_{\\mathrm{value}}$", "$e_{\\mathrm{value}}$"]
+          "$p_{\\mathrm{v}}$", "$p_{\\mathrm{v-adjusted}}$"]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     print("{0} {1}s in focal set.".format(len(cds_focal_set), args.granularity))
     print("{0} {1}s in control set".format(len(cds_control_set), args.granularity))
 
-    dico_ouput = {"GO": [], "obs": [], "exp": [], "oddsratio": [], "p_value": []}
+    dico_ouput = {"GO": [], "obs": [], "exp": [], "oddsratio": [], "p_val": []}
     for go_id, cds_all_go_set in go_id2cds_list.items():
         if gene:
             cds_go_set = cds_all_go_set & cds_set
@@ -90,24 +90,25 @@ if __name__ == '__main__':
         assert np.sum(obs) == len(cds_set)
 
         if np.min(obs) > 1:
-            oddsratio, p_value = st.fisher_exact(obs, alternative='greater')
+            oddsratio, p_val = st.fisher_exact(obs, alternative='greater')
             dico_ouput["GO"].append(go_id2name[go_id].replace("_", "-").replace("[", "").replace("]", ""))
             dico_ouput["obs"].append(int(obs[0, 0]))
             dico_ouput["exp"].append(float(obs[0, 0]) / oddsratio)
             dico_ouput["oddsratio"].append(oddsratio)
-            dico_ouput["p_value"].append(p_value)
+            dico_ouput["p_val"].append(p_val)
 
     df = pd.DataFrame(dico_ouput)
-    df["e_value"] = df["p_value"] * len(df["p_value"])
-    df.sort_values(by="e_value", inplace=True)
+    df = adjusted_holm_pval(df, alpha=0.05, format_p=False)
+    df.sort_values(by="pval_adj", inplace=True)
     df.to_csv(args.output.replace(".tex", ".tsv"), index=False, sep="\t")
 
     text_core = "{0} tests performed with {1} {4}s detected as {2} and {3} as nearly-neutral." \
-                "\n".format(len(df["p_value"]), len(cds_focal_set), args.category.lower().replace("-", " "),
+                "\n".format(len(df["p_val"]), len(cds_focal_set), args.category.lower().replace("-", " "),
                             len(cds_control_set), args.granularity)
     text_core += "\\scriptsize\n"
-    text_core += df[df["e_value"] < 1.0].head(500).to_latex(index=False, escape=False, longtable=True,
-                                                            float_format=tex_f, header=header)
+    df_head = format_pval(df[df["pval_adj"] < 1.0]).head(500)
+    text_core += df_head.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=header,
+                                  column_format="|l|r|r|r|r|r|")
 
     with open(args.output.replace(".tex", "") + ".core.tex", 'w') as core_f:
         core_f.write(text_core)
@@ -122,6 +123,7 @@ if __name__ == '__main__':
     tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {1}".format(
         os.path.dirname(args.output),
         args.output)
+    os.system(tex_to_pdf)
     os.system(tex_to_pdf)
     os.system(tex_to_pdf)
     print('Pdf generated')

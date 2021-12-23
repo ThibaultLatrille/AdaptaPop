@@ -37,7 +37,7 @@ if __name__ == '__main__':
     if args.model in ["dfem", "grapes"]:
         for filepath in glob(args.folder + "/*{0}.csv".format(args.model)):
             dfem_df = pd.read_csv(filepath)
-            ge_df = dfem_df[dfem_df["model"] == "GammaExpo"]
+            ge_df = dfem_df[dfem_df["model"] == "Neutral"]
             omega_a = float(ge_df["omegaA"])
             alpha = float(ge_df["alpha"])
             omega_dict["OMEGA_A"].append(omega_a)
@@ -70,9 +70,9 @@ if __name__ == '__main__':
                 omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
             else:
                 assert args.model == "aMK"
-                alpha_array = [((dnds - (pn_x / float(Lpn)) / (ps_x / float(Lps))) / dnds) if ps_x != 0 else np.nan for
-                               pn_x, ps_x in zip(sfs_n, sfs_s)]
-                alpha_array = np.array([a if a > 0 else np.nan for a in alpha_array])
+                alpha_array = np.array(
+                    [((dnds - (pn_x / float(Lpn)) / (ps_x / float(Lps))) / dnds) if ps_x != 0 else np.nan for
+                     pn_x, ps_x in zip(sfs_n, sfs_s)])
                 mask = np.isfinite(alpha_array)
                 delta = 1.0 / len(alpha_array)
                 freq_array = np.linspace(delta, 1.0 - delta, len(alpha_array))

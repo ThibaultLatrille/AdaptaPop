@@ -2,7 +2,7 @@ import argparse
 import seaborn as sns
 import pandas as pd
 from collections import defaultdict
-from libraries import format_pop, sp_to_color, RED, GREEN, sp_sorted
+from libraries import format_pop, RED, GREEN, sp_sorted
 import matplotlib as mpl
 
 mpl.use('Agg')
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         nbr_pop = len(sub_pop)
         sub_order = [pop for pop in order if pop in sub_pop]
 
-        fig, ax = plt.subplots(figsize=(210 * (nbr_pop + 1) / my_dpi, 1080 / my_dpi), dpi=my_dpi)
+        fig, ax = plt.subplots(figsize=(140 * (nbr_pop + 1) / my_dpi, 1080 / my_dpi), dpi=my_dpi)
         graph = sns.violinplot(x="pop", y="wA", data=df_nn, ax=ax, color=GREEN, inner="quartile", order=sub_order,
                                label=f"Nearly-neutral {granu}s (subsampled)")
         sns.stripplot(x="pop", y="wA", data=df_ada, ax=ax, color=RED, edgecolor="gray", size=10, jitter=0,
@@ -62,9 +62,8 @@ if __name__ == '__main__':
             graph.axhline(0.12, color=RED, linestyle="--")
         if granu == "site":
             graph.axhline(0.52, color=RED, linestyle="--")
-        # plt.setp(ax.get_xticklabels(), rotation=30, ha="right", rotation_mode="anchor")
+        plt.setp(ax.get_xticklabels(), rotation=30, ha="right", rotation_mode="anchor")
         for tick_label in graph.axes.get_xticklabels():
-            tick_label.set_color(sp_to_color(pop2sp[tick_label.get_text()]))
             tick_label.set_fontsize(fontsize_legend)
         for tick_label in graph.axes.get_yticklabels():
             tick_label.set_fontsize(fontsize_legend)

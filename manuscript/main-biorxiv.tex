@@ -1,10 +1,13 @@
 \documentclass{article}
 
-\usepackage{xcolor}
+\usepackage{xcolor, colortbl}
 \definecolor{BLUELINK}{HTML}{0645AD}
 \definecolor{DARKBLUELINK}{HTML}{0B0080}
 \definecolor{LIGHTBLUELINK}{HTML}{3366BB}
 \definecolor{PURPLELINK}{HTML}{663366}
+\definecolor{RED}{HTML}{EB6231}
+\definecolor{GREEN}{HTML}{8FB03E}
+\definecolor{LIGHTGREY}{gray}{0.9}
 \PassOptionsToPackage{hyphens}{url}
 \usepackage[colorlinks=false]{hyperref}
 % for linking between references, figures, TOC, etc in the pdf document
@@ -65,13 +68,13 @@
 \newcommand{\BiDimArray}[1]{\bm{#1}}
 
 \DeclareMathOperator{\E}{\mathbb{E}}
-\DeclareMathOperator{\Var}{\text{Var}}
+\DeclareMathOperator{\Var}{\mathrm{Var}}
 \newcommand{\der}{\mathrm{d}}
-\newcommand{\angstrom}{\text{\normalfont\AA}}
-\newcommand{\e}{\text{e}}
+\newcommand{\angstrom}{\mathrm{\normalfont\AA}}
+\newcommand{\e}{\mathrm{e}}
 \newcommand{\avg}[1]{\left< #1 \right>} % for average
-\newcommand{\Ne}{N_{\text{e}}}
-\newcommand{\Ner}{N_{\text{r}}}
+\newcommand{\Ne}{N_{\mathrm{e}}}
+\newcommand{\Ner}{N_{\mathrm{r}}}
 \newcommand{\dn}{d_N}
 \newcommand{\ds}{d_S}
 \newcommand{\dnds}{\dn / \ds}
@@ -79,23 +82,23 @@
 \newcommand{\ps}{\pi_S}
 \newcommand{\pnps}{\pn / \ps}
 \newcommand{\proba}{\mathbb{P}}
-\newcommand{\pfix}{\proba_{\text{fix}}}
-\newcommand{\Pfix}{2 \Ne \proba_{\text{fix}}}
+\newcommand{\pfix}{\proba_{\mathrm{fix}}}
+\newcommand{\Pfix}{2 \Ne \proba_{\mathrm{fix}}}
 \newcommand{\indice}{a}
 \newcommand{\indiceexp}{^{(\indice)}}
 
 \renewcommand{\baselinestretch}{1.5}
-\renewcommand{\arraystretch}{0.7}
+\renewcommand{\arraystretch}{0.6}
 \linenumbers
 
 \title{Reconciling methods for detecting adaptation from inter- and intra-specific data}
 
 %\date{September 9, 1985}	% Here you can change the date presented in the paper title
-%\date{} 					% Or removing it
+%\date{} \rowcolor{LIGHTGREY}% Or removing it
 
 \author{
 	\large
-	T. {Latrille}$^{1,2}$, N. {Rodrigue}$^{3}$, N. {Lartillot}$^{1}$ \\
+	T. {Latrille}$^{1,2}$, N. {Rodrigue}$^{3}$, N. {Lartillot}$^{1}$\\
 	\normalsize
 	$^{1}$Université de Lyon, Université Lyon 1, CNRS, Laboratoire de Biométrie et Biologie Évolutive UMR 5558, F-69622 Villeurbanne, France.\\
 	$^{2}$École Normale Supérieure de Lyon, Université de Lyon, Université Lyon 1, Lyon, France\\
@@ -107,171 +110,214 @@
 \maketitle
 
 \begin{abstract}
-	Adaptation in protein-coding sequences can be detected using multiple sequence alignments across species (inter-specific data).
-	This method uses phylogenetic codon models, classically formulated in terms of the ratio of synonymous and non-synonymous substitution rates.
+	Adaptation in protein-coding sequences can be detected from multiple sequence alignments across species, or alternatively by leveraging polymorphism inside a population.
+	Across species, quantification of the adaptive rate rely on phylogenetic codon models, classically formulated in terms of the ratio of non-synonymous over synonymous substitution rates, seeking signature of an accelerated rate of non-synonymous substitutions.
 	However, because of the background of purifying selection, these models are potentially limited in their sensitivity.
-	Recent developments have led to more sophisticated mutation-selection codon models aiming at making a more detailed quantitative assessment of the interplay between mutation, purifying and positive selection, leading to potentially more powerful and more quantitative detection of adaptation.
-	However, these alternative codon models have not yet been assessed more extensively on empirical data.
-	In this study, we conducted a large-scale analysis on placental mammals protein-coding sequences, and assessed the performance of mutation-selection codon models to detect proteins and sites under adaptation.
-	Finally, adaptation in protein-coding sequences can also be assessed by combining divergence and polymorphism (intra-specific data) in so-called McDonal \& Kreitman tests.
-	Taking advantage of this independent approach and leveraging intra-specific polymorphism from several populations, we integrated inter- and intra-specific data across the entire exome, and showed that proteins and sites detected to be under adaptation at the phylogenetic scale are also under adaptation at the population-genetic scale.
-	Altogether, our exome-wide analysis shows that phylogenetic mutation-selection codon models and population-genetics test of adaptation can be reconciled and are congruent.
+	Recent developments have led to more sophisticated mutation-selection codon models aiming at making a more detailed quantitative assessment of the interplay between mutation, purifying and positive selection, leading to potentially more powerful and more quantitative models, that have yet to be tested at large scale.
+	In this study, we first conducted a large-scale exome analysis on placental mammals, and assessed the performance of mutation-selection codon models to detect proteins and sites under adaptation.
+	Importantly, mutation-selection codon models are based on a population-genetic formalism and thus are directly comparable to McDonal \& Kreitman tests at the population level to quantify adaptation.
+	Taking advantage of this relationship between phylogenetic and population-genetics, we integrated divergence and polymorphism data across the entire exome for 29 populations across 7 genus, and showed that proteins and sites detected to be under adaptation at the phylogenetic scale are also under adaptation at the population-genetic scale.
+	Altogether, our exome-wide analysis shows that phylogenetic mutation-selection codon models and population-genetics test of adaptation can be reconciled and are congruent, paving the way for integrative models and analyses across individuals and populations.
 \end{abstract}
 
 \keywords{Adaptation \and phyogenetics \and population-genetics \and codon models}
 
 \section*{Main}
 
-Genetic sequences are informative of populations past evolutionary history and can carry signature of selection.
-Selection takes a variety of forms since a mutation in a molecular sequence can either be neutral, positively or negatively selected.
-One main goal of molecular evolution is to quantify the intensity of evolutionary forces acting on sequences, and to detect the signature in present-day sequences left by recurrent events of positive selection.
-
-Theoretically, in order to detect positive selection, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model.
+Selection in molecular sequences takes a variety of form, and a mutation can be either adaptive if positively selected, or instead purified if negatively selected.
+In this context, present-day genetic sequences are informative of populations past evolutionary history and can carry signature of selection at different time scales.
+One main goal of molecular evolution is to disentangle and quantify the intensity of neutral, adaptive and purifying evolution acting on sequences, leveraging variations in sequences between and within species.
+Theoretically, in order to detect adaptive evolution, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model.
 In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although they may be under weak selection.
 Non-synonymous mutations, on the other hand, might be under a mixture of adaptation and purifying selection.
 Contrasting synonymous and non-synonymous changes, two different types of methods have emerged to quantify both positive and purifying selection acting on protein-coding sequences.
-One method, stemming from phylogeny, uses multiple sequence alignment (inter-specific data) in different species to quantify adaptation.
-Another method, stemming from population genetics, contrasts polymorphism inside a population (intra-specific data) and divergence to a close species.
+One method, stemming from phylogeny, uses multiple sequence alignment in different species to quantify adaptation.
+Another method, stemming from population genetics, contrasts polymorphism inside a population and divergence to a close species.
 One goal of the present work is to confront these two types of approaches.
 
 In phylogeny-based method, the ratio of non-synonymous substitutions over synonymous substitutions, called $\omega$ is estimated from protein-coding DNA alignment\cite{muse_likelihood_1994,goldman_codon-based_1994}.
 Assuming synonymous mutations are neutral, $\omega>1$ signals an excess in the rate of non-synonymous substitutions, indicating that the protein is under adaptive evolution.
 Conversely, a default of non-synonymous substitutions, leading to $\omega<1$, means the protein is under purifying selection.
 In practice, protein are typically under a mix of adaptation and purifying selection, thus typically leading to an $\omega<1$ even in the presence of positive selection.
-At a finner scale, site-models detect specific site of the sequence with an $\omega>1$\cite{yang_codon-substitution_2000, kosiol_patterns_2008}.
+At a finner scale, site-models detect specific site ($i$) of the sequence with an $\omega^{(i)}>1$\cite{yang_codon-substitution_2000, kosiol_patterns_2008}.
 An alternative approach to detect adaptation would be to rely on an explicit \textit{nearly-neutral model} as the null model against which to detect deviation.
-Recent development in this direction, the so-called phylogenetic mutation-selection models, provide a null model by estimating the fitness landscape over amino-acid sequences\cite{yang_mutation-selection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
-At the mutation-selection balance, the codons will bounce between amino-acids with high fitnesses, and mutation from a high fitness amino-acid towards a low fitness amino-acid will have a small probability of fixation, genuinely accounting purifying selection.
+Recent development in this direction, the so-called phylogenetic mutation-selection models, provide a null model by estimating the fitness landscape over amino-acid sequences, for each site of the sequence\cite{yang_mutation-selection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
+At the mutation-selection balance, the probability for a specific codon to be fixed in the population is proportional to its fitness, and mutation from a high fitness amino-acid towards a low fitness amino-acid will have a small probability of fixation, genuinely accounting purifying selection.
+Conversely, only nearly-neutral mutations from high fitness amino acids will be permitted by the model, allowing to predict the nearly-neutral rate of non-synonymous substitutions at mutation-selection balance, called $\omega_{0}$.
+By contrasting $\omega$ estimated by $\omega$-based codon models and $\omega_{0}$ predicted by mutation-selection model, one can hope to extract the rate of adaption $\Delta \omega = \omega - \omega_{0}$.
+However, mutation-selection model have not yet been applied to large scale divergence data to quantify the rate of adaptation\cite{rodrigue_detecting_2016}.
+In this study, we thus first applied $\omega$-based and mutation-selection codon models to whole exome on placental mammals, such as to quantify the rate $\Delta \omega$ for each site and protein and detect signature of adaptive evolution at the phylogenetic scale.
 
-By contrasting $ \omega $ estimated by the classical codon models and the $ \omega_0 $ predicted by the mutation-selection model, one can hope to extract the rate of adaption $ \delta \omega = \omega - \omega_0 $, but this has not yet been conducted on a large scale\cite{rodrigue_detecting_2016}.
-
-In population-based method, one of the most widely used test for adaptation was proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}.
+At the population-genetic scale, one of the most widely used test for adaptation was proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}.
 This method uses the substitutions between two close species and polymorphism inside on population.
 Deleterious mutations are quickly removed by selection, and the ratio of non-synonymous substitutions over synonymous substitutions ($\dnds$) is expected to be lower than one, since none of non-synonymous deleterious mutations will reach fixation.
 Also the ratio of non-synonymous polymorphism over synonymous polymorphism ($\pnps$) is also expected to be lower than one, since the non-synonymous deleterious mutations will be removed quickly from the population.
 Most importantly, in the absence of advantageous mutations, these two ratio are expected to be the same ($\dnds=\pnps$).
-If advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to a strictly positive adaptive rate $\omega_A = \dnds-\pnps$\cite{smith_adaptive_2002}.
+If advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to a strictly positive adaptive rate $\omega_{\mathrm{A}} = \dnds-\pnps$\cite{smith_adaptive_2002}.
 This method is however plagued by the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an under-estimation of the rate of adaptive evolution\cite{eyre-walker_quantifying_2002}.
-Subsequent developments have tried to correct for this effect be relying on an explicit \textit{nearly-neutral model}, so as to derive the expected value of $\dnds$ and $\pnps$ in the absence of adaptation.
-The observed deviation of $\dnds$ compared to this null expectation then provides an estimate of the rate of adaptation\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}.
+Subsequent developments have tried to correct for this effect be relying on an explicit \textit{nearly-neutral model}, such as to derive an estimate of the rate of adaptation\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}.
 
-The population- and phylogeny-based method work over very different time scales.
-For that reason, they might be capturing different signals: isolated events of adaptation along a particular lineage for population-based method, versus long-term evolutionary Red-Queen for phylogeny based methods.
-Accordingly, the goal of this study is assess whether the two signals are correlated, which represent a unique opportunity to confound these two types of approaches on non-overlapping data frames.
-To this aim we develop a pipeline gathering divergence and polymorphism data for coding genes across species.
-Alignments in placentals are used to estimate the rate of adaptation in each gene and each site, and we extract genes and sites with a rate of adaptation significantly high.
-The pipeline then testes if the group of sequences detected with a high rate of adaption in the phylogeny-based method also display a high rate of adaptation in the population-based method, using polymorphism available in \textit{Homo sapiens}, \textit{Bos taurus}, \textit{Ovis aries} and \textit{Chlorocebus sabaeus}.
+Altogether, the rate of adaptation is directly comparable between phylogenetic and population-genetic methods since they seek a deviation of $\omega$ from a nearly-neutral null model, estimated with mutation-selection models in phylogenetic context ($\omega_{0}$) or from standing polymorphism in a population-genetic context ($\pnps$).
+Accordingly, the goal of this study is assess whether the two signals of adaptation are correlated, which represent a unique opportunity to confront phylogenetic and population-genetics methods.
+However, the population- and phylogeny-based method work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny based methods versus isolated events of adaptation along a particular lineage for population-based method.
+Nonetheless, we expect sites and proteins under long-term evolutionary Red-Queen to maintain their signal of adaptation in several independent lineages.
+To test this hypothesis, we develop a pipeline integrating divergence and polymorphism data across the entire exome for 29 populations across 7 genus, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
+The pipeline then testes if the group of sequences detected with a high rate of adaption in the phylogeny-based method also display a high rate of adaptation in the population-based method, leveraging polymorphism available in each population.
 
 \section*{Results}
 
 \subsection*{Detecting genes and sites under adaptation}
 
 We derived a two-step approach (see methods), applied to mammalian orthologs.
-The value of $\omega$ estimated by the site-model is shown as a function of $\omega_{0}$ estimated by the mutation-selection model for genes (scatterplot in figure~\ref{fig:scatterplot}A) and sites (density plot figure~\ref{fig:scatterplot}B).
-The method detected $564$ genes and $61.164$ sites having a lower bound for the confidence interval of $\omega$ above the upper bound of the confidence interval of $\omega_{0}$, meaning that the value of their $\omega$ is too high compared to $\omega_{0}$.
-For these outliers (in red), the nearly neutral-model assumption appears to be rejected, and those proteins are putatively under an adaptive regime (called the AR set).
-On the other hand, the \textit{nearly-neutral} regime (in green) could not be rejected for $2868$ proteins and $1.707.826$ sites (called the NNR set)
+The value of $\omega$ estimated by the site-model is shown as a function of $\omega_{0}$ estimated by the mutation-selection model for genes (scatterplot in figure~\ref{fig:scatterplot}A) and sites (density plot in figure~\ref{fig:scatterplot}B).
+Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning that the value of their $\omega$ is too high compared to $\omega_{0}$.
+Importantly, genes and sites classified under a adaptive regime have an average $\omega < 1$, otherwise they are considered as strongly adaptive, meaning that they could not have been by detected by homogeneous $\omega$-based codon models solely based on their value of $\omega$.
+The nearly-neutral model assumption appears to be rejected for $564$ genes and $61.164$ sites, which are putatively under a long-term evolutionary Red-Queen.
+On the other hand, the \textit{nearly-neutral} regime (in green) could not be rejected for $2868$ proteins and $1.707.826$ sites.
 
 \subsection*{Ontology enrichment tests}
-Next, we investigated whether the outliers genes showed enrichment in ontology terms.
-Thus, on the set of outliers, we performed $490$ Fisher's exact test to estimates ontology enrichment by contrasting with the set of genes under a nearly-neutral regime (see table~\ref{table:ontology}).
-$19$ ontologies were observed with an $p_{\text{value}}^{\text{corrected}} < 0.05$.
+Next, we investigated whether the genes classified as adaptive showed enrichment in ontology terms.
+Thus, we performed $490$ Fisher's exact test to estimates ontology enrichment by contrasting with the genes classified as under nearly-neutral regime.
+$19$ ontologies are observed with a $p_{\mathrm{value}}$ corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{value}}^{\mathrm{adjusted}}$) lower than the risk $\alpha=0.05$ (see table~\ref{table:ontology}).
 The most enriched ontology are immune system process and innate immune response.
-An enrichment in genes involved in immune processes was also found in large scale analysis based on classical site codon-models\cite{kosiol_patterns_2008}).
+An enrichment in genes involved in immune processes was also found in large scale analysis based on $\omega$-based site codon-models\cite{kosiol_patterns_2008}.
 Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
 
 \subsection*{Congruence between phylogeny- and population-based methods}
 Finally, we investigated whether the phylogeny-based and the population-based methods give congruent results in terms of detection of adaptive evolution.
-For each $19$ population, $\omega_{\text{A}}=\dnds - \pnps$ is computed on the concatenate of the $564$ candidates genes inferred by the phylogeny-based method to have a high rate of adaptation, called $\omega_{\text{A}}^{\text{A}}$.
-The result is compared to the empirical distribution of $\omega_A$ over random sets of $564$ nearly-neutral genes, for .
-The average rate of adaptation over the $564$ candidates, such as estimated by Mc-Donald and Kreitman (see methods), is higher than the average rate of adaptation over nearly-neutral random samples.
-In this case, the deviation is marginally significant ($p_{\mathrm{value}}=0.036$),
-meaning that modeling change in population size and the distribution of fitness effects of mutations leads to more congruence between phylogeny- and population-based methods, suggesting that the two methods are at least partially congruent in their detection of adaptation.
+At the population-gentic scale, $\omega_{\mathrm{A}}$ is the rate of adaptive evolution as proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}.
+On the one hand, the ratio of non-synonymous over synonymous polymorphism ($\pnps$) only contains non-adaptive polymorphisms.
+On the other hand, divergence data with regard to a close specie allows one to estimate the ratio of non-synonymous over synonymous substitutions ($\dnds$) between these species, containing a mixture of both advantageous mutation and non-adaptive substitution.
+As a result, $\omega_{\mathrm{A}} = \dnds - \pnps$ only contains the rate of adaptive substitution, and it should be higher for genes classified as adaptive in the phylogeny-based method, compared to genes classified as nearly-neutral.
+
+For each $29$ population across $7$ genus and their sister species, $\omega_{\mathrm{A}}$ is computed on the concatenate of the $564$ genes classified as adaptive by the phylogeny-based method.
+The result is compared to the empirical distribution of $\omega_{\mathrm{A}}$ over random sets of $564$ nearly-neutral genes (1000 sampling replicates), see figure~\ref{fig:method}.
+Importantly, $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes, such as to alleviate the fact that genes classified as adaptive have a higher $\omega$ than genes classified as nearly-neutral (see figure~\ref{fig:scatterplot}), which could bias our comparison since $\omega_{\mathrm{A}}$ could simply be higher for genes with higher $\omega$.
+$p_{\mathrm{value}}$ are computed as the proportion of replicates for which $\omega_{\mathrm{A}}$ is higher in the nearly-neutral replicate than in the adaptive genes (computed only once).
+The results are shown for the $29$ populations as violinplot in figure~\ref{fig:unfolded-MK}A and their value are shown in table~\ref{table:unfolded-MK}.
+Out of $29$ populations, $24$ have a $p_{\mathrm{value}}^{\mathrm{adjusted}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+Of note, the only populations for which the test is not significant are human populations.
+
+The same procedure is applied at a finer scale with sites instead of genes.
+For each population, $\omega_{\mathrm{A}}$ is computed on the concatenate of the $61.164$ sites classified as adaptive by the phylogeny-based method, and compared to the empirical null distribution (figure~\ref{fig:unfolded-MK}B) and table~\ref{table:unfolded-MK}.
+Out of $29$ populations, $8$ have a $p_{\mathrm{value}}^{\mathrm{adjusted}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+Of note, sites classified under a adaptive regime have an average $\omega < 1$, such that we discarded sites with $\omega > 1$ (considered under a strong adaptive regime), meaning we could detect long-term evolutionary Red-Queen even for site with $\omega < 1$ that are still under adaptation at the population-genetic scale.
 
 \section*{Discussion}
 
-This study is the first large-scale application of the phylogenetic mutation-selection method for detecting adaptation.
-Its application on mammalian genes suggests that $564$ out of $14477$ proteins and $61164$ out of $2636948$ sites are under adaptation.
-The protein under adaptation also showed significant increase in ontology terms related to immune processes.
-In practice, there could be some background adaption in proteins categorized here as being in a \textit{nearly-neutral} regime, which might not have been detected due to lack of power of the statistical test.
+This study is the first large-scale application of the phylogenetic mutation-selection codon models for detecting adaptation.
+This method contrast the observed ratio of non-synonymous over synonymous substitution rates ($\omega$) to a ratio predicted under a nearly-neutral regime ($\omega_{0}$)
+Its application on mammalian genes suggests that $564$ out of $14477$ proteins are under long-term evolutionary Red-Queen, with ontology terms related to immune processes.
+Mutation-selection models at the gene level has a somewhat a comparable sensitivity compared to site-specific $\omega$-based codon models, for which $400$ genes were detected out of $16.529$ in a previous study~\cite{kosiol_patterns_2008}.
+Moreover $61164$ sites are found to be under an adaptive regime ($\omega_{0} < \omega< 1$), which could theoretically never be detected by site-specific $\omega$-based codon models due to their $\omega$ lower than 1.
 
-In \cite{kosiol_patterns_2008}, $400$ genes were detected out of $16,529$ using codon site-model, suggesting that the mutation-selection model has somewhat a comparable, sensitivity compared to site-model.
-One main novelty of mutation-selection model, compared to classical codon models, is to provide an estimate of $\omega_A$, thus directly comparable with population-based methods.
-Phylogeny-based method is computationally intensive, and requires a well resolved species tree, hence the limitation to mammals in this study.
-Moreover it crucially depends on the quality of the alignments and paralogs identified as orthologs can easily falsify the results.
+At the population-genetics scale, the availability of approaches to detect adaptation, for example using the McDonald \& Kreitman (MK) methods, raises the question whether the signal of adaptation is congruent at the phylogenetic and population-genetic scale.
+Fortunately, estimate of the rate of non-adaptive substitution, approximated by $\pnps$ in the context of population-genetics codon models is what is referred to as $\omega_{0}$ in the context of the phylogenetic mutation-selection codon models.
+As a result, mutation-selection codon models ($\omega - \omega_{0}$) and the MK test ($\dnds - \pnps$) should theoretically be more directly comparable.
+In this light, we aligned divergence and polymorphism data across the entire exome for 29 populations across 7 genus, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
+In $25$ out of $29$ populations, the set of genes detected to be under adaptation at the phylogenetic scale showed a significant increase in the rate of adaption ($\omega_{\mathrm{A}}$) such as inferred by population-based method.
+Notably, the $4$ populations for which the test is not conclusive are human populations, meaning that recent episode of adaptation in the \textit{Hominini} lineages do not reflect the long-term patterns of adaptation.
+This result is in stark contrast with studies comparing $\omega$-based codon models at the gene level with MK methods, which found that the set of genes detected does not seem to overlap beyond random expectations\cite{chen_two_2020, ziwen_he_qipian_chen_hao_yang_qingjian_chen_suhua_shi_two_2020}.
 
-The set of genes detected to be under adaptation in phylogeny-based methods showed a significant increase in the rate of adaption, such as inferred by population-based method.
-It is also possible that the two methods are inherently testing for different patterns of adaptation, meaning that recent episode of adaptation in the \textit{Hominini} lineages do not reflect the long-term patterns of adaptation.
+Additionally, at a finer scale at the site level, for $8$ out of $29$ populations, the set of sites detected to be under adaptation at the phylogenetic scale showed a significant increase in $\omega_{\mathrm{A}}$ inferred by population-based method.
+This result is congruent with other studies at the site level showing that $\omega$-based codon models are congruent with MK methods, with most adaptive mutations occurring at the surface of proteins in both methods\cite{moutinho_impact_2019}.
+Moreover studies have shown that estimating the distribution of fitness effect at the population-genetics scale conditioning on SIFT scores estimated at the phylogenetic scale improves goodness of fit \cite{chen_hunting_2021}
+In practice our result are in the sane direction, although we might lack power, there could be some background adaption in proteins categorized here as being in a \textit{nearly-neutral} regime, which might not have been detected due to lack of power of the statistical test.
 Especially since the purifying process is stronger on longer timescale, the frontier between neutral and mildly deleterious mutation is blurred on short timescale\cite{ho_time_2005}.
+To confirm our results at the gene and site level, our study could be replicated across different scales, for examples in birds for which polymorphism datasets are readily available.
+
+
+Both models at the phylogenetic scale and population-genetics have limitations.
+Phylogeny-based method is computationally intensive, requires a well resolved species and gene trees, and it is crucially dependent on the quality of the alignments and paralogs identified as orthologs can easily falsify the results, hence the limitation to mammals in this study.
+Moreover, all differences observed in the alignment are assumed to be substitutions, while some might in fact be polymorphisms segregating in the population.
+Mistaking polymorphisms for substitutions is problematic, since both are not sensitive to mutation, selection and drift to the same extent\cite{mugal_why_2014}.
+More generally, substitution rates are much more strongly influenced by fixation biases (such as gBGC) than polymorphisms, which are primarily reflecting mutation biases.
+At the population-genetic scale, the greatest limitation is the lack of power determined by the genetic diversity since polymorphism are rare and estimation of $\omega_{\mathrm{A}}$ requires to pool many sites for which SNPs are available.
+Additionally, $\omega_{\mathrm{A}}$ can be biased by moderately deleterious mutations\cite{eyre-walker_quantifying_2002} and by the change in population size through time\cite{eyre-walker_changing_2002}.
+To overcome this biases, both Grapes\cite{galtier_adaptive_2016} and polyDFE\cite{tataru_polydfe_2020} are also used (supplementary materials), which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
+However, the high range of $\omega_{\mathrm{A}}$ estimated on sets of genes/sites classified as nearly-neutral shows that these models lacking power (even more than the MK test) because of the sparcity of the SFS.
+
+Finally, because mutation-selection codon models are based on population-genetic first principles, they can theoretically be extended to account for within species diversity.
+One strategy would be to augment molecular divergence data between species with information about molecular polymorphism within species, in order to help disentangle mutation, selection and drift\cite{thorne_codon_2012}.
 
 \section*{Methods}
 
-\subsection*{Theoretical rate of adaption in phylogeny-based method}
+\subsection*{Phylogenetic dataset}
+Protein-coding DNA sequences alignments in placental mammals are extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
+Genes located on the X, Y and mitochondrial chromosome are discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
+Additionally, sequences from the species for which polymorphism are available, as well as their sister species have been discarded from the analysis to ensure independence between the data used in the phylogenetic and population-genetic method.
+
+\subsection*{Adaptation in phylogeny-based method}
 Classical codon models estimate a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates\cite{muse_likelihood_1994,goldman_codon-based_1994}.
 In the so-called site-models, $\omega$ is allowed to vary across sites\cite{yang_codon-substitution_2000, huelsenbeck_dirichlet_2006}.
-In \textit{Bayescode}, site-specific $\omega^{(i)}$ are independent identically distributed from a gamma distribution\cite{lartillot_phylobayes_2013}.
-In a second step, the average over site is calculated, giving estimates of $\omega$ for each protein-coding sequences (figure~\ref{fig:scatterplot}A).
+In \textit{Bayescode}, site-specific $\omega^{(i)}$ (figure~\ref{fig:scatterplot}B, y-axis) are independent identically distributed from a gamma distribution\cite{lartillot_phylobayes_2013}.
+In a second step, the average over site is calculated, giving estimates of $\omega$ for each protein-coding sequence (figure~\ref{fig:scatterplot}A, y-axis).
 
 In contrast, mutation-selection models assume that the protein-coding sequence is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino-acid at each site\cite{yang_mutation-selection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
-Mathematically, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}^{(i)}$) at site $i$ of the sequence is equal to the rate of mutation at site $i$ ($\mu_{a \mapsto b}^{(i)}$) multiplied by the probability of fixation of the mutation ($p_{a \mapsto b}^{(i)}$).
-Crucially, the probability of fixation depends on the difference of fitness between the amino-acid encoded by the mutated codon ($f_b^{(i)}$) and the fitness of the amino-acid encoded by the original codon ($f_a^{(i)}$) of site $i$\cite{wright_evolution_1931, fisher_genetical_1930}.
+Mathematically, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}^{(i)}$) at site $i$ of the sequence is equal to the rate of mutation from the underlying DNA change ($\mu_{a \mapsto b}$) multiplied by the scaled probability of fixation of the mutation ($\proba_{a \mapsto b}^{(i)}$).
+Crucially, the probability of fixation depends on the difference of scaled fitness between the amino-acid encoded by the mutated codon ($F_b^{(i)}$) and the fitness of the amino-acid encoded by the original codon ($F_a^{(i)}$) of site $i$\cite{wright_evolution_1931, fisher_genetical_1930}.
 Altogether, the rate of substitution from codon $a$ to $b$ at a given site $i$ is:
 \begin{equation}
-	q_{a \mapsto b}^{(i)} = \mu_{a \mapsto b}^{(i)} \dfrac{\mathrm{ln}(f_b^{(i)} / f_a^{(i)})}{1 - f_b^{(i)} / f_a^{(i)}}.
+	q_{a \mapsto b}^{(i)} = \mu_{a \mapsto b} \dfrac{\mathrm{ln}(F_b^{(i)} / F_a^{(i)})}{1 - F_b^{(i)} / F_a^{(i)}}.
 \end{equation}
 
-Fitting the mutation-selection model on a sequence alignment leads, via equation (1), to an estimation of the mutation rate matrix ($\mu^{(i)}$) as well as the fitness landscape of the protein ($f^{(i)}$) at each site $i$ of the sequence.
-From these parameters, one can compute $\omega_{0}^{(i)}$, the site-specific predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance:
+Fitting the mutation-selection model on a sequence alignment leads to an estimation of the mutation rate matrix ($\UniDimArray{mu}$) as well as the 20 amino-acid fitness landscape ($\UniDimArray{f^{(i)}}$) at each site $i$.
+From these parameters, one can compute $\omega_{0}^{(i)}$ (figure~\ref{fig:scatterplot}B, x-axis), the site-specific predicted rate of non-synonymous over synonymous substitution at the mutation-selection balance:
 \begin{equation}
-	\omega_{0}^{(i)} = \sum_{a \in \mathcal{C}} \pi_a^{(i)} \dfrac{\sum_{b \in \mathcal{N}_a} q_{a \mapsto b}^{(i)}}{\sum_{b \in \mathcal{S}_a} q_{a \mapsto b}^{(i)}},
+	\omega_{0}^{(i)} = \dfrac{\sum_{a \in \mathcal{C}} \sum_{b \in \mathcal{N}_a} \pi_a^{(i)} q_{a \mapsto b}^{(i)}}{\sum_{a \in \mathcal{C}} \sum_{b \in \mathcal{N}_a} \pi_a^{(i)} \mu_{a \mapsto b}},
 \end{equation}
-where $\mathcal{C}$ is the set all the possible codons ($61$ by discarding stop codons), $\pi_a$ is the equilibrium frequency of codon $a$ at site $i$, and $\mathcal{N}_a$ (respectively $\mathcal{S}_a$) is the set of codons that are non-synonymous (respectively synonymous) to $a$\cite{spielman_relationship_2015, rodrigue_detecting_2016}.
-In a second step, the average over site is calculated, giving estimates of $\omega_0$ for each protein-coding sequences.
+where $\mathcal{C}$ is the set all the possible codons ($61$ by discarding stop codons), $\pi_a^{(i)}$ is the equilibrium frequency of codon $a$ at site $i$, and $\mathcal{N}_a$ is the set of codons that are non-synonymous to $a$\cite{spielman_relationship_2015, rodrigue_detecting_2016}.
+In a second step, the average over site is calculated, giving estimates of $\omega_{0}$ for each protein-coding sequences (figure~\ref{fig:scatterplot}A, x-axis).
+Under the assumption that the protein is under a \textit{nearly-neutral} regime, the predicted $\omega_{0}$ (mutation-selection model) and the estimated $\omega$ (site-model) should be the same\cite{spielman_relationship_2015}.
 
-Under the assumption that the protein is under a \textit{nearly-neutral} regime, the predicted $\omega_0$ (mutation-selection model) and the estimated $\omega$ (site-model) should be the same.
-But if this assumption is violated, and the protein is under adaptation then $\omega > \omega_0$.
-From these consideration, the method can estimate $\Delta \omega$, namely the rate of adaptive substitution over neutral substitution as the deviation of $\omega$ from the quasi-neutral model $\omega_0$:
-\begin{equation}
-	\Delta \omega = \omega - \omega_0.
-\end{equation}
+We ran the Bayesian software \href{https://github.com/bayesiancook/bayescode}{BayesCode} on each protein-coding DNA alignment\cite{lartillot_phylobayes_2013, rodrigue_detecting_2016}.
+Each Monte-Carlo Markov-Chain (MCMC) is ran during $2000$ points, with a burn-in of $1000$ points, allowing to compute the mean of $\omega$ and $\omega_{0}$ across the MCMC, as well as the $99.95$\% confidence interval for genes $90$\% confidence interval for sites.
+Genes and sites classified under a strongly adaptive regime (in black) have an average $\omega > 1$.
+Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+Genes and sites classified under an epistasis regime (in blue) are such that a higher bound for the confidence interval of $\omega$ is below the lower bound of the confidence interval of $\omega_{0}$, meaning $\omega < \omega_{0}$.
+Genes and sites are classified under a nearly-neutral regime (in green) if the mean of $\omega$ is within the confidence interval of the $\omega_{0}$, and respectively $\omega_{0}$ is also within the confidence interval of the $\omega$, meaning $\omega = \omega_{0}$.
+Genes and sites that do not fall in any of these categories are considered unclassified.
 
-\subsection*{Phylogenetic dataset and experiments}
-Protein-coding sequences (genes) alignments in placental mammals were extracted from the \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
-genes located on the X, Y and mitochondrial chromosome were discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
-We ran the Bayesian software \href{https://github.com/bayesiancook/bayescode}{BayesCode} on each genes using the site-model\cite{lartillot_phylobayes_2013, rodrigue_detecting_2016}.
-Each Monte-Carlo Markov-Chain is ran during $2000$ points, with a burn-in of $1000$ points.
-The convergence of the chain during the burn-in is assessed by running two independent chains on preliminary runs, and asserting that parameters of the models of the two chains converged during burn-in.
+\subsection*{Polymorphism dataset}
+In order to compare polymorphism and divergence, each SNP (chromosome, position, strand) in the focal species must be matched to its relative position in the protein-coding DNA alignment.
+First, genomic position are converted to relative position in the coding sequence (CDS) using gene annotation files (GTF format) downloaded from Ensembl (\url{ensembl.org}), we verified the SNP match the reference in the CDS (FASTA format) also downloaded from Ensembl.
+Secondly, relative position in the CDS is converted to position in the multiple sequence alignment (containing gaps) from OrthoMaM database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019} by doing a global pairwise alignment (Biopython pairwise2) between the CDS fasta and the sequence found in the alignment.
+This conversion from genomic position to position in the alignment is only possible if the assembly used for SNP calling is the same as the one used in the alignment, the GTF annotations and the FASTA sequences.
+We retrieved polymorphism from different projects.
+\textit{Equus caballus} variants called on the EquCab2 assembly in the EVA study PRJEB9799, we considered \textit{Ceratotherium simum simum} as its sister species.
+\textit{Canis familiars} variants called on the CanFam3.1 assembly in the EVA study PRJEB24066, we considered \textit{Ursus maritimus} as its sister species.
+\textit{Bos taurus} variants called on the UMD3.1 assembly in the next-gen project, we considered \textit{Bison bison bison} as its sister species.
+\textit{Ovis aries} variants called on the Oar\_v3.1 assembly in the next-gen project, we considered \textit{Pantholops hodgsonii} as its sister species.
+\textit{Capra Hircus} variants called on the CHIR1 assembly in the next-gen project, we performed a liftover to the ARS1 assembly and considered \textit{Pantholops hodgsonii} as its sister species.
+\textit{Chlorocebus sabaeus} variants are called on the ChlSab1.1 assembly in the EVA study PRJEB22989\cite{svardal_ancient_2017}, we considered \textit{Macaca mulatta} as its sister species.
+\textit{Homo sapiens} variants are called on the GRCh38 assembly in the 1000 genomes project\cite{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}, we considered \textit{Pan troglodytes} as its sister species.
+Variants not inside genes are discarded at the beginning of the analysis.
+Insertions and deletions are not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele are considered.
+Stop codon mutants are also discarded.
+For populations containing more than $8$ sampled individuals, the site-frequency spectrum (SFS) are sub-sampled down to $16$ chromosomes ($8$ diploid individuals) without replacement (hyper-geometric distribution) to alleviate the effect of different sampling depth in the $29$ populations.
+Moreover, subsampling mitigate the impact of moderately deleterious mutations segregating at low frequency on $\pnps$, since they are more likely to be discarded than polymorphism segregating at higher frequency.
+The Snakemake pipeline for integrating polymorphism and divergence data uses custom scripts written in python 3.8.
 
-\subsection*{Theoretical rate of adaption in population-based method}
-In the method proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}, the ratio of non-synonymous over synonymous polymorphism ($\pnps$) only contains non-adaptive polymorphisms.
-On the other hand, divergence data with regard to a close specie allows one to estimate the ratio of non-synonymous over synonymous substitutions ($\dnds$) between these species.
-All the non-synonymous substitutions in the sequence are supposed to be a mixture of both advantageous mutation and non-adaptive substitution.
-Thus the difference $\dnds - \pnps$ is the rate of adaptive evolution:
-\begin{equation*}
-	\omega_A=$\dnds$ - \pnps.
-\end{equation*}
+\subsection*{Rate of adaption in population-based method}
 
-$\omega_A$ can be biased by moderately deleterious mutations\cite{eyre-walker_quantifying_2002} and by the change in population size through time\cite{eyre-walker_changing_2002}.
-To overcome this biases, both Grapes\cite{galtier_adaptive_2016} and polyDFE\cite{tataru_polydfe_2020} are also used (supplementary materials), which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
+The genes and sites classified as under adaptation are concatenated.
+For each population $\pnps$ is computed as the sum of non-synonymous over synonymous polymorphism on the concatenated SFS.
+$\dnds$ is computed on the concatenated pairwise alignment between focal and sister species extracted from OrthoMaM, the $\dnds$ count is performed by \textit{yn00}.
+Altogether, $\omega_{\mathrm{A}} = \dnds - \pnps$ is thus computed for each population on genes and sites classified as under adaptation.
+
+The result is compared to the empirical null distribution of $\omega_{\mathrm{A}}$, obtained by randomly sampling (1000 sampling replicates) a subset of genes/sites classified as nearly-neutral.
+The random sampling is weighted to control for $\omega$ in the set of nearly-neutral genes/sites.
+First, a normal distribution is fitted to $\omega$ in both sets, and the probability density is called $f$ for the adaptive set and $g$ for the nearly-neutral set.
+Secondly, for each gene/site classified as nearly-neutral the weight is computed as the ratio of the of the focal $\omega$ as $f(\omega)/g(\omega)$.
+Sampling with this procedure produce a set of genes/sites classified as nearly-neutral with the same $\omega$ on average than the set of adaptive genes/sites.
+
+Other methods to compute $\omega_{\mathrm{A}}$ such as Grapes\cite{galtier_adaptive_2016} and polyDFE\cite{tataru_polydfe_2020} are also used (supplementary materials), which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
 In Grapes, GammaExpo models the fitness effect of weakly deleterious non-synonymous mutations as distributed according to a negative Gamma and the fitness effect of weakly advantageous mutations is distributed exponentially.
 This method is an extension of the methods introduced by Eyre-Walker and collaborators\cite{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
-This estimation of the DFE than leads to a predicted $\dnds$, under the \textit{nearly-neutral} regime, which can then be subtracted from the $\dnds$ observed between the focal species and its sister group, giving another estimate of the rate of adaptive evolution.
-
-\subsection*{Polymorphism dataset and experiments}
-Polymorphism datasets were downloaded from Ensembl v91 (\url{http://dec2017.archive.ensembl.org}).
-\textit{Homo sapiens} variants are called on the GRCh38 assembly in the 1000 genomes project\cite{consortium_integrated_2012, the_1000_genomes_project_consortium_global_2015}.
-\textit{Bos taurus} variants are called on the UMD3.1 assembly in the next gen project.
-\textit{Ovis aries} variants are called on the Oar\_v3.1 assembly in the next gen project.
-\textit{Chlorocebus sabaeus} variants are called on the ChlSab1.1 assembly in the EVA study PRJEB22989\cite{svardal_ancient_2017}.
-Variants not inside genes were discarded at the beginning of the analysis.
-Insertions and deletions were not analyzed, and only Single Nucleotide Polymorphism (SNPs) with only one mutant allele were considered.
-Stop codon mutants were also discarded.
-Divergence data between \textit{Homo sapiens} and \textit{Pan troglodytes} is extracted from \href{http://www.orthomam.univ-montp2.fr}{OrthoMaM} database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
-The pipeline for assembling and analyzing the data is written in python 3.8.
-SFS were sub-sampled down to $8$ categories without replacement (hyper-geometric distribution).
+Unfolded SFS are obtained by polarizing SNPs using the $3$ closest outgroups found in the OrthoMam alignment with est-usfs\cite{keightley_inferring_2018}.
 
 \section{Data availability}
-The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments.
+The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments on the original dataset or on user specified datasets.
 
 \section{Acknowledgements}
 We gratefully also acknowledge the help of Nicolas Galtier for his advice and review concerning this manuscript.
@@ -294,149 +340,144 @@ TL, NR and NL both contributed to the writing of the manuscript.
 		\includegraphics[width=\linewidth, page=1]{scatterplot_site.pdf}
 	\end{minipage}
 	\llap{\raisebox{-1.0cm}{\scriptsize B\hspace{0.35cm}}}\hfill
-	\label{fig:scatterplot}
-	\caption{ \textbf{Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale}.
+	\caption{
+		Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale.
 		$\omega$ estimated by the site-model against $\omega_{0}$ predicted by the mutation-selection model.
-		Scatter plot of $14475$ genes in panel A. Density plot of $2636948$ sites in panel B.
-		Genes or sites are then classified into one the the four evolutionary regime: strongly adaptive ($\omega > 1$ in black), adaptive ($\omega > \omega_{0}$ in red), nearly-neutral ($\omega \simeq \omega_{0}$ in green) or epistasis ($\omega < \omega_{0}$ in blue). }
+		Scatter plot of $14475$ genes in panel A, with $99.95$\% confidence interval. Density plot of $2636948$ sites in panel B.
+		Genes or sites are then classified into one the the four evolutionary regime: strongly adaptive ($\omega > 1$ in black), adaptive ($\omega > \omega_{0}$ in red), nearly-neutral ($\omega \simeq \omega_{0}$ in green) or epistasis ($\omega < \omega_{0}$ in blue).}
+	\label{fig:scatterplot}
 \end{figure*}
 
 \begin{figure*}[h!]
 	\centering
 	\includegraphics[width=\linewidth, page=1]{polymorphism-method.pdf}
 	\caption{
-		$\omega_A$ is computed on the concatenate of orthologs sites having a high rate of adaptation, detected in phylogeny-based method.
-		The result is compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
+		Integrating divergence and polymorphism for the detection of adaptation.
+		At the phylogenetic level, $\omega$ (classical codon models) and $\omega_{0}$ (mutation-selection codon models) are computed from protein-coding DNA alignments, allowing to classify genes into adaptive (in red) and nearly-neutral (in green) regime.
+		At the population-genetic level, for each population, $\omega_{\mathrm{A}}$ is computed on the concatenate of genes classified as under adaptation.
+		The result is compared to the empirical null distribution of $\omega_{\mathrm{A}}$ in each population, obtained by randomly sampling (1000 replicates) a subset under a nearly-neutral regime, for which $\omega$ is controlled to be the same in both sets of genes.
 	}
+	\label{fig:method}
 \end{figure*}
 
 \begin{figure*}[h!]
 	\centering
-
 	\includegraphics[width=\linewidth, page=1]{unfolded-MK.pdf}
-
 	\caption{
-		Enrichment of adaptation at the population-genetic scale across different populations at the gene (top row) and site (bottom row) level.
-		$\omega_A$ is computed on the concatenate of orthologs genes (sites) having a high rate of adaptation, detected in phylogeny-based method.
-		The result is compared to the empirical null distribution of $\omega_A$, obtained by randomly sampling a subset under a nearly-neutral regime.
-	}
+		Enrichment of adaptation at the population-genetic scale for $29$ populations across $7$ genus at the gene (panel A) and site (panel B) level.
+		For each population, $\omega_{\mathrm{A}}$ is computed on $564$ genes and $61164$ sites having a high rate of adaptation at the phylogenetic scale (in red).
+		The result is compared to the empirical null distribution of $\omega_{\mathrm{A}}$, obtained by randomly sampling (1000 replicates) a subset of genes and sites under a nearly-neutral regime (violinplot in green).
+		$^*$ signify that the $p_{\mathrm{value}}$ corrected for multiple comparison (Holm–Bonferroni correction) is lower than the risk $\alpha=0.05$.
+		The acronym of populations, and the quantitative value of $\omega_{\mathrm{A}}$ and $p_{\mathrm{value}}$ are shown in table~\ref{table:unfolded-MK}}
+	\label{fig:unfolded-MK}
 \end{figure*}
 
-\begin{figure*}[h!]
+\begin{table*}[h!]
 	\centering
-	\includegraphics[width=\linewidth, page=1]{results.delta_wa.pdf}
-	\label{fig:pvalues}
-	\caption{Enrichment of adaptation at the population-genetic scale across different methods.}
-\end{figure*}
-
+	\begin{adjustbox}{width = 1\textwidth}
+		\begin{tabular}{|l|l|r|r|r|r|r|r|r|r|r|}
+			\toprule
+			\multicolumn{2}{|c|}{} & \multicolumn{4}{c|}{Genes} & \multicolumn{4}{c|}{Sites} \\ \hline
+			\textbf{Species} &
+			\textbf{Population} &
+			\specialcell{$\bm{\omega_{\mathrm{A}}}$ \\ adaptive} &
+			\specialcell{$\bm{\left< \omega_{\mathrm{A}} \right>}$ \\ nearly-neutral} &
+			$\bm{p_{\mathrm{value}}}$ &
+			$\bm{p_{\mathrm{value}}^{\mathrm{adjusted}}}$ &
+			\specialcell{$\bm{\omega_{\mathrm{A}}}$ \\ adaptive}  &
+			\specialcell{$\bm{\left< \omega_{\mathrm{A}} \right>}$ \\ nearly-neutral} &
+			$\bm{p_{\mathrm{value}}}$ &
+			$\bm{p_{\mathrm{value}}^{\mathrm{adjusted}}}$ &
+			$\bm{\pi_{\textrm{S}}}$ \\
+			\midrule
+					 Equus caballus & Diverse (Equus) & 0.102 & -0.036 & 0.0 & 0.0$\bm{^*}$ & 0.150 & 0.015 & 0.040 & 0.440\hspace{5pt} & 0.002 \\ \hline
+\rowcolor{LIGHTGREY} Canis familiaris & Diverse (Canis) & 0.091 & -0.014 & 0.0 & 0.0$\bm{^*}$ & 0.169 & 0.010 & 0.002 & 0.044$\bm{^*}$ & 0.003 \\ \hline
+					 Bos taurus & Iran (IRBT) & 0.143 & 0.109 & 0.005 & 0.036$\bm{^*}$ & 0.183 & 0.065 & 0.005 & 0.095\hspace{5pt} & 0.008 \\
+					 Bos taurus & Uganda (UGBT) & 0.148 & 0.112 & 0.004 & 0.036$\bm{^*}$ & 0.204 & 0.061 & 0.0 & 0.0$\bm{^*}$ & 0.008 \\ \hline
+\rowcolor{LIGHTGREY} Capra hircus & Australia (AUCH) & 0.096 & 0.032 & 0.0 & 0.0$\bm{^*}$ & 0.118 & 0.013 & 0.073 & 0.584\hspace{5pt} & 0.003 \\
+\rowcolor{LIGHTGREY} Capra hircus & France (FRCH) & 0.091 & 0.016 & 0.0 & 0.0$\bm{^*}$ & 0.159 & 0.053 & 0.060 & 0.540\hspace{5pt} & 0.002 \\
+\rowcolor{LIGHTGREY} Capra aegagrus & Iran (IRCA) & 0.120 & 0.041 & 0.0 & 0.0$\bm{^*}$ & 0.120 & 0.052 & 0.125 & 0.875\hspace{5pt} & 0.003 \\
+\rowcolor{LIGHTGREY} Capra hircus & Iran (IRCH) & 0.106 & 0.030 & 0.0 & 0.0$\bm{^*}$ & 0.150 & 0.025 & 0.018 & 0.288\hspace{5pt} & 0.004 \\
+\rowcolor{LIGHTGREY} Capra hircus & Italy (ITCH) & 0.090 & 0.012 & 0.0 & 0.0$\bm{^*}$ & 0.185 & 0.061 & 0.020 & 0.300\hspace{5pt} & 0.003 \\
+\rowcolor{LIGHTGREY} Capra hircus & Morocco (MOCH) & 0.107 & 0.026 & 0.0 & 0.0$\bm{^*}$ & 0.108 & 0.011 & 0.049 & 0.490\hspace{5pt} & 0.004 \\ \hline
+					 Ovis aries & Iran (IROA) & 0.173 & 0.078 & 0.0 & 0.0$\bm{^*}$ & 0.202 & 0.043 & 0.0 & 0.0$\bm{^*}$ & 0.007 \\
+					 Ovis orientalis & Iran (IROO) & 0.180 & 0.079 & 0.0 & 0.0$\bm{^*}$ & 0.211 & 0.058 & 0.0 & 0.0$\bm{^*}$ & 0.008 \\
+					 Ovis vignei & Iran (IROV) & 0.174 & 0.105 & 0.0 & 0.0$\bm{^*}$ & 0.254 & 0.073 & 0.0 & 0.0$\bm{^*}$ & 0.005 \\
+					 Ovis aries & Various (ISGC) & 0.171 & 0.079 & 0.0 & 0.0$\bm{^*}$ & 0.192 & 0.052 & 0.0 & 0.0$\bm{^*}$ & 0.008 \\
+					 Ovis aries & Morocco (MOOA) & 0.176 & 0.081 & 0.0 & 0.0$\bm{^*}$ & 0.217 & 0.053 & 0.0 & 0.0$\bm{^*}$ & 0.007 \\ \hline
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Barbados & 0.107 & 0.018 & 0.0 & 0.0$\bm{^*}$ & 0.214 & -0.041 & 0.0 & 0.0$\bm{^*}$ & 0.003 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Central African Republic (CAR) & 0.101 & 0.045 & 0.0 & 0.0$\bm{^*}$ & 0.100 & -0.00019 & 0.027 & 0.351\hspace{5pt} & 0.006 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Ethiopia & 0.055 & 0.007 & 0.005 & 0.036$\bm{^*}$ & 0.158 & 0.018 & 0.004 & 0.080\hspace{5pt} & 0.005 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Gambia & 0.083 & 0.029 & 0.0 & 0.0$\bm{^*}$ & 0.150 & -0.004 & 0.003 & 0.063\hspace{5pt} & 0.004 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Kenya & 0.101 & 0.046 & 0.0 & 0.0$\bm{^*}$ & 0.106 & -0.020 & 0.021 & 0.300\hspace{5pt} & 0.004 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Nevis & 0.058 & 0.006 & 0.003 & 0.030$\bm{^*}$ & 0.145 & -0.025 & 0.006 & 0.108\hspace{5pt} & 0.003 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & South Africa (SA) & 0.095 & 0.025 & 0.0 & 0.0$\bm{^*}$ & 0.100 & 0.00034 & 0.028 & 0.351\hspace{5pt} & 0.006 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Saint Kitts (SK) & 0.064 & 0.010 & 0.005 & 0.036$\bm{^*}$ & 0.111 & -0.034 & 0.009 & 0.153\hspace{5pt} & 0.004 \\
+\rowcolor{LIGHTGREY} Chlorocebus sabaeus & Zambia & 0.095 & 0.019 & 0.0 & 0.0$\bm{^*}$ & 0.023 & -0.008 & 0.291 & 1.000\hspace{5pt} & 0.006 \\ \hline
+					 Homo sapiens & African (AFR) & 0.057 & 0.009 & 0.037 & 0.111\hspace{5pt} & -0.069 & 0.009 & 0.810 & 1.000\hspace{5pt} & 0.002 \\
+					 Homo sapiens & Ad Mixed American (AMR) & 0.060 & -0.014 & 0.004 & 0.036$\bm{^*}$ & -0.035 & -0.004 & 0.660 & 1.000\hspace{5pt} & 0.002 \\
+					 Homo sapiens & East Asian (EAS) & 0.011 & -0.010 & 0.248 & 0.248\hspace{5pt} & -0.011 & -0.013 & 0.506 & 1.000\hspace{5pt} & 0.002 \\
+					 Homo sapiens & European (EUR) & 0.029 & -0.019 & 0.046 & 0.111\hspace{5pt} & -0.079 & -0.002 & 0.804 & 1.000\hspace{5pt} & 0.002 \\
+					 Homo sapiens & South Asian (SAS) & 0.038 & -0.024 & 0.014 & 0.056\hspace{5pt} & -0.199 & -0.007 & 0.963 & 1.000\hspace{5pt} & 0.002 \\
+			\bottomrule
+	 \end{tabular}
+	\end{adjustbox}
+	\caption{
+		Table of quantitative value of $\omega_{\mathrm{A}}$ across $29$ population shown in figure~\ref{fig:unfolded-MK} and the $p_{\mathrm{value}}$ associated to the comparison between the genes and sites classified as adaptive and nearly-neutral.
+		$\left< \right>$ refers to the mean over the $1000$ replicates (subsampling).
+		$\pi_{\textrm{S}}$ is the observed genetic diversity (number of SNPs per site) counted over synonymous sites.
+		$p_{\mathrm{value}}^{\mathrm{adjusted}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
+		$^*$ for $p_{\mathrm{value}}^{\mathrm{adjusted}} < 0.05$.
+	}
+	\label{table:unfolded-MK}
+\end{table*}
 
 \begin{table*}[h!]
 	\centering
 	\begin{adjustbox}{width = 1\textwidth}
 		\small
-		\begin{tabular}{|c|c|c|c|c|c|}
-			\hline
-			\textbf{Ontology} & $\bm{n_{\mathrm{Observed}}}$ & $\bm{n_{\mathrm{Expected}}}$ & \textbf{Odds ratio} & $\bm{p_{\mathrm{value}}}$ & $\bm{p_{\mathrm{value}}^{\mathrm{corrected}}}$		\\
-			\hline
-			immune system process & 38 & 4.868 & 7.806 & 1.6e$^{-14}$ & 7.9e$^{-12}$ \\
-			innate immune response & 32 & 4.253 & 7.524 & 3e$^{-12}$ & 1.5e$^{-9}$ \\
-			extracellular space & 60 & 20.3 & 2.962 & 4.3e$^{-9}$ & 2.1e$^{-6}$ \\
-			extracellular region & 73 & 29.3 & 2.494 & 4.3e$^{-8}$ & 2.1e$^{-5}$ \\
-			cell surface & 29 & 6.634 & 4.371 & 8e$^{-8}$ & 3.9e$^{-5}$ \\
-			external side of plasma membrane & 17 & 2.354 & 7.221 & 4.7e$^{-7}$ & 0.00023 \\
-			blood microparticle & 14 & 1.385 & 10.1 & 5.5e$^{-7}$ & 0.00027 \\
-			regulation of complement activation & 10 & 0.401 & 24.9 & 9.6e$^{-7}$ & 0.00047 \\
-			defense response to virus & 12 & 0.997 & 12.0 & 1.5e$^{-6}$ & 0.00074 \\
-			plasma membrane & 98 & 48.8 & 2.009 & 2.2e$^{-6}$ & 0.001 \\
-			immune response & 22 & 5.447 & 4.039 & 6.2e$^{-6}$ & 0.003 \\
-			platelet degranulation & 11 & 1.001 & 11.0 & 6.5e$^{-6}$ & 0.003 \\
-			integral component of plasma membrane & 46 & 19.5 & 2.355 & 1.6e$^{-5}$ & 0.008 \\
-			chemotaxis & 11 & 1.404 & 7.837 & 3.4e$^{-5}$ & 0.017 \\
-			proteolysis & 25 & 7.959 & 3.141 & 3.5e$^{-5}$ & 0.017 \\
-			receptor-mediated endocytosis & 10 & 1.207 & 8.283 & 6e$^{-5}$ & 0.030 \\
-			positive regulation of ERK1 and ERK2 cascade & 13 & 2.396 & 5.426 & 6.6e$^{-5}$ & 0.032 \\
-			cell surface receptor signaling pathway & 17 & 4.354 & 3.905 & 8.8e$^{-5}$ & 0.043 \\
-			extracellular exosome & 66 & 34.5 & 1.912 & 8.9e$^{-5}$ & 0.044 \\
-			adaptive immune response & 12 & 2.204 & 5.445 & 0.00012 & 0.060 \\
-			serine-type endopeptidase activity & 14 & 3.192 & 4.386 & 0.00016 & 0.076 \\
-			inflammatory response & 20 & 6.304 & 3.173 & 0.00017 & 0.085 \\
-			\hline
+		\begin{tabular}{|l|r|r|r|r|r|}
+			\toprule
+			\textbf{Ontology} &
+			$\bm{n_{\mathrm{Observed}}}$ &
+			$\bm{n_{\mathrm{Expected}}}$ &
+			\textbf{Odds ratio} &
+			$\bm{p_{\mathrm{value}}}$ &
+			$\bm{p_{\mathrm{value}}^{\mathrm{adjusted}}}$ \\
+			\midrule
+			immune system process & 38 & 4.868 & 7.806 & 1.6$\times 10^{-14}$ & 7.9$\times 10^{-12}$$\bm{^*}$ \\
+			innate immune response & 32 & 4.253 & 7.524 & 3$\times 10^{-12}$ & 1.5$\times 10^{-9}$$\bm{^*}$ \\
+			extracellular space & 60 & 20.3 & 2.962 & 4.3$\times 10^{-9}$ & 2.1$\times 10^{-6}$$\bm{^*}$ \\
+			extracellular region & 73 & 29.3 & 2.494 & 4.3$\times 10^{-8}$ & 2.1$\times 10^{-5}$$\bm{^*}$ \\
+			cell surface & 29 & 6.634 & 4.371 & 8$\times 10^{-8}$ & 3.9$\times 10^{-5}$$\bm{^*}$ \\
+			external side of plasma membrane & 17 & 2.354 & 7.221 & 4.7$\times 10^{-7}$ & 0.00023$\bm{^*}$ \\
+			blood microparticle & 14 & 1.385 & 10.1 & 5.5$\times 10^{-7}$ & 0.00027$\bm{^*}$ \\
+			regulation of complement activation & 10 & 0.401 & 24.9 & 9.6$\times 10^{-7}$ & 0.00046$\bm{^*}$ \\
+			defense response to virus & 12 & 0.997 & 12.0 & 1.5$\times 10^{-6}$ & 0.00073$\bm{^*}$ \\
+			plasma membrane & 98 & 48.8 & 2.009 & 2.2$\times 10^{-6}$ & 0.001$\bm{^*}$ \\
+			immune response & 22 & 5.447 & 4.039 & 6.2$\times 10^{-6}$ & 0.003$\bm{^*}$ \\
+			platelet degranulation & 11 & 1.001 & 11.0 & 6.5$\times 10^{-6}$ & 0.003$\bm{^*}$ \\
+			integral component of plasma membrane & 46 & 19.5 & 2.355 & 1.6$\times 10^{-5}$ & 0.008$\bm{^*}$ \\
+			chemotaxis & 11 & 1.404 & 7.837 & 3.4$\times 10^{-5}$ & 0.016$\bm{^*}$ \\
+			proteolysis & 25 & 7.959 & 3.141 & 3.5$\times 10^{-5}$ & 0.016$\bm{^*}$ \\
+			receptor-mediated endocytosis & 10 & 1.207 & 8.283 & 6$\times 10^{-5}$ & 0.029$\bm{^*}$ \\
+			positive regulation of ERK1 and ERK2 cascade & 13 & 2.396 & 5.426 & 6.6$\times 10^{-5}$ & 0.031$\bm{^*}$ \\
+			cell surface receptor signaling pathway & 17 & 4.354 & 3.905 & 8.8$\times 10^{-5}$ & 0.041$\bm{^*}$ \\
+			extracellular exosome & 66 & 34.5 & 1.912 & 8.9$\times 10^{-5}$ & 0.042$\bm{^*}$ \\
+			adaptive immune response & 12 & 2.204 & 5.445 & 0.00012 & 0.058\hspace{5pt} \\
+			serine-type endopeptidase activity & 14 & 3.192 & 4.386 & 0.00016 & 0.073\hspace{5pt} \\
+			inflammatory response & 20 & 6.304 & 3.173 & 0.00017 & 0.081\hspace{5pt} \\
+			\bottomrule
 		\end{tabular}
 	\end{adjustbox}
-	\label{table:ontology}
 	\caption{
-		Ontology enrichment in the adapative genes.
-		490 ontology Fisher's exact test were performed with $243$ genes detected as under adaptation and $1164$ as under \textit{nearly-neutral} regime.
-		$32$ ontology terms are detected with $p_{\mathrm{value}}^{\mathrm{corrected}} < 1$, while one is expected on average, and the estimation of the false discoveries rate is $3\%$.
+		Ontology enrichment in the adaptive genes.
+		490 ontology Fisher's exact test are performed with $243$ genes detected as under adaptation and $1164$ as under \textit{nearly-neutral} regime for which ontologies are available.
+		$p_{\mathrm{value}}^{\mathrm{adjusted}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
+		$^*$ for $p_{\mathrm{value}}^{\mathrm{adjusted}} < 0.05$.
 	}
+	\label{table:ontology}
 \end{table*}
 
 \end{document}
-
-\subsection{Confronting methods for detecting adaptation}
-\label{subsec:confronting-methods-for-detecting-adaptation}
-
-The availability of independent phylogenetic methods (based on either phenomenological and mechanistic {codon} models) and population genetics approaches (using the McDonald \& Kreitman ideas) for detecting adaptation raises the question whether they detect congruent signals of adaptation.
-
-Empirically, phenomenological and mechanistic {codon} methods should be confronted to McDonald \& Kreitman ({MK}) methods.
-In the case of the overlap between positively selected genes detected with phenomenological {codon} models and with {MK} methods, the set of genes detected does not seem to overlap beyond random expectations~\cite{He2020}.
-In contrast, at the site level, classical {codon} models are congruent with {MK} methods, with most adaptive mutations occurring at the surface of proteins in both methods~\cite{Moutinho2019}.
-These results still need to be refined across clades and genes, and the availability of polymorphism and divergence {DNA} sequences that are aligned will make this comparison possible.
-
-However, positively selected genes or sites detected by classical {codon} models and {MK} methods can theoretically be different, since the non-adaptive part of substitutions  ($\omega_{\text{NA}}$) is subtracted in the {MK} test while classical {codon} models do not account for it.
-Interestingly, another estimate of $\omega_{\text{NA}}$ in the context of phylogenetic {codon} models is what was referred to as $\omega_0$ in the context of the mutation-selection null model (see section~\ref{subsec:HB-formalism-nearly-neutral-model}).
-As a result, mechanistic mutation-selection {codon} models ($\omega_0$) and the {MK} test ($\pnps$) should theoretically be more directly comparable.
-From the availability of divergence and polymorphism data, it is now possible to ask whether the rate of non-adaptive evolution measured by phylogenetic mutation-selection models and {MK} methods are congruent, and if not the reason for such discrepancy should be understood.
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=\textwidth] {figures/inter-intra}
-	\caption{Detecting adaptive evolution in coding sequences from inter- and intra-specific data}
-	\label{fig:detecting-adaptation-inter-intra}
-\end{figure}
-
-\section{Unifying phylogenetic and population-genetics models}
-\label{sec:unifying-phylogenetic-and-population-genetics-model}
-
-Throughout this manuscript, the phylogenetic {codon} models that have been presented have ignored genetic diversity within species.
-As a result, all differences observed in the alignment are assumed to be substitutions .
-However some of the differences observed in the alignment might in fact be polymorphisms segregating in the population.
-Moreover, substitutions  are not instantaneous and ancestral polymorphisms can result in shared polymorphisms across species due to incomplete lineage sorting~\cite{Charlesworth2010}.
-
-Mistaking polymorphisms for substitutions  is problematic, since both are not sensitive to mutation, selection and drift to the same extent~\cite{Mugal2014}.
-For example, the {neutral} diversity increases with $\Ne$, while the rate of {neutral} substitutions  is insensitive to $\Ne$.
-Also, polymorphisms involving mildly deleterious mutations are very common but are normally filtered out by selection and thus, are not often seen as substitutions .
-
-More generally, {substitution} rates are much more strongly influenced by fixation biases (such as gBGC) than polymorphisms, which are primarily reflecting mutation biases.
-
-Interestingly, this suggests that polymorphism and divergence could be leveraged together to help disentangle mutation, selection and drift.
-In other words, phylogenetic and population-genetic approaches could be unified, in the context of a single modelling framework~\cite{Thorne2012}.
-
-Such an integration between phylogenetic and population genetics has already been attempted in several studies.
-For example, \cite{Wilson2011} modelled {codon} evolution in a joint framework with $3$ species, which allowed them to analyse the variation in selection pressure spatially along the genome and temporally between lineages.
-However, this methodology proved to be computationally intensive and does not scale well with the number of extant species.
-Alternatively, modelling substitutions  as mutational events followed by a gradual fixation, using an explicit Wright-Fisher or Moran process along the phylogeny, makes it possible to estimate nucleotide mutation rates and mean fixation probabilities from genetic variation within and between species, while accounting for shared ancestral polymorphisms and incomplete lineage sorting~\cite{DeMaio2013, Schrempf2016, Bergman2018, Schrempf2019}.
-In particular, this methodology was used to disentangle {gBGC} and the mutational bias~\cite{Borges2019, Borges2020}.
-However, this methodology does not scale well with the number of states of the models.
-For that reason, it would be particularly difficult to translate the approach from nucleotides (4 states) to {codons} (61 states).
-
-Because mechanistic {codon} models are based on population-genetic first principles, they can theoretically be extended to account for within species diversity.
-One strategy would be to augment molecular divergence data between species with information about molecular polymorphism within species.
-
-A first implementation was tested against simulations under a Wright-Fisher model of evolution along the phylogeny.
-It yielded an accurate estimation of diversity ($\theta = 4 \Ne u$) in extant species, and was able to better tease out mutation and selection by leveraging both divergence and polymorphism signals.
-However, it was found to be computationally intensive, even with the use of sufficient statistics to accelerate the computation.
-Moreover, the assumption of a constant $\Ne$ along the phylogeny in mutation-selection {codon} models was arguably the strongest restriction to relax in this context~\cite{Rousselle2018}.
-Indeed, it makes limited sense to integrate empirical data about genetic diversity in extant species that generally have quite different levels of diversity if $\Ne$ is considered constant along the phylogeny.
-This was historically the reason why I decided to first extend phylogenetic site-specific mutation-selection {codon} models by incorporating branch-specific $\Ne$.
-
-Once incorporating branch specific $\Ne$, the original goal was then to add polymorphism data in the context of this improved mutation-selection {codon} model.
-As it turns out, however, there are other issues that needed to be addressed, before achieving this integration, in particular, the fact that the range of $\Ne$ inferred by the model turns out to be too narrow, as well as computational issues.
-Indeed, with branch-specific $\Ne$ and extant polymorphism, the computing time to reach convergence of the {MCMC} became prohibitive.
-
-Retrospectively, even though site- and branch-specific mutation-selection phylogenetic {codon} models can be extended by incorporating empirical data about polymorphism, as I have started to do in \texttt{BayesCode}, I believe it is not yet the path forward to build a unified phylogenetic and population-genetic model.
-Before doing this, I believe phylogenetic {codon} models and population-genetics method should first be confronted, and the discrepancy should be understood, such as presented in the previous section.
-The impact of epistasis should also be better understood and characterized.
-Only in a second step, subsequently to this confrontation, could phylogenetic models in principle accommodate extant polymorphism.
-However, this will probably require another approach of inference, more computationally reasonable than the one that I have explored in my work (in chapter~\ref{chap:MutSelDrift}).
 
