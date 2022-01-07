@@ -116,13 +116,17 @@ def extend_pop(p, sample):
         return f"{sample[p]} ({fp})"
 
 
-omega_a = "$\\omega_{\\mathrm{A}}$"
-omega_a_mean = "$\\left< \\omega_{\\mathrm{A}} \\right>$"
+my_dpi = 256
+omega_a = "\\specialcell{$\\omega_{\\mathrm{A}}$ \\\\ adaptive set}"
+omega_a_mean = "\\specialcell{$\\left< \\omega_{\\mathrm{A}} \\right>$ \\\\ nearly-neutral set}"
+omega = "\\specialcell{$d_{\\mathrm{N}} / d_{\\mathrm{S}}$ \\\\ adaptive set}"
+omega_mean = "\\specialcell{$\\left< d_{\\mathrm{N}} / d_{\\mathrm{S}} \\right>$ \\\\ nearly-neutral set}"
 pv = "$p_{\\mathrm{value}}$"
 pv_adj = "$p_{\\mathrm{value}}^{\\mathrm{adjusted}}$"
 pi_s = "$\\pi_{\\textrm{S}}$"
 
-header = ["Species", "Population", "SFS", "Level", "Model", omega_a, omega_a_mean, pv, pv_adj, pi_s]
+header_wa = ["Species", "Population", "SFS", "Level", "Model", omega_a, omega_a_mean, pv, pv_adj, pi_s]
+header_w = ["Species", "Population", "SFS", "Level", "Model", omega, omega_mean, pv, pv_adj, pi_s]
 header_main = ["Species", "Population", omega_a, omega_a_mean, pv, pv_adj, omega_a, omega_a_mean, pv, pv_adj, pi_s]
 
 if __name__ == '__main__':
@@ -135,7 +139,7 @@ if __name__ == '__main__':
     df = pd.read_csv(args.tsv, sep="\t")
     df = df.groupby(["species", "pop", "sfs", "granularity", "model"]).max().reset_index()
 
-    dico_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict)
+    dico_wA_matrix, dico_w_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict), defaultdict(dict)
     pop2sp = {}
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
                                                      ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
@@ -147,11 +151,12 @@ if __name__ == '__main__':
                 assert len(pop_ddf["pop"]) == 1
                 fpop = format_pop(pop)
                 pop2sp[fpop] = pop_ddf["species"].values[0]
-                dico_matrix[fpop][m] = pop_ddf["p_val"].values[0]
+                dico_wA_matrix[fpop][m] = pop_ddf["wA_pval"].values[0]
+                dico_w_matrix[fpop][m] = pop_ddf["w_pval"].values[0]
                 dico_delta_wa[fpop][m] = pop_ddf["wA_Selected"].values[0] - pop_ddf["wA_Neutral"].values[0]
 
     models = set()
-    for s in dico_matrix.values():
+    for s in dico_wA_matrix.values():
         models = models.union(s.keys())
     models = list(sorted(models))
 
@@ -161,11 +166,11 @@ if __name__ == '__main__':
 
     for id_species, sp in enumerate(species):
         for id_model_set, model_set in enumerate(models):
-            if sp in dico_matrix and model_set in dico_matrix[sp]:
-                p_matrix[id_species, id_model_set] = dico_matrix[sp][model_set]
+            if sp in dico_wA_matrix and model_set in dico_wA_matrix[sp]:
+                p_matrix[id_species, id_model_set] = dico_wA_matrix[sp][model_set]
                 delta_wa_matrix[id_species, id_model_set] = dico_delta_wa[sp][model_set]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 
     YlGn = matplotlib.cm.YlGn
     im, cbar = heatmap(p_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=r"$p_{\mathrm{value}}$")
@@ -175,7 +180,7 @@ if __name__ == '__main__':
     plt.savefig(args.output.replace(".tex", ".pval.pdf"), format="pdf")
     plt.clf()
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
     RdBu = matplotlib.cm.get_cmap('RdBu_r')
     start = np.nanmin(delta_wa_matrix)
     midpoint = - start / (np.nanmax(delta_wa_matrix) - start)
@@ -202,27 +207,29 @@ if __name__ == '__main__':
     o = open(args.output, 'w')
 
     for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
+                                                             ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)].drop(
             ["sfs", "granularity", "model"], axis=1)
         if len(ddf["species"]) == 0:
             continue
 
-        sub_header = [i for i in header if i not in ["SFS", "Level", "Model"]]
-        ddf = adjusted_holm_pval(ddf)
-        ps = ddf["P_S"]
-        ddf.drop(["P_S"], axis=1, inplace=True)
-        ddf["P_S"] = ps
-
-        o.write("\\newpage\n")
         o.write("\\subsection{" + "{0} SFS at {1} level - {2}".format(sfs.capitalize(), granularity, model) + "} \n")
         o.write("\\begin{center}\n")
-        o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
-                "{0}-{1}-{2}.pdf".format(granularity, sfs, model) + "} \n")
-        o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
-        o.write(ddf.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|",
-                             header=sub_header))
-        o.write("\\end{adjustbox}\n")
+        
+        for prefix in ["wA", "w"]:
+            sub_header = [i for i in (header_wa if prefix == "wA" else header_w) if i not in ["SFS", "Level", "Model"]]
+            subdf = ddf.copy()
+            subdf = adjusted_holm_pval(subdf, prefix=prefix + "_")
+            subdf.pop(("w" if prefix == "wA" else "wA") + "_pval")
+            ps = subdf.pop("P_S")
+            subdf["P_S"] = ps
+            o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
+                    "{0}-{1}-{2}-{3}.pdf".format(granularity, sfs, model, prefix) + "} \n")
+            o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
+            o.write(subdf.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|",
+                                 header=sub_header))
+            o.write("\\end{adjustbox}\n")
+            o.write("\\newpage\n")
         o.write("\\end{center}\n")
 
     sub_header_main = [i for i in header_main if i not in ["SFS", "Level", "Model"]]
@@ -231,16 +238,16 @@ if __name__ == '__main__':
         if len(ddf["species"]) == 0:
             continue
 
+        ddf.pop("w_pval")
+
         ddg = []
         for granularity in ["gene", "site"]:
             ddf_g = ddf[ddf["granularity"] == granularity].drop(["granularity"], axis=1)
-            ps = ddf_g["P_S"].values
-            ddf_g.drop(["P_S"], axis=1, inplace=True)
-            ddg.append(adjusted_holm_pval(ddf_g))
+            ps = ddf_g.pop("P_S")
+            ddg.append(adjusted_holm_pval(ddf_g, prefix="wA_"))
 
         merge = pd.merge(ddg[0], ddg[1], how="inner", on=["pop", "species"])
         merge["P_S"] = ps
-        o.write("\\newpage\n")
         o.write("\\subsection{" + "{0} SFS - {1}".format(sfs.capitalize(), model) + "} \n")
         o.write("\\begin{center}\n")
         o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
@@ -248,6 +255,7 @@ if __name__ == '__main__':
                                header=sub_header_main))
         o.write("\\end{adjustbox}\n")
         o.write("\\end{center}\n")
+        o.write("\\newpage\n")
     o.close()
 
     tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {0}/main-table.tex".format(

@@ -45,8 +45,8 @@ rule all:
         ANALYSIS_FOLDER + "/results.tex",
         ANALYSIS_FOLDER + "/violin_plot",
         expand("scatterplot_{granularity}.pdf",granularity=GRANULARITY),
-        "ontology/gene_adaptive_table.pdf","ontology/gene_epistasis_table.pdf",
-        "ontology/site_adaptive_table.pdf","ontology/site_epistasis_table.pdf","ontology/site_strongly-adaptive_table.pdf"
+        #"ontology/gene_adaptive_table.pdf","ontology/gene_epistasis_table.pdf",
+        #"ontology/site_adaptive_table.pdf","ontology/site_epistasis_table.pdf","ontology/site_strongly-adaptive_table.pdf"
 
 rule pickle:
     input:

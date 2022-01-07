@@ -232,22 +232,23 @@ def tex_f(x):
         return s
 
 
-def format_pval(d, alpha=0.05):
-    d["pval_adj"] = d.apply(lambda r: tex_f(r["pval_adj"]) + ("$\\bm{^*}$" if r["pval_adj"] < alpha else "~~"), axis=1)
+def format_pval(d, prefix="", alpha=0.05):
+    col = prefix + "pval_adj"
+    d[col] = d.apply(lambda r: tex_f(r[col]) + ("$\\bm{^*}$" if r[col] < alpha else "~~"), axis=1)
     return d
 
 
-def adjusted_holm_pval(d, alpha=0.05, format_p=True):
-    n = len(d["p_val"])
-    sorted_pval = sorted(zip(d["p_val"], d.index))
-    sorted_adjpval = [[min(1, p_val * (n - i)), p] for i, (p_val, p) in enumerate(sorted_pval)]
+def adjusted_holm_pval(d, prefix="", alpha=0.05, format_p=True):
+    n = len(d[prefix + "pval"])
+    sorted_pval = sorted(zip(d[prefix + "pval"], d.index))
+    sorted_adjpval = [[min(1, pval * (n - i)), p] for i, (pval, p) in enumerate(sorted_pval)]
     for i in range(1, len(sorted_adjpval)):
         if sorted_adjpval[i][0] <= sorted_adjpval[i - 1][0]:
             sorted_adjpval[i][0] = sorted_adjpval[i - 1][0]
-    holm = {p: p_val for p_val, p in sorted_adjpval}
-    d["pval_adj"] = [holm[p] for p in d.index]
+    holm = {p: pval for pval, p in sorted_adjpval}
+    d[prefix + "pval_adj"] = [holm[p] for p in d.index]
     if format_p:
-        d = format_pval(d, alpha)
+        d = format_pval(d, prefix=prefix, alpha=alpha)
     return d
 
 

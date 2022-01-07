@@ -73,30 +73,30 @@ if __name__ == '__main__':
         # plt.plot(idf, a * idf + b, 'r-', label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(
         #    float(a), abs(float(b)), results.rsquared, "+" if float(b) > 0 else "-"), color=GREEN)
 
-        plt.errorbar(unclass_omega_0[:, 1], unclass_omega[:, 1],
-                     xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
-                           unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
-                     yerr=[unclass_omega[:, 1] - unclass_omega[:, 0], unclass_omega[:, 2] - unclass_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ unclassified genes".format(len(unclass_dico)), c=GREY,
-                     fmt='o', marker=None, mew=0, ecolor=GREY, **error_kwargs)
-
-        plt.errorbar(epi_omega_0[:, 1], epi_omega[:, 1],
-                     xerr=[epi_omega_0[:, 1] - epi_omega_0[:, 0], epi_omega_0[:, 2] - epi_omega_0[:, 1]],
-                     yerr=[epi_omega[:, 1] - epi_omega[:, 0], epi_omega[:, 2] - epi_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ epistasis genes".format(len(epi_dico)), c=BLUE,
-                     fmt='o', marker=None, mew=0, ecolor=BLUE, **error_kwargs)
-
         plt.errorbar(ada_omega_0[:, 1], ada_omega[:, 1],
                      xerr=[ada_omega_0[:, 1] - ada_omega_0[:, 0], ada_omega_0[:, 2] - ada_omega_0[:, 1]],
                      yerr=[ada_omega[:, 1] - ada_omega[:, 0], ada_omega[:, 2] - ada_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ adaptive genes".format(len(ada_dico)), c=RED,
-                     fmt='o', marker=None, mew=0, ecolor=RED, **error_kwargs)
+                     alpha=0.4, label=r"${0}$ adaptive genes".format(len(ada_dico)), c=RED,
+                     fmt='o', marker=None, mew=0, ecolor=RED, zorder=10, lw=.5, markersize=3.0)
 
         plt.errorbar(nn_omega_0[:, 1], nn_omega[:, 1],
                      xerr=[nn_omega_0[:, 1] - nn_omega_0[:, 0], nn_omega_0[:, 2] - nn_omega_0[:, 1]],
                      yerr=[nn_omega[:, 1] - nn_omega[:, 0], nn_omega[:, 2] - nn_omega[:, 1]],
-                     alpha=0.75, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN,
-                     fmt='o', marker=None, mew=0, ecolor=GREEN, **error_kwargs)
+                     alpha=0.4, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN,
+                     fmt='o', marker=None, mew=0, ecolor=GREEN, zorder=5, lw=.5, markersize=3.0)
+
+        plt.errorbar(epi_omega_0[:, 1], epi_omega[:, 1],
+                     xerr=[epi_omega_0[:, 1] - epi_omega_0[:, 0], epi_omega_0[:, 2] - epi_omega_0[:, 1]],
+                     yerr=[epi_omega[:, 1] - epi_omega[:, 0], epi_omega[:, 2] - epi_omega[:, 1]],
+                     alpha=0.4, label=r"${0}$ epistasis genes".format(len(epi_dico)), c=BLUE,
+                     fmt='o', marker=None, mew=0, ecolor=BLUE, zorder=10, lw=.5, markersize=3.0)
+
+        plt.errorbar(unclass_omega_0[:, 1], unclass_omega[:, 1],
+                     xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
+                           unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
+                     yerr=[unclass_omega[:, 1] - unclass_omega[:, 0], unclass_omega[:, 2] - unclass_omega[:, 1]],
+                     alpha=0.4, label=r"${0}$ unclassified genes".format(len(unclass_dico)), c=GREY,
+                     fmt='o', marker=None, mew=0, ecolor=GREY, zorder=0, lw=.5, markersize=3.0)
 
     else:
         xmin, xmax = 0.05, 1.4
@@ -120,7 +120,8 @@ if __name__ == '__main__':
 
         max_heatmap = max([np.max(h) for c, e, h in heatmaps])
         for COLOR, extent, heatmap in heatmaps:
-            if COLOR == GREY: continue
+            if COLOR == GREY:
+                continue
             colors[..., 0:3] = COLOR[0:3]
             colors[..., -1] = Normalize(0.0, 1.5 * np.log(max_heatmap), clip=True)(np.log(heatmap.T))
             # mask = colors[..., -1] == 0.0

@@ -38,6 +38,8 @@ rst
 rst1
 rub
 *.gz
+*.bcf
+*.run.xml
 *.bed
 *.toc
 *.unmap

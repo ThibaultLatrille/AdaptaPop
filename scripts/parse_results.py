@@ -37,12 +37,14 @@ if __name__ == '__main__':
     if args.model in ["dfem", "grapes"]:
         for filepath in glob(args.folder + "/*{0}.csv".format(args.model)):
             dfem_df = pd.read_csv(filepath)
-            ge_df = dfem_df[dfem_df["model"] == "Neutral"]
+            ge_df = dfem_df[dfem_df["model"] == "GammaExpo"]
             omega_a = float(ge_df["omegaA"])
-            alpha = float(ge_df["alpha"])
+            yn00_results = read_yn(filepath.replace("_grapes.csv", "_yn00.out"))
+            res = list(list(yn00_results.values())[0].values())[0]['YN00']
+            dnds = res["omega"]
             omega_dict["OMEGA_A"].append(omega_a)
-            omega_dict["ALPHA"].append(alpha)
-            omega_dict["OMEGA_NA"].append(omega_a * (1 - alpha) / alpha if alpha != 0 else "NaN")
+            omega_dict["ALPHA"].append(omega_a / dnds)
+            omega_dict["OMEGA_NA"].append(dnds - omega_a)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     elif args.model in ["MK", "aMK"]:
         for filepath in glob(args.folder + "/*.dofe"):
@@ -98,19 +100,19 @@ if __name__ == '__main__':
             polydfe_dico = read_polyDFE(filepath)
             if len(polydfe_dico) == 0: continue
             if 'D_sel' in polydfe_dico and 'D_neut' in polydfe_dico:
-                omega = polydfe_dico["D_sel"] / polydfe_dico["D_neut"]
+                dnds = polydfe_dico["D_sel"] / polydfe_dico["D_neut"]
             else:
                 yn00_results = read_yn(filepath.replace("_polyDFE.out", "_yn00.out"))
                 res = list(list(yn00_results.values())[0].values())[0]['YN00']
-                omega = res["omega"]
+                dnds = res["omega"]
             '''
             estimates = postprocessing.parseOutput(filepath)[0]
             alpha = postprocessing.estimateAlpha(estimates, supLimit=5)[0]
             alpha_dfe = polydfe_dico["alpha_dfe"]
             '''
             alpha = polydfe_dico["alpha_div"]
-            omega_dict["OMEGA_NA"].append(omega * (1 - alpha))
-            omega_dict["OMEGA_A"].append(omega * alpha)
+            omega_dict["OMEGA_NA"].append(dnds * (1 - alpha))
+            omega_dict["OMEGA_A"].append(dnds * alpha)
             omega_dict["ALPHA"].append(alpha)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
 

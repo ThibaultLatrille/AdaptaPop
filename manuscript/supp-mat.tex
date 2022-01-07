@@ -1,3 +1,4 @@
+%! BibTeX Compiler = biber
 \documentclass{article}
 \usepackage{xcolor}
 \definecolor{BLUELINK}{HTML}{0645AD}
@@ -46,8 +47,12 @@ urlcolor=BLUELINK
 \renewcommand*{\bm}[1]{#1}%
 % any other necessary redefinitions
 }
+\newcommand{\specialcell}[2][c]{%
+    \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
 \usepackage{xfrac, nicefrac}
-\usepackage{natbib}
+\usepackage[backend=biber,style=nature]{biblatex}
+\addbibresource{codon_models.bib}
 \pdfinclusioncopyfonts=1
 
 \begin{document}
@@ -57,6 +62,20 @@ urlcolor=BLUELINK
 \pagebreak
 
 \section{Rate of adaptation enrichment}
+\subsection{Method summary}
+
+\begin{center}
+    \includegraphics[width=\linewidth]{pipeline}
+\end{center}
+
+\subsection{Comparison - MK/PolyDFE/grapes}
+
+\begin{center}
+    \includegraphics[width=\linewidth]{results.pval}
+    \includegraphics[width=\linewidth]{results.delta_wa} \\
+    $\Delta \omega_{\text{A}} = \omega_{\text{A}}^{\text{Adaptive set}} - \omega_{\text{A}}^{\text{Nearly-neutral set}}$
+\end{center}
+
 \input{results.tex}
 
 \section{Genes ontology enrichment}
@@ -89,5 +108,6 @@ Only the first entries are shown below, the full table is available at:
 \url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/site_epistasis_table.tsv}.
 \input{site_epistasis_table.core.tex}
 
+\printbibliography
 
 \end{document}

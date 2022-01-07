@@ -66,7 +66,7 @@ if __name__ == '__main__':
     print("{0} {1}s in focal set.".format(len(cds_focal_set), args.granularity))
     print("{0} {1}s in control set".format(len(cds_control_set), args.granularity))
 
-    dico_ouput = {"GO": [], "obs": [], "exp": [], "oddsratio": [], "p_val": []}
+    dico_ouput = {"GO": [], "obs": [], "exp": [], "oddsratio": [], "pval": []}
     for go_id, cds_all_go_set in go_id2cds_list.items():
         if gene:
             cds_go_set = cds_all_go_set & cds_set
@@ -90,12 +90,12 @@ if __name__ == '__main__':
         assert np.sum(obs) == len(cds_set)
 
         if np.min(obs) > 1:
-            oddsratio, p_val = st.fisher_exact(obs, alternative='greater')
+            oddsratio, pval = st.fisher_exact(obs, alternative='greater')
             dico_ouput["GO"].append(go_id2name[go_id].replace("_", "-").replace("[", "").replace("]", ""))
             dico_ouput["obs"].append(int(obs[0, 0]))
             dico_ouput["exp"].append(float(obs[0, 0]) / oddsratio)
             dico_ouput["oddsratio"].append(oddsratio)
-            dico_ouput["p_val"].append(p_val)
+            dico_ouput["pval"].append(pval)
 
     df = pd.DataFrame(dico_ouput)
     df = adjusted_holm_pval(df, alpha=0.05, format_p=False)
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     df.to_csv(args.output.replace(".tex", ".tsv"), index=False, sep="\t")
 
     text_core = "{0} tests performed with {1} {4}s detected as {2} and {3} as nearly-neutral." \
-                "\n".format(len(df["p_val"]), len(cds_focal_set), args.category.lower().replace("-", " "),
+                "\n".format(len(df["pval"]), len(cds_focal_set), args.category.lower().replace("-", " "),
                             len(cds_control_set), args.granularity)
     text_core += "\\scriptsize\n"
     df_head = format_pval(df[df["pval_adj"] < 1.0]).head(500)
