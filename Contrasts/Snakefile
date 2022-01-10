@@ -23,12 +23,12 @@ DFE_MODELS = [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
 
 BATCHES = range(1,NBR_BATCHES + 1)
 
-EXP_LIST = []
-SPECIES = {}
-SUBSAMPlE_SFS = {}
+HIST_LIST = []
+SPECIES_SISTER_K, SUBSAMPlE_SFS = {}, {}
+
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
-    SPECIES[row["Species"]] = row["SisterSpecies"]
-    SPECIES[row["SampleName"]] = row["k"]
+    SPECIES_SISTER_K[row["Species"]] = row["SisterSpecies"]
+    SPECIES_SISTER_K[row["SampleName"]] = row["k"]
     for popu_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(row["Species"],row["SampleName"])):
         for granularity in GRANULARITY:
             dir = "{0}-{1}-{2}".format(row["Species"],row["SampleName"],granularity)
@@ -36,7 +36,7 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
                 for sfs in config['SFS']:
                     if (model == "polyDFE" or model == "MK" or model == "aMK") and sfs == "folded": continue
                     if NBR_BATCHES > 0:
-                        EXP_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model,sfs))
+                        HIST_LIST.append(dir + "/histogram-{0}-{1}.tsv".format(model,sfs))
 
 localrules: all,pickle,parse_results,parse_results_gathered,plot_heatmap,plot_violin,plot_scatter,table_ontology
 
@@ -57,13 +57,13 @@ rule pickle:
         tsv=FOLDER + "/pickle.{species}.{granularity}.pk1.bz2"
     params:
         script=ROOT + '/scripts/annotation_ensg.py',
-        species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species, SPECIES[wildcards.species])
+        species=lambda wildcards: "--focal_species {0} --sister_species {1}".format(wildcards.species, SPECIES_SISTER_K[wildcards.species])
     shell:
         'python3 {params.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
 rule generate_DoFE:
     input:
-        vfc=lambda wildcards: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(wildcards.species,wildcards.popu)),
+        tsv=lambda wildcards: glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(wildcards.species,wildcards.popu)),
         pickle=lambda wildcards: FOLDER + "/pickle.{0}.{1}.pk1.bz2".format(wildcards.species,wildcards.granularity),
     params:
         dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
@@ -71,11 +71,11 @@ rule generate_DoFE:
         time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: "{0}-{1}-{2}-{3}".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
         tmp_folder=lambda wildcards: FOLDER + "/{0}-{1}-{2}/tmp/{3}/".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.batch),
         output=lambda wildcards: FOLDER + "/{0}-{1}-{2}/{3}/".format(wildcards.species,wildcards.popu,wildcards.granularity,wildcards.sfs),
-        species=lambda wildcards: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(wildcards.species, SPECIES[wildcards.species],wildcards.sfs,SPECIES[wildcards.popu])
+        species=lambda wildcards: "--focal_species {0} --sister_species {1} --sfs {2} --subsample {3}".format(wildcards.species, SPECIES_SISTER_K[wildcards.species],wildcards.sfs,SPECIES_SISTER_K[wildcards.popu])
     output:
         touch("{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {params.script} --pickle {input.pickle} {params.dfe} --seed {wildcards.batch} --vcf {input.vfc} --granularity {wildcards.granularity} --rep {NBR_REPLICATES_PER_BATCH} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {params.script} --pickle {input.pickle} {params.dfe} --seed {wildcards.batch} --vcf {input.tsv} --granularity {wildcards.granularity} --rep {NBR_REPLICATES_PER_BATCH} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule parse_results:
     input:
@@ -91,7 +91,7 @@ rule parse_results:
 
 rule parse_results_gathered:
     input:
-        tsv=EXP_LIST,
+        tsv=HIST_LIST,
         script=ROOT + '/scripts/parse_results_gathered.py'
     output:
         tsv=ANALYSIS_FOLDER + "/results.tsv"
@@ -100,7 +100,7 @@ rule parse_results_gathered:
 
 rule plot_violin:
     input:
-        tsv=EXP_LIST,
+        tsv=HIST_LIST,
         script=ROOT + '/scripts/plot_violin.py'
     output:
         tsv=touch(ANALYSIS_FOLDER + "/violin_plot")

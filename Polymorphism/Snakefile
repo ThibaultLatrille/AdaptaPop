@@ -23,7 +23,6 @@ LIFTOVER = 'liftover_source.vcf.gz' in config["DOWNLOAD"] and 'liftover_target.v
 rule all:
     input:
         expand('CDS.ANNOT.' + NAME + '.{subset}.tsv.gz',subset=POPULATIONS if POPULATIONS else list(vfc_dico.keys())),
-        'CDS.SELCOEFF.' + NAME + '.vcf.gz',
         expand('dl.{filename}', filename=config["DOWNLOAD"].keys())
 
 rule download:
@@ -101,37 +100,29 @@ rule annotate_vcf:
     shell:
         'python3 {input.script_vcf} --gtf {input.gtf_gz} --fasta {input.fa_gz} --vcf {input.vfc_gz} --ali {input.ali_folder} --tree {input.tree_folder} --xml {input.xml_folder} --specie {params.specie} {params.chr2acc} --output {output.vfc_gz}'
 
-rule selcoeff:
-    input:
-        vcf=expand(rules.annotate_vcf.output.vfc_gz,subset=list(vfc_dico.keys())),
-        script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
-        exp_folder=ROOT + '/OrthoMam/Experiments/'
-    output:
-        vcf='CDS.SELCOEFF.' + NAME + '.vcf.gz'
-    shell:
-        'python3 {input.script} --vcf {input.vcf} --folder {input.exp_folder} --output {output.vcf}'
-
 if POPULATIONS:
     rule chr_to_pop:
         input:
-            vcf=expand(rules.annotate_vcf.output.vfc_gz,subset=list(vfc_dico.keys())),
+            vcf=expand(rules.annotate_vcf.output.vfc_gz, subset=list(vfc_dico.keys())),
             panel=config["PANEL"],
             script=ROOT + '/scripts/vcf_chr_to_pop.py'
         params:
             output='CDS.ANNOT.' + NAME + '.POPULATION.vcf.gz'
         output:
-            vcf_pop=expand(rules.annotate_vcf.output.vfc_gz,subset=POPULATIONS)
+            vcf_pop=expand(rules.annotate_vcf.output.vfc_gz, subset=POPULATIONS)
         shell:
             'python3 {input.script} --panel {input.panel} --vcf {input.vcf} --output {params.output}'
 
 rule est_sfs:
     input:
-        vcf=rules.annotate_vcf.output.vfc_gz,
+        vcf=rules.chr_to_pop.output.vcf_pop if POPULATIONS else rules.annotate_vcf.output.vfc_gz,
         script=ROOT + '/scripts/est_sfs.py',
         est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
         est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
         est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt'
+    params:
+        vcf=lambda wildcards: 'CDS.ANNOT.' + NAME + f'.{wildcards.subset}.vcf.gz'
     output:
         tsv='CDS.ANNOT.' + NAME + '.{subset}.tsv.gz'
     shell:
-        'python3 {input.script} --vcf {input.vcf} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'
+        'python3 {input.script} --vcf {params.vcf} --output {output.tsv} --exec {input.est_exec} --config {input.est_config} --seed {input.est_seed}'

@@ -1,0 +1,30 @@
+Species	SisterSpecies	SampleName	Location	SampleSize	k
+Chlorocebus_sabaeus	Macaca_mulatta	Barbados	Barbados	5	16
+Chlorocebus_sabaeus	Macaca_mulatta	Central_African_Republic	Central African Republic	11	16
+Chlorocebus_sabaeus	Macaca_mulatta	Ethiopia	Ethiopia	16	16
+Chlorocebus_sabaeus	Macaca_mulatta	Gambia	Gambia	22	16
+Chlorocebus_sabaeus	Macaca_mulatta	Kenya	Kenya	4	16
+Chlorocebus_sabaeus	Macaca_mulatta	Nevis	Nevis	12	16
+Chlorocebus_sabaeus	Macaca_mulatta	Saint_Kitts	Saint Kitts	22	16
+Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South Africa	49	16
+Chlorocebus_sabaeus	Macaca_mulatta	Zambia	Zambia	16	16
+Homo_sapiens	Pan_troglodytes	AFR	African	661	16
+Homo_sapiens	Pan_troglodytes	AMR	Ad Mixed American	347	16
+Homo_sapiens	Pan_troglodytes	EAS	East Asian	504	16
+Homo_sapiens	Pan_troglodytes	EUR	European	503	16
+Homo_sapiens	Pan_troglodytes	SAS	South Asian	489	16
+Bos_taurus	Bison_bison_bison	IRBT	Iran	9	16
+Bos_taurus	Bison_bison_bison	UGBT	Uganda	25	16
+Equus_caballus	Ceratotherium_simum_simum	up	Diverse	6	16
+Ovis_aries	Pantholops_hodgsonii	IROA	Iran	20	16
+Ovis_aries	Pantholops_hodgsonii	IROO	Iran	19	16
+Ovis_aries	Pantholops_hodgsonii	ISGC	Various	75	16
+Ovis_aries	Pantholops_hodgsonii	IROV	Iran	4	16
+Ovis_aries	Pantholops_hodgsonii	MOOA	Morocco	160	16
+Capra_hircus	Pantholops_hodgsonii	IRCA	Iran	22	16
+Capra_hircus	Pantholops_hodgsonii	IRCH	Iran	20	16
+Capra_hircus	Pantholops_hodgsonii	AUCH	Australia	5	16
+Capra_hircus	Pantholops_hodgsonii	FRCH	France	4	16
+Capra_hircus	Pantholops_hodgsonii	ITCH	Italy	5	16
+Capra_hircus	Pantholops_hodgsonii	MOCH	Morocco	161	16
+Canis_familiaris	Ursus_maritimus	dogs	Diverse	238	16

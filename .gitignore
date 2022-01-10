@@ -19,6 +19,8 @@
 /Polymorphism/Capra_hircus/flo/
 /Contrasts/CDS.ANNOT.tar.xz
 /Contrasts/annotation.*.tsv
+SelCoeff/SFS/
+SelCoeff/VCF/
 /scripts/__pycache__/
 /Contrasts/*/
 /utils/
