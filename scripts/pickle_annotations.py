@@ -43,5 +43,5 @@ if __name__ == '__main__':
     dico_alignments = load_alignments(dico_omega, args.focal_species, args.sister_species, args.ali_folder)
     filter_set = filter_set.intersection(set(dico_alignments))
 
-    with bz2.BZ2File(args.output, "w") as f:
-        cPickle.dump((filter_set, dico_omega_0, dico_omega, dico_alignments), f)
+    with bz2.BZ2File(args.output, "w") as file:
+        cPickle.dump((filter_set, dico_omega_0, dico_omega, dico_alignments), file)

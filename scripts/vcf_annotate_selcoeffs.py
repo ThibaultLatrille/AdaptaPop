@@ -3,14 +3,37 @@ import argparse
 import gzip
 import numpy as np
 import pandas as pd
-from collections import defaultdict
-from libraries import codontable, snp_data_frame
+from collections import defaultdict, namedtuple
+from scipy.optimize import brentq
+from libraries import codontable, snp_data_frame, build_divergence_dico
 import os
+
+
+def s_to_omega(s):
+    if s < -10:
+        return -s * np.exp(s)
+    else:
+        return s / (1 - np.exp(-s))
+
+
+def omega_to_s(omega):
+    if omega == 0.0:
+        return -np.inf
+    a, b = -100, 1.0
+    if omega > 1:
+        b = omega + 1.0
+    if s_to_omega(a) > omega:
+        print("a", a, s_to_omega(a), omega)
+    elif s_to_omega(b) < omega:
+        print("b", b, s_to_omega(b), omega)
+    s = brentq(lambda x: s_to_omega(x) - omega, a=a, b=b)
+    return s
 
 
 def open_profile(folder, ensg):
     path = "{0}/{1}_NT/sitemutsel_1.run.siteprofiles".format(folder, ensg)
-    if not os.path.isfile(path): path = path.replace("_null_", "__")
+    if not os.path.isfile(path):
+        path = path.replace("_null_", "__")
     return pd.read_csv(path, sep="\t", skiprows=1, header=None,
                        names="site,A,C,D,E,F,G,H,I,K,L,M,N,P,Q,R,S,T,V,W,Y".split(","))
 
@@ -22,14 +45,18 @@ if __name__ == '__main__':
     parser.add_argument('--folder', required=True, type=str, dest="folder", help="The experiment folder path")
     parser.add_argument('--output', required=True, type=str, dest="output", help="The output file")
     args = parser.parse_args()
+    SNP_row = namedtuple('SNP_row', ['anc', 'der', 'polarized', 'count', 'sample_size'])
 
     dico_snps = defaultdict(dict)
-    df_snp, _, _ = snp_data_frame(args.tsv, False, -1)
+    df_snp, _, _ = snp_data_frame(args.tsv, polarize_snps=True)
     for ensg, ddf in df_snp:
         for _, row in ddf.iterrows():
-            dico_snps[ensg][row["POS"]] = (row["ANC"], row["COUNT"], row["SAMPLE_SIZE"])
+            polarized = row["ANC"] == row["REF"]
+            der = row["ALT"] if polarized else row["REF"]
+            dico_snps[ensg][row["CODON_POS"]] = SNP_row(row["ANC"], der, polarized, row["COUNT"], row["SAMPLE_SIZE"])
 
     header, profiles_dict = {}, {}
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list(df_snp.groups), gene_level=False)
     annot_file = gzip.open(args.output, 'wt')
     duplicate = 0
     total = 0
@@ -62,23 +89,45 @@ if __name__ == '__main__':
         nuc_pos = int(line_list[header["ENSG_POS"]])
         codon_pos = int(nuc_pos / 3)
 
+        if codon_pos not in dico_snps[ensg]:
+            continue
+
         if ensg not in profiles_dict:
             profiles_dict[ensg] = open_profile(args.folder, ensg)
 
-        aa_ref = codontable[line_list[header["CODON_REF"]]]
-        aa_alt = codontable[line_list[header["CODON_ALT"]]]
+        codon_ref, codon_alt = line_list[header["CODON_REF"]], line_list[header["CODON_ALT"]]
+        aa_ref, aa_alt = codontable[codon_ref], codontable[codon_alt]
         if aa_alt == "X" or aa_ref == "X":
             continue
-        selcoeff = np.log(profiles_dict[ensg][aa_alt][codon_pos] / profiles_dict[ensg][aa_ref][codon_pos])
+
+        if dico_snps[ensg][codon_pos].polarized:
+            aa_anc, aa_der = aa_ref, aa_alt
+            codon_anc, codon_der = codon_ref, codon_alt
+        else:
+            aa_anc, aa_der = aa_alt, aa_ref
+            codon_anc, codon_der = codon_alt, codon_ref
+
+        selcoeff = np.log(profiles_dict[ensg][aa_der][codon_pos] / profiles_dict[ensg][aa_anc][codon_pos])
         infos = ["{0}={1}".format(k, line_list[header[k]]) for k, i in header.items() if i > header["CHR"]]
         last_pos = line_list[header["POS"]]
-        if codon_pos not in dico_snps[ensg]:
-            continue
-        line_list[header["INFO"]] += ";ANC=" + dico_snps[ensg][codon_pos][0]
-        line_list[header["INFO"]] += ";COUNT=" + str(dico_snps[ensg][codon_pos][1])
-        line_list[header["INFO"]] += ";SAMPLE_SIZE=" + str(dico_snps[ensg][codon_pos][2])
+
+        line_list[header["INFO"]] += f";NUC_ANC={dico_snps[ensg][codon_pos].anc}"
+        line_list[header["INFO"]] += f";NUC_DER={dico_snps[ensg][codon_pos].der}"
+        line_list[header["INFO"]] += f";CODON_ANC={codon_anc};CODON_DER={codon_der}"
+        line_list[header["INFO"]] += f";AA_REF={aa_ref};AA_ALT={aa_alt}"
+        line_list[header["INFO"]] += f";AA_ANC={aa_anc};AA_DER={aa_der};SEL_COEFF={selcoeff:.3f}"
+        line_list[header["INFO"]] += f";POLARIZED={dico_snps[ensg][codon_pos].polarized}"
+        line_list[header["INFO"]] += f";COUNT_POLARIZED={dico_snps[ensg][codon_pos].count}"
+        line_list[header["INFO"]] += f";SAMPLE_SIZE={dico_snps[ensg][codon_pos].sample_size}"
         line_list[header["INFO"]] += ";" + ";".join(infos)
-        line_list[header["INFO"]] += ";AA_REF={1};AA_ALT={2};SEL_COEFF={0:.3f}".format(selcoeff, aa_ref, aa_alt)
+
+        site_omega = dico_omega[ensg][codon_pos][1]
+        line_list[header["INFO"]] += ";SITE_OMEGA=" + str(site_omega)
+        line_list[header["INFO"]] += ";SITE_OMEGA_SEL_COEFF=" + str(omega_to_s(site_omega))
+
+        site_omega_0 = dico_omega_0[ensg][codon_pos][1]
+        line_list[header["INFO"]] += ";SITE_OMEGA_0=" + str(site_omega_0)
+        line_list[header["INFO"]] += ";SITE_OMEGA_0_SEL_COEFF=" + str(omega_to_s(site_omega_0))
         last_line = "\t".join(line_list[:header["CHR"]]) + "\n"
         annot_file.write(last_line)
     vcf_file.close()

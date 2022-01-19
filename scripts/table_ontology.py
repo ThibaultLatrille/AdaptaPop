@@ -34,7 +34,7 @@ if __name__ == '__main__':
                         help="folder containing OrthoMam results")
     parser.add_argument('-x', '--xml', required=True, type=str, dest="xml", metavar="<xml>", help="The xml folder")
     parser.add_argument('-c', '--category', required=False, type=str, default='adaptive', dest="category",
-                        help="Category of genes or sites (either epistasis, adaptive or strongly_adaptive)")
+                        help="Category of genes or sites (either adaptive or strongly_adaptive)")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
     parser.add_argument('-g', '--granularity', required=True, type=str, default="gene", dest="granularity",
                         help="Gene or site level")
@@ -44,10 +44,8 @@ if __name__ == '__main__':
     gene = args.granularity.lower() == "gene"
     list_ensg = [i[:-3] for i in os.listdir(args.folder)]
     dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene)
-    strg_adap_dico, adap_dico, epi_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega,
-                                                                                     gene_level=gene)
-    focal_dico = epi_dico if args.category.lower() == "epistasis" else (
-        adap_dico if args.category.lower() == "adaptive" else strg_adap_dico)
+    strg_adap_dico, adap_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    focal_dico = adap_dico if args.category.lower() == "adaptive" else strg_adap_dico
     go_id2cds_list, go_id2name, set_all_go_cds = ontology_table(args.xml)
     if gene:
         cds_focal_set = set(focal_dico) & set_all_go_cds

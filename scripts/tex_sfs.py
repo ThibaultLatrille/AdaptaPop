@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import os
 
 if __name__ == '__main__':
@@ -9,15 +10,37 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     o = open(args.tex_include, 'w')
-    for sfs in args.sfs:
-        name = sfs.replace(".pdf", "").split("/")[-1].replace("_", " ").replace(".", " - ")
-        o.write("\\subsection{" + name + "} \n \n")
-        o.write("\\begin{minipage}{0.49\\linewidth} \n")
-        o.write("\\includegraphics[width=\\linewidth, page=1]{" + sfs + "} \n")
-        o.write("\\end{minipage}\n")
-        o.write("\\begin{minipage}{0.49\\linewidth}\n")
-        o.write("\\includegraphics[width=\\linewidth, page=1]{" + sfs.replace(".pdf", ".normalize.pdf") + "} \n")
-        o.write("\\end{minipage}\n")
+    nested_dict = defaultdict(lambda: defaultdict(dict))
+    for sfs in sorted(args.sfs):
+        sp, pop, method = sfs.replace(".pdf", "").split("/")[-1].replace("_", " ").split(".")
+        nested_dict[sp][pop][method] = sfs
+
+    dict_method = {"MutSel": "site-specific Mutation-Selection codon models.",
+                   "Omega": "site-specific codon models.",
+                   "Omega 0": "site-specific Mutation-Selection codon models (average over all amino acids).",
+                   "SIFT": "SIFT score",
+                   "WS": "weak to strong mutations (AT$\\rightarrow$GC)",
+                   "SW": "strong to weak mutations (GC$\\rightarrow$AT)"}
+    for sp, nested_dict_1 in nested_dict.items():
+        o.write("\\section{" + sp + "} \n \n")
+        for pop, nested_dict_2 in nested_dict_1.items():
+            o.write("\\subsection{" + pop + "} \n \n")
+            for method, sfs in nested_dict_2.items():
+                o.write("\\subsubsection{SFS for " + dict_method[method] + '} \n')
+                o.write("\\begin{minipage}{0.49\\linewidth} \n")
+                o.write("\\includegraphics[width=\\linewidth, page=1]{" + sfs + "} \n")
+                o.write("\\end{minipage}\n")
+                o.write("\\begin{minipage}{0.49\\linewidth}\n")
+                o.write(
+                    "\\includegraphics[width=\\linewidth, page=1]{" + sfs.replace(".pdf", ".normalize.pdf") + "} \n")
+                o.write("\\end{minipage}\n")
+                o.write("\\\\ \n")
+                if "SIFT" in method:
+                    o.write("\\subsubsection{SIFT score versus Mutation-Selection model} \n")
+                    sfs = sfs.replace("SIFT", "SIFT_vs_MutSel")
+                    o.write("\\includegraphics[width=0.5\\linewidth, page=1]{" + sfs + "} \n")
+                    o.write("\\\\ \n")
+        o.write("\\newpage \n \n")
     o.close()
 
     tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {1}".format(

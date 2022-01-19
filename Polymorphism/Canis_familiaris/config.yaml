@@ -7,3 +7,4 @@ SPECIES: "Canis_familiaris"
 DOWNLOAD:
   Canis_familiaris.CanFam3.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/canis_familiaris/Canis_familiaris.CanFam3.1.91.gtf.gz"
   Canis_familiaris.CanFam3.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/canis_familiaris/cds/Canis_familiaris.CanFam3.1.cds.all.fa.gz"
+  Canis_familiaris.CanFam3.1.SIFT.vcf.gz: "ftp.ensembl.org/pub/release-91/variation/vcf/canis_familiaris/canis_familiaris_incl_consequences.vcf.gz"

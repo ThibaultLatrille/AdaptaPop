@@ -31,28 +31,31 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    gene = args.granularity.lower() == "gene"
-    is_unfolded = args.sfs == "unfolded"
+    gene = "gene" in args.granularity.lower()
+    strong = "strong" in args.granularity.lower()
+
+    polarize_snps = args.sfs == "unfolded"
     pickle_file = bz2.BZ2File(args.pickle, 'rb')
     filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
     pickle_file.close()
     print("Data loaded")
-    _, adaptive_dico, epistasis_dico, nearly_neutral_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene,
-                                                                              filter_set=filter_set)
+    strong_adaptive_dico, adaptive_dico, nearly_neutral_dico, _ = split_outliers(dico_omega_0, dico_omega,
+                                                                                 gene_level=gene, filter_set=filter_set)
+    test_dico = strong_adaptive_dico if strong else adaptive_dico
     print("Data classified")
     if gene:
-        if args.nbr_genes == -1 or args.nbr_genes > len(adaptive_dico): args.nbr_genes = len(adaptive_dico)
-        print('{0} adaptive genes'.format(len(adaptive_dico)))
-        print('{0} epistasis genes'.format(len(epistasis_dico)))
+        if args.nbr_genes == -1 or args.nbr_genes > len(test_dico):
+            args.nbr_genes = len(test_dico)
+        print('{0} adaptive genes'.format(len(test_dico)))
         print('{0} nearly-neutral genes'.format(len(nearly_neutral_dico)))
     else:
-        adapta_sites = sum([len(v) for v in adaptive_dico.values()])
-        if args.nbr_sites == -1 or args.nbr_sites > adapta_sites: args.nbr_sites = adapta_sites
+        adapta_sites = sum([len(v) for v in test_dico.values()])
+        if args.nbr_sites == -1 or args.nbr_sites > adapta_sites:
+            args.nbr_sites = adapta_sites
         print('{0} adaptive sites'.format(adapta_sites))
-        print('{0} epistasis sites'.format(sum([len(v) for v in epistasis_dico.values()])))
         print('{0} nearly-neutral sites'.format(sum([len(v) for v in nearly_neutral_dico.values()])))
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, is_unfolded, args.subsample)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, polarize_snps)
     np.random.seed(args.seed)
 
     weigths_nearly_neutral = None
@@ -65,8 +68,8 @@ if __name__ == '__main__':
     f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "all nearly-neutral", args.granularity))
     f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "all nearly-neutral", args.granularity))
 
-    w = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]
-    w_0 = filtered_table_omega(dico_omega_0, adaptive_dico, gene)[:, 1]
+    w = filtered_table_omega(dico_omega, test_dico, gene)[:, 1]
+    w_0 = filtered_table_omega(dico_omega_0, test_dico, gene)[:, 1]
     w_A = w - w_0
     f_sample.write(txt.format("", np.mean(w), np.std(w), "all adaptive", args.granularity))
     f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "all adaptive", args.granularity))
@@ -75,13 +78,14 @@ if __name__ == '__main__':
     errors = gzip.open(args.tmp_folder + "/errors.txt.gz", 'wt')
     if args.output.split("/")[-1] == "1":
         print("{0}_ADAPTIVE".format(args.output))
-        dfe_alpha("{0}_ADAPTIVE".format(args.output), df_snp, sample_size, adaptive_dico, gene,
+        dfe_alpha("{0}_ADAPTIVE".format(args.output), df_snp, sample_size, args.subsample, test_dico, gene,
                   args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
-                  args.dfe_path, is_unfolded, errors)
+                  args.dfe_path, polarize_snps, errors)
 
     if args.weighted.lower() == "true":
+        assert (not strong)
         print("Weighted sampling controlling for w")
-        adaptive_table = filtered_table_omega(dico_omega, adaptive_dico, gene)[:, 1]
+        adaptive_table = filtered_table_omega(dico_omega, test_dico, gene)[:, 1]
         loc, scale = np.mean(adaptive_table), np.std(adaptive_table)
         x = filtered_table_omega(dico_omega, nearly_neutral_dico, gene)[:, 1]
         assert (not np.isnan(x).any())
@@ -105,9 +109,9 @@ if __name__ == '__main__':
         f_sample.write(txt.format("0", np.mean(w_0), np.std(w_0), "resampled nearly-neutral", args.granularity))
         f_sample.write(txt.format("A", np.mean(w_A), np.std(w_A), "resampled nearly-neutral", args.granularity))
 
-        if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, subset, gene,
+        if dfe_alpha("{0}_{1}".format(prefix, rep), df_snp, sample_size, args.subsample, subset, gene,
                      args.focal_species, args.sister_species, dico_alignments, fix_poly, args.tmp_folder,
-                     args.dfe_path, is_unfolded, errors):
+                     args.dfe_path, polarize_snps, errors):
             rep += 1
         else:
             nbr_errors += 1

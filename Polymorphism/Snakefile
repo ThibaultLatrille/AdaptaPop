@@ -10,13 +10,16 @@ ftp = FTP(config['FTP'])
 ftp.login()
 vfc_dico = {}
 for analysis in ftp.nlst(config['STUDY']):
+    print(analysis)
     for file_path in ftp.nlst(analysis):
+        print(file_path)
         file = file_path.split('/')[-1]
         if file.endswith('vcf.gz') and (config['CONTAINS'] in file) and (config['CONTAINS_PREFIX'] in file):
             key_vcf = file.replace(config['CONTAINS_PREFIX'],'').replace(config['CONTAINS'],'').replace('.vcf.gz','')
             key_vcf = key_vcf.split('.')[0]
             vfc_dico[key_vcf] = file_path
 
+print(vfc_dico)
 POPULATIONS = set(pd.read_csv(config["PANEL"],sep='\t')["pop"]) if 'PANEL' in config else False
 LIFTOVER = 'liftover_source.vcf.gz' in config["DOWNLOAD"] and 'liftover_target.vcf.gz' in config["DOWNLOAD"]
 
@@ -71,21 +74,13 @@ rule intersect:
         vfc_gz=rules.lift_over_vcf.output if LIFTOVER else rules.download_vcf.output,
         bed=rules.gtf_to_bed.output.merged_bed
     output:
-        vfc='CDS.' + NAME + '.{subset}.vcf'
+        vfc_gz='CDS.' + NAME + '.{subset}.vcf.gz'
     shell:
-        'bedtools intersect -a {input.vfc_gz} -b {input.bed} -wb -header > {output.vfc}'
-
-rule zip:
-    priority: 50
-    input:
-        vfc_cds=rules.intersect.output.vfc
-    output: 'CDS.' + NAME + '.{subset}.vcf.gz'
-    shell:
-        'gzip -k {input.vfc_cds}'
+        'bedtools intersect -a {input.vfc_gz} -b {input.bed} -wb -header | gzip > {output.vfc_gz}'
 
 rule annotate_vcf:
     input:
-        vfc_gz=rules.zip.output,
+        vfc_gz=rules.intersect.output,
         gtf_gz=f"dl.{NAME}.gtf.gz",
         fa_gz=f"dl.{NAME}.fa.gz",
         ali_folder=ROOT + '/OrthoMam/Datasets/omm_NT_fasta.v10c_116/',
@@ -116,7 +111,7 @@ if POPULATIONS:
 rule est_sfs:
     input:
         vcf=rules.chr_to_pop.output.vcf_pop if POPULATIONS else rules.annotate_vcf.output.vfc_gz,
-        script=ROOT + '/scripts/est_sfs.py',
+        script=ROOT + '/scripts/vcf_polarize_est_usfs.py',
         est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
         est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
         est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt'

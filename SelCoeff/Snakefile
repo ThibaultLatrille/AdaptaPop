@@ -13,14 +13,15 @@ POPU_TO_TSV = {}
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     for popu_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(row["Species"],row["SampleName"])):
         POPU_TO_TSV[row["SampleName"]] = popu_path
-        SFS_LIST.append(FOLDER + f"/SFS/{row['Species']}.{row['SampleName']}.pdf")
-
-localrules: all, selcoeff, sfs
+        for method in config["METHOD_LIST"]:
+            if method == "SIFT" and row['Species'] not in config["SIFT"]:
+                continue
+            SFS_LIST.append(FOLDER + f"/SFS/{row['Species']}.{row['SampleName']}.{method}.pdf")
 
 rule all:
     input: FOLDER + "/sfs-list-doc.pdf"
 
-rule selcoeff:
+rule annotate_vcf:
     input:
         vcf=lambda wildcards: POPU_TO_TSV[wildcards.popu].replace(".tsv.gz", ".vcf.gz"),
         tsv=lambda wildcards: POPU_TO_TSV[wildcards.popu],
@@ -31,14 +32,23 @@ rule selcoeff:
     shell:
         'python3 {input.script} --vcf {input.vcf} --tsv {input.tsv} --folder {input.exp_folder} --output {output.vcf}'
 
+rule SIFT_intersect:
+    input:
+        vcf=rules.annotate_vcf.output.vcf,
+        vcf_sift=lambda wildcards: ROOT + f"/Polymorphism/{wildcards.species}/dl.{config['SIFT'][wildcards.species]}"
+    output:
+        vcf=FOLDER + "/VCF/{species}.{popu}.SIFT.vcf.gz"
+    shell:
+        'bedtools intersect -a {input.vcf_sift} -b {input.vcf} -wb -wa -header | gzip > {output.vcf}'
+
 rule sfs:
     input:
-        vcf=rules.selcoeff.output.vcf,
+        vcf=lambda wildcards: rules.SIFT_intersect.output.vcf if wildcards.method == "SIFT" else rules.annotate_vcf.output.vcf,
         script=ROOT + '/scripts/plot_sfs.py',
     output:
-        pdf=FOLDER + "/SFS/{species}.{popu}.pdf"
+        pdf=FOLDER + "/SFS/{species}.{popu}.{method}.pdf"
     shell:
-        'python3 {input.script} --vcf {input.vcf} --output {output.pdf}'
+        'python3 {input.script} --vcf {input.vcf} --method {wildcards.method} --output {output.pdf}'
 
 rule latex:
     input:

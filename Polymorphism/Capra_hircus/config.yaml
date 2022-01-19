@@ -10,3 +10,4 @@ DOWNLOAD:
   Capra_hircus.ARS1.fa.gz: "ftp.ncbi.nlm.nih.gov/genomes/all/annotation_releases/9925/102/GCF_001704415.1_ARS1/GCF_001704415.1_ARS1_cds_from_genomic.fna.gz"
   liftover_source.vcf.gz: "ftp.ebi.ac.uk/pub/databases/eva/rs_releases/release_2/by_species/capra_hircus/CHIR_1.0/GCA_000317765.1_current_ids.vcf.gz"
   liftover_target.vcf.gz: "ftp.ensembl.org/pub/release-92/variation/vcf/capra_hircus/capra_hircus.vcf.gz"
+  Capra_hircus.ARS1.SIFT.vcf.gz: "ftp.ensembl.org/pub/release-92/variation/vcf/capra_hircus/capra_hircus_incl_consequences.vcf.gz"

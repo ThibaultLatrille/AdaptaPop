@@ -7,3 +7,4 @@ SPECIES: "Ovis_aries"
 DOWNLOAD:
   Ovis_aries.Oar_v3.1.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/ovis_aries/Ovis_aries.Oar_v3.1.91.gtf.gz"
   Ovis_aries.Oar_v3.1.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/ovis_aries/cds/Ovis_aries.Oar_v3.1.cds.all.fa.gz"
+  Ovis_aries.Oar_v3.1.SIFT.vcf.gz: "ftp.ensembl.org/pub/release-91/variation/vcf/ovis_aries/ovis_aries_incl_consequences.vcf.gz"

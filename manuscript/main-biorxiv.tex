@@ -1,4 +1,5 @@
 %! BibTeX Compiler = biber
+%TC:ignore
 \documentclass{article}
 
 \usepackage{xcolor, colortbl}
@@ -124,6 +125,7 @@
 \keywords{Adaptation \and phylogenetic \and population genetics \and codon models}
 
 \section*{Introduction}
+%TC:endignore
 
 Selection in molecular sequences takes a variety of forms, and a mutation can be either adaptive if positively selected, or instead purified if negatively selected.
 In this context, present-day genetic sequences are informative of populations past evolutionary history and can carry signature of selection at different time scales.
@@ -163,8 +165,10 @@ Accordingly, the goal of this study is to assess whether the two signals of adap
 However, the population- and phylogeny-based method work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny based methods versus isolated events of adaptation along a particular lineage for population-based method.
 Nonetheless, we expect sites and proteins under long-term evolutionary Red-Queen to maintain their signal of adaptation in several independent lineages.
 To test this hypothesis, we develop a pipeline integrating divergence and polymorphism data across the entire exome for 29 populations across 7 genera, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
+
 The pipeline then testes if the group of sequences detected with a high rate of adaptation in the phylogeny-based method also display a high rate of adaptation in the population-based method, leveraging polymorphism available in each population.
 
+%TC:ignore
 \section*{Results}\label{sec:results}
 
 \subsection*{Detecting genes and sites under adaptation}
@@ -490,6 +494,6 @@ TL, NR and NL contributed to the writing of the manuscript.
 	}
 	\label{table:unfolded-MK}
 \end{table*}
-
 \end{document}
 
+%TC:endignore

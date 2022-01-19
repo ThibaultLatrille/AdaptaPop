@@ -42,10 +42,10 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
     args = parser.parse_args()
 
-    gene = args.granularity.lower() == "gene"
+    gene = "gene" in args.granularity.lower()
     list_ensg = [i[:-3] for i in os.listdir(args.folder)]
     dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene)
-    strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    strg_ada_dico, ada_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
 
     unclass_omega_0 = filtered_table_omega(dico_omega_0, unclass_dico, gene_level=gene)
     unclass_omega = filtered_table_omega(dico_omega, unclass_dico, gene_level=gene)
@@ -53,17 +53,14 @@ if __name__ == '__main__':
     strg_ada_omega = filtered_table_omega(dico_omega, strg_ada_dico, gene_level=gene)
     ada_omega_0 = filtered_table_omega(dico_omega_0, ada_dico, gene_level=gene)
     ada_omega = filtered_table_omega(dico_omega, ada_dico, gene_level=gene)
-    epi_omega_0 = filtered_table_omega(dico_omega_0, epi_dico, gene_level=gene)
-    epi_omega = filtered_table_omega(dico_omega, epi_dico, gene_level=gene)
     nn_omega_0 = filtered_table_omega(dico_omega_0, nn_dico, gene_level=gene)
     nn_omega = filtered_table_omega(dico_omega, nn_dico, gene_level=gene)
 
     if gene:
         print('{0} adaptive genes'.format(len(ada_dico)))
-        print('{0} epistasis genes'.format(len(epi_dico)))
         print('{0} nearly-neutral genes'.format(len(nn_dico)))
         print('{0} unclassified genes'.format(len(unclass_dico)))
-        t = sum([len(d) for d in [strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico]])
+        t = sum([len(d) for d in [strg_ada_dico, ada_dico, nn_dico, unclass_dico]])
         print(r'{0} total genes.'.format(t))
         # model = sm.OLS(list(nn_omega[:, 1]), sm.add_constant(list(nn_omega_0[:, 1])))
         # results = model.fit()
@@ -83,12 +80,6 @@ if __name__ == '__main__':
                      alpha=0.4, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN,
                      fmt='o', marker=None, mew=0, ecolor=GREEN, zorder=5, lw=.5, markersize=3.0)
 
-        plt.errorbar(epi_omega_0[:, 1], epi_omega[:, 1],
-                     xerr=[epi_omega_0[:, 1] - epi_omega_0[:, 0], epi_omega_0[:, 2] - epi_omega_0[:, 1]],
-                     yerr=[epi_omega[:, 1] - epi_omega[:, 0], epi_omega[:, 2] - epi_omega[:, 1]],
-                     alpha=0.4, label=r"${0}$ epistasis genes".format(len(epi_dico)), c=BLUE,
-                     fmt='o', marker=None, mew=0, ecolor=BLUE, zorder=10, lw=.5, markersize=3.0)
-
         plt.errorbar(unclass_omega_0[:, 1], unclass_omega[:, 1],
                      xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
                            unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
@@ -103,9 +94,7 @@ if __name__ == '__main__':
         colors = np.zeros((ybins, xbins, 4))
         list_plot = list()
         list_plot.append((GREY, unclass_omega_0, unclass_omega))
-        list_plot.append((BLUE, epi_omega_0, epi_omega))
-        list_plot.append((BLACK, strg_ada_omega_0, strg_ada_omega))
-        list_plot.append((RED, ada_omega_0, ada_omega))
+        list_plot.append((RED, strg_ada_omega_0, strg_ada_omega))
         list_plot.append((GREEN, nn_omega_0, nn_omega))
 
         heatmaps = list()
@@ -132,14 +121,14 @@ if __name__ == '__main__':
             cs = plt.contour(data, extent=extent, levels=set_levels, colors=[COLOR] * len(set_levels), linestyles='-')
             plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=10)
 
-        plt.scatter(0, 0, label=r'{0} strongly adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])),
-                    color=BLACK)
-        plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in ada_dico.values()])), color=RED)
+        plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])),
+                    color=RED)
         plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])),
                     color=GREEN)
-        plt.scatter(0, 0, label=r'{0} epistasis sites'.format(sum([len(v) for v in epi_dico.values()])), color=BLUE)
+        plt.scatter(0, 0, label=r'{0} unclassifed sites'.format(sum([len(v) for v in unclass_dico.values()])),
+                    color=GREY)
         print(r'{0} unclassified sites'.format(sum([len(v) for v in unclass_dico.values()])))
-        t = sum([sum([len(v) for v in d.values()]) for d in [strg_ada_dico, ada_dico, epi_dico, nn_dico, unclass_dico]])
+        t = sum([sum([len(v) for v in d.values()]) for d in [strg_ada_dico, ada_dico, nn_dico, unclass_dico]])
         print(r'{0} total sites.'.format(t))
     plt.legend(fontsize=fontsize_legend, loc="lower right")
     plt.ylim((ymin, ymax))

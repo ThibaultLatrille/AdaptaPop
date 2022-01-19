@@ -19,11 +19,14 @@
 /Polymorphism/Capra_hircus/flo/
 /Contrasts/CDS.ANNOT.tar.xz
 /Contrasts/annotation.*.tsv
+/Contrasts.Legacy
 SelCoeff/SFS/
 SelCoeff/VCF/
+SelCoeff/sfs-list-include.tex
 /scripts/__pycache__/
 /Contrasts/*/
 /utils/
+*corrections.txt
 *.est-sfs.pvalues.txt
 *.est-sfs.txt
 *.est-sfs.usfs

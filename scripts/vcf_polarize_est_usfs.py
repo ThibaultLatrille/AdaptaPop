@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+from collections import defaultdict
 import gzip
 import os
 import pandas as pd
@@ -16,8 +17,7 @@ if __name__ == '__main__':
 
     print("Loading file " + args.vcf)
     fixed_poly = dict()
-    snp_table, header = {"CHR": [], "REF": [], "ALT": [], "ANC": [], "COUNT": [], "SAMPLE_SIZE": [],
-                         "ENSG": [], "POS": [], "TYPE": []}, {}
+    snp_table, header = defaultdict(list), {}
     vcf_file = gzip.open(args.vcf, 'rt')
     est_sfs_path = args.output.replace(".tsv.gz", ".est-sfs")
     est_sfs_file = open(est_sfs_path + ".txt", 'w')
@@ -72,7 +72,8 @@ if __name__ == '__main__':
         snp_table["COUNT"].append(count)
         snp_table["SAMPLE_SIZE"].append(n)
         snp_table["ENSG"].append(ensg)
-        snp_table["POS"].append(codon_pos)
+        snp_table["CODON_POS"].append(codon_pos)
+        snp_table["NUC_POS"].append(nuc_pos)
         snp_table["TYPE"].append(line_list[header["SNP_TYPE"]])
 
     est_sfs_file.close()

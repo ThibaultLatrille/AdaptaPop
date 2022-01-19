@@ -17,10 +17,9 @@ if __name__ == '__main__':
 
     ensg_list = sorted([i[:-3] for i in os.listdir(args.div_folder)])
     dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, ensg_list, gene_level=True)
-    strg_adap, adap, epi, nn, _ = split_outliers(dico_omega_0, dico_omega, gene_level=True)
+    strg_adap, adap, nn, _ = split_outliers(dico_omega_0, dico_omega, gene_level=True)
     dico_cat = dict()
-    for ensg_cat_list, cat in [(strg_adap, "strongly_adaptive"), (adap, "adaptive"), (epi, "epistasis"),
-                               (nn, "nearly-neutral")]:
+    for ensg_cat_list, cat in [(strg_adap, "strongly_adaptive"), (adap, "adaptive"), (nn, "nearly-neutral")]:
         for ensg in ensg_cat_list:
             dico_cat[ensg] = cat
 

@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import numpy as np
 from collections import defaultdict
-import itertools
-from libraries import tex_f, format_pop, sp_sorted, adjusted_holm_pval
+from itertools import product
+from libraries import tex_f, format_pop, sp_sorted, sort_df, adjusted_holm_pval
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -108,27 +108,23 @@ def format_domega(p):
     return "{0:.2g}".format(p)
 
 
-def extend_pop(p, sample):
-    fp = format_pop(p)
-    if sample[p] == fp:
-        return p
-    else:
-        return f"{sample[p]} ({fp})"
-
+def column_format(data_frame):
+    return "|" + "|".join(["l"] * 2 + ["r"] * (len(data_frame) - 2)) + "|"
 
 my_dpi = 256
-omega_a = "\\specialcell{$\\omega_{\\mathrm{A}}$ \\\\ adaptive set}"
-omega_a_mean = "\\specialcell{$\\left< \\omega_{\\mathrm{A}} \\right>$ \\\\ nearly-neutral set}"
-omega = "\\specialcell{$d_{\\mathrm{N}} / d_{\\mathrm{S}}$ \\\\ adaptive set}"
-omega_mean = "\\specialcell{$\\left< d_{\\mathrm{N}} / d_{\\mathrm{S}} \\right>$ \\\\ nearly-neutral set}"
-pv = "$p_{\\mathrm{value}}$"
-pv_adj = "$p_{\\mathrm{value}}^{\\mathrm{adjusted}}$"
+omega_a = "\\specialcell{$\\omega_{\\mathrm{A}}$ \\\\ test}"
+omega_a_mean = "\\specialcell{$\\left< \\omega_{\\mathrm{A}} \\right>$ \\\\ control}"
+omega = "\\specialcell{$d_{\\mathrm{N}} / d_{\\mathrm{S}}$ \\\\ test}"
+omega_mean = "\\specialcell{$\\left< d_{\\mathrm{N}} / d_{\\mathrm{S}} \\right>$ \\\\ control}"
+chi = "$\\chi$"
+pv = "$p_{\\mathrm{v}}$"
+pv_adj = "$p_{\\mathrm{v}}^{\\mathrm{adj}}$"
 pi_s = "$\\pi_{\\textrm{S}}$"
 
-header_wa = ["Species", "Population", "SFS", "Level", "Model", omega_a, omega_a_mean, pv, pv_adj, pi_s]
+header_wa = ["Species", "Population", "SFS", "Level", "Model", omega_a, omega_a_mean, pv, pv_adj, chi, pi_s]
 header_w = ["Species", "Population", "SFS", "Level", "Model", omega, omega_mean, pv, pv_adj, pi_s]
-header_main = ["Species", "Population", omega_a, omega_a_mean, pv, pv_adj, omega_a, omega_a_mean, pv, pv_adj, pi_s]
-
+header_main = ["Species", "Population", omega_a, omega_a_mean, pv, pv_adj, chi, omega_a, omega_a_mean, pv, pv_adj, chi, pi_s]
+invert_prefix = {"w": "wA", "wA": "w"}
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, dest="tsv", help="Input tsv file")
@@ -137,43 +133,45 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = pd.read_csv(args.tsv, sep="\t")
+    df["chi"] = (df["wA_Test"] - df["wA_Control"]) / (df["Δw_Test"] - df["Δw_Control"])
+    df.pop("Δw_Test")
+    df.pop("Δw_Control")
     df = df.groupby(["species", "pop", "sfs", "granularity", "model"]).max().reset_index()
 
-    dico_wA_matrix, dico_w_matrix, dico_delta_wa = defaultdict(dict), defaultdict(dict), defaultdict(dict)
+    dico_pval, dico_delta_wa = defaultdict(dict), defaultdict(dict)
     pop2sp = {}
-    for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                     ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
+    for sfs, granularity, model in product(["folded", "unfolded"], ["gene", "site", "site strong"],
+                                           ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)]
-        m = "{0}s - {1} SFS - {2}".format(granularity.capitalize(), sfs, model)
+        m = "{0}s - {1}SFS - {2}".format(granularity.capitalize(), sfs[0], model)
         for pop in ddf["pop"].values:
             pop_ddf = ddf[ddf["pop"] == pop]
             if len(pop_ddf["pop"]) != 0:
                 assert len(pop_ddf["pop"]) == 1
                 fpop = format_pop(pop)
                 pop2sp[fpop] = pop_ddf["species"].values[0]
-                dico_wA_matrix[fpop][m] = pop_ddf["wA_pval"].values[0]
-                dico_w_matrix[fpop][m] = pop_ddf["w_pval"].values[0]
-                dico_delta_wa[fpop][m] = pop_ddf["wA_Selected"].values[0] - pop_ddf["wA_Neutral"].values[0]
+                dico_pval[fpop][m] = pop_ddf["wA_pval"].values[0]
+                dico_delta_wa[fpop][m] = pop_ddf["wA_Test"].values[0] - pop_ddf["wA_Control"].values[0]
 
     models = set()
-    for s in dico_wA_matrix.values():
+    for s in dico_pval.values():
         models = models.union(s.keys())
     models = list(sorted(models))
 
     species = [pop for pop, sp in sorted(pop2sp.items(), key=lambda kv: sp_sorted(*kv))]
-    p_matrix, delta_wa_matrix = np.ones((len(species), len(models))), np.ones((len(species), len(models)))
-    p_matrix[:], delta_wa_matrix[:] = np.NaN, np.NaN
+    pval_matrix, delta_wa_matrix = np.ones((len(species), len(models))), np.ones((len(species), len(models)))
+    pval_matrix[:], delta_wa_matrix[:] = np.NaN, np.NaN
 
     for id_species, sp in enumerate(species):
         for id_model_set, model_set in enumerate(models):
-            if sp in dico_wA_matrix and model_set in dico_wA_matrix[sp]:
-                p_matrix[id_species, id_model_set] = dico_wA_matrix[sp][model_set]
+            if sp in dico_pval and model_set in dico_pval[sp]:
+                pval_matrix[id_species, id_model_set] = dico_pval[sp][model_set]
                 delta_wa_matrix[id_species, id_model_set] = dico_delta_wa[sp][model_set]
 
     fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 
     YlGn = matplotlib.cm.YlGn
-    im, cbar = heatmap(p_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=r"$p_{\mathrm{value}}$")
+    im, cbar = heatmap(pval_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=r"$p_{\mathrm{value}}$")
     texts = annotate_heatmap(im, valfmt=lambda p: "0" if abs(p) < 1e-1 else "{0:.1g}".format(p), fontsize=6)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".pval.png"), format="png")
@@ -194,20 +192,17 @@ if __name__ == '__main__':
     plt.clf()
     plt.close('all')
 
-    df = df.iloc[df.apply(lambda r: sp_sorted(format_pop(r["pop"]), r["species"]), axis=1).argsort()]
-    df["species"] = df.apply(lambda r: "Ovis orientalis" if r["pop"] == "IROO" else r["species"], axis=1)
-    df["species"] = df.apply(lambda r: "Ovis vignei" if r["pop"] == "IROV" else r["species"], axis=1)
-    df["species"] = df.apply(lambda r: "Capra aegagrus" if r["pop"] == "IRCA" else r["species"], axis=1)
-
-    dico_sample = {r["SampleName"].replace("_", " "): r["Location"] for _, r in
-                   list(pd.read_csv(args.sample_list, sep='\t').iterrows())}
-
-    df["pop"] = df.apply(lambda r: extend_pop(r["pop"], dico_sample), axis=1)
+    df = sort_df(df, args.sample_list)
 
     o = open(args.output, 'w')
+    o.write("\\subsection{Heatmap} \n")
+    o.write("\\begin{center}\n")
+    o.write("\\includegraphics[width=\\linewidth]{" + args.output.replace(".tex", ".pval.pdf") + "} \n")
+    o.write("\\includegraphics[width=\\linewidth]{" + args.output.replace(".tex", ".delta_wa.pdf") + "} \n")
+    o.write("\\end{center}\n")
 
-    for sfs, granularity, model in itertools.product(["folded", "unfolded"], ["gene", "site"],
-                                                             ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
+    for sfs, granularity, model in product(["folded", "unfolded"], ["gene", "site", "site strong"],
+                                           ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["granularity"] == granularity) & (df["model"] == model)].drop(
             ["sfs", "granularity", "model"], axis=1)
         if len(ddf["species"]) == 0:
@@ -215,43 +210,54 @@ if __name__ == '__main__':
 
         o.write("\\subsection{" + "{0} SFS at {1} level - {2}".format(sfs.capitalize(), granularity, model) + "} \n")
         o.write("\\begin{center}\n")
-        
+
         for prefix in ["wA", "w"]:
             sub_header = [i for i in (header_wa if prefix == "wA" else header_w) if i not in ["SFS", "Level", "Model"]]
             subdf = ddf.copy()
             subdf = adjusted_holm_pval(subdf, prefix=prefix + "_")
-            subdf.pop(("w" if prefix == "wA" else "wA") + "_pval")
-            ps = subdf.pop("P_S")
-            subdf["P_S"] = ps
+            subdf.pop(f"{invert_prefix[prefix]}_pval")
+            subdf.pop(f"{invert_prefix[prefix]}_Test")
+            subdf.pop(f"{invert_prefix[prefix]}_Control")
+            if prefix == "w":
+                subdf.pop("chi")
+            else:
+                subdf["chi"] = subdf.pop("chi")
+            subdf["P_S"] = subdf.pop("P_S")
             o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
                     "{0}-{1}-{2}-{3}.pdf".format(granularity, sfs, model, prefix) + "} \n")
             o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
-            o.write(subdf.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|",
-                                 header=sub_header))
+            o.write(subdf.to_latex(index=False, escape=False, float_format=tex_f, column_format=column_format(subdf),
+                                   header=sub_header))
             o.write("\\end{adjustbox}\n")
             o.write("\\newpage\n")
         o.write("\\end{center}\n")
 
     sub_header_main = [i for i in header_main if i not in ["SFS", "Level", "Model"]]
-    for sfs, model in itertools.product(["folded", "unfolded"], ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
+    for sfs, model in product(["folded", "unfolded"], ["grapes", "polyDFE", "dfem", "MK", "aMK"]):
         ddf = df[(df["sfs"] == sfs) & (df["model"] == model)].drop(["sfs", "model"], axis=1)
         if len(ddf["species"]) == 0:
             continue
 
-        ddf.pop("w_pval")
+        for pop_col in ["w_pval", "w_Test", "w_Control"]:
+            ddf.pop(pop_col)
 
         ddg = []
         for granularity in ["gene", "site"]:
             ddf_g = ddf[ddf["granularity"] == granularity].drop(["granularity"], axis=1)
-            ps = ddf_g.pop("P_S")
-            ddg.append(adjusted_holm_pval(ddf_g, prefix="wA_"))
+            # ps = ddf_g.pop("P_S")
+            adjusted_holm_pval(ddf_g, prefix="wA_")
+            ddf_g["chi"] = ddf_g.pop("chi")
+            if granularity == "gene":
+                ddf_g.pop("P_S")
+            else:
+                ddf_g["P_S"] = ddf_g.pop("P_S")
+            ddg.append(ddf_g)
 
         merge = pd.merge(ddg[0], ddg[1], how="inner", on=["pop", "species"])
-        merge["P_S"] = ps
         o.write("\\subsection{" + "{0} SFS - {1}".format(sfs.capitalize(), model) + "} \n")
         o.write("\\begin{center}\n")
         o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
-        o.write(merge.to_latex(index=False, escape=False, float_format=tex_f, column_format="|l|l|r|r|r|r|r|r|r|r|r|",
+        o.write(merge.to_latex(index=False, escape=False, float_format=tex_f, column_format=column_format(merge),
                                header=sub_header_main))
         o.write("\\end{adjustbox}\n")
         o.write("\\end{center}\n")

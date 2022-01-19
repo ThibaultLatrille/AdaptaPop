@@ -28,12 +28,41 @@ def read_yn(path):
 
 
 omega_dict = defaultdict(list)
+phylo_dict = defaultdict(list)
+
+
+def parse_line(line):
+    return float(line.split(",")[0].split("=")[-1])
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--folder', required=False, type=str, dest="folder", help="Folder path")
     parser.add_argument('-m', '--model', required=False, type=str, dest="model", help="Model name")
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output path")
     args = parser.parse_args()
+
+    for filepath in glob(args.folder + "/*.txt"):
+        f = open(filepath, 'r')
+        while True:
+            omega_line = f.readline()
+            if omega_line.strip() == "":
+                break
+            omega_0_line = f.readline()
+            omega_A_line = f.readline()
+            if "all adaptive" in omega_line:
+                adaptive = True
+            elif ("resampled nearly" in omega_line) or ('all genome' in omega_line):
+                adaptive = False
+            else:
+                continue
+            phylo_dict["OMEGA"].append(parse_line(omega_line))
+            phylo_dict["OMEGA_0"].append(parse_line(omega_0_line))
+            phylo_dict["OMEGA_A"].append(parse_line(omega_A_line))
+            phylo_dict["ADAPTIVE"].append(adaptive)
+
+    pd.DataFrame(phylo_dict).to_csv(args.output.replace(".tsv", ".phylo.tsv"), sep="\t", index=False)
+
     if args.model in ["dfem", "grapes"]:
         for filepath in glob(args.folder + "/*{0}.csv".format(args.model)):
             dfem_df = pd.read_csv(filepath)
