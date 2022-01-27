@@ -10,7 +10,7 @@ ROOT = os.path.abspath('..')
 FOLDER = os.path.abspath('.')
 EXP_FOLDER = f"{FOLDER}/{config['EXPERIMENT']}"
 ANALYSIS_FOLDER = f"{EXP_FOLDER}/analysis"
-os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot", exist_ok=True)
+os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot",exist_ok=True)
 
 GRANULARITY = config['GRANULARITY']
 SUBSAMPLING_SITES = config['SUBSAMPLING_SITES']
@@ -34,26 +34,26 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     SPECIES_SISTER_K[row['Species']] = row["SisterSpecies"]
     SUBSAMPlE_SFS[row['SampleName']] = row["k"]
     for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
-        for model, sfs in product(config['DFE_MODELS'], config['SFS']):
+        for model, sfs in product(config['DFE_MODELS'],config['SFS']):
             if ((model == "polyDFE" or model == "MK" or model == "aMK") and sfs == "folded") or (NBR_BATCHES == 0):
                 continue
             TSV_GENOME_LIST.append(f"{EXP_FOLDER}/genome/{row['Species']}-{row['SampleName']}-{model}-{sfs}.tsv")
 
             for granularity in GRANULARITY:
-                if ("strong" in granularity) and SUBSAMPLING_WEIGHTED:
+                if ("MutSelExclu" not in granularity) and SUBSAMPLING_WEIGHTED:
                     continue
                 TSV_LIST.append(f"{EXP_FOLDER}/{row['Species']}-{row['SampleName']}-{granularity}/results-{model}-{sfs}.tsv")
 
-localrules: all,pickle,parse_results,gather_parsed_results,plot_heatmap,plot_violin,parse_genome_results,gather_genome_results,plot_scatter,table_ontology
+localrules: all,pickle,parse_results,gather_parsed_results,plot_heatmap,plot_violin,parse_genome_results,gather_genome_results,plot_scatter,table_ontology,plot_venn
 
 rule all:
     input:
         f"{ANALYSIS_FOLDER}/results.tex",
         f"{ANALYSIS_FOLDER}/violin_plot",
         f"{ANALYSIS_FOLDER}/genome_results.tsv",
-        # expand("scatterplot_{granularity}.pdf",granularity=[i.replace("_strong", "") for i in GRANULARITY]),
-        #"ontology/gene_adaptive_table.pdf","ontology/gene_epistasis_table.pdf",
-        #"ontology/site_adaptive_table.pdf","ontology/site_epistasis_table.pdf","ontology/site_strongly-adaptive_table.pdf"
+        f"venn_diagram-{'-'.join(GRANULARITY)}.pdf",
+        expand("scatterplot-{granularity}.pdf",granularity=GRANULARITY),
+        expand("ontology/{granularity}-table.pdf",granularity=GRANULARITY)
 
 rule pickle:
     input:
@@ -61,37 +61,37 @@ rule pickle:
         div_folder=f'{ROOT}/OrthoMam/Experiments',
         xml=f'{ROOT}/OrthoMam/Datasets/omm_markers'
     output:
-        tsv=EXP_FOLDER + "/pickle.{species}.{granularity}.pk1.bz2"
+        tsv=EXP_FOLDER + "/pickle-{species}-{level}-{pp}.pk1.bz2"
     params:
         script=f'{ROOT}/scripts/pickle_annotations.py',
         species=lambda wildcards: f"--focal_species {wildcards.species} --sister_species {SPECIES_SISTER_K[wildcards.species]}"
     shell:
-        'python3 {params.script} {params.species} --granularity {wildcards.granularity} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
+        'python3 {params.script} {params.species} --level {wildcards.level} --pp {wildcards.pp} --ali_folder {input.ali_folder} --div_folder {input.div_folder} --xml {input.xml} --output {output.tsv}'
 
 rule generate_DoFE:
     input:
         tsv=lambda wildcards: glob(f'{ROOT}/Polymorphism/{wildcards.species}/CDS.ANNOT.*.{wildcards.popu}.tsv.gz'),
-        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle.{wildcards.species}.{wildcards.granularity.replace('_strong', '')}.pk1.bz2"
+        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle-{wildcards.species}-{wildcards.level}-{wildcards.pp}.pk1.bz2"
     params:
         dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
         script=f'{ROOT}/scripts/generate_DoFE.py',
-        time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: "{wildcards.species}-{wildcards.popu}-{wildcards.granularity}-{wildcards.batch}",
-        tmp_folder=lambda wildcards: f"{EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.granularity}/tmp/{wildcards.batch}/",
-        output=lambda wildcards: f"{EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.granularity}/{wildcards.sfs}/",
+        time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: f"{wildcards.species}-{wildcards.popu}-{wildcards.level}-{wildcards.method}-{wildcards.pp}-{wildcards.batch}",
+        tmp_folder=lambda wildcards: f"{EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.level}-{wildcards.method}-{wildcards.pp}/tmp/{wildcards.batch}/",
+        output=lambda wildcards: f"{EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.level}-{wildcards.method}-{wildcards.pp}/{wildcards.sfs}/",
         species=lambda wildcards: f"--focal_species {wildcards.species} --sister_species {SPECIES_SISTER_K[wildcards.species]} --sfs {wildcards.sfs} --subsample {SUBSAMPlE_SFS[wildcards.popu]}"
     output:
-        touch(EXP_FOLDER + "/{species}-{popu}-{granularity}/{sfs}/{batch}.txt")
+        touch(EXP_FOLDER + "/{species}-{popu}-{level}-{method}-{pp}/{sfs}/{batch}.txt")
     shell:
-        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {params.script} --pickle {input.pickle} {params.dfe} --seed {wildcards.batch} --vcf {input.tsv} --granularity {wildcards.granularity} --rep {NBR_REPLICATES_PER_BATCH} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
+        'mkdir -p {params.tmp_folder} && mkdir -p {params.output} && python3 {params.script} --pickle {input.pickle} {params.dfe} --seed {wildcards.batch} --vcf {input.tsv} --level {wildcards.level} --method {wildcards.method} --rep {NBR_REPLICATES_PER_BATCH} --nbr_sites {SUBSAMPLING_SITES} --nbr_genes {SUBSAMPLING_GENES} --weighted {SUBSAMPLING_WEIGHTED} --output {params.output}{wildcards.batch} --tmp_folder {params.tmp_folder} {params.species}'
 
 rule parse_results:
     input:
-        dfe_res=expand(EXP_FOLDER + "/{{species}}-{{popu}}-{{granularity}}/{{sfs}}/{batch}.txt",batch=BATCHES),
+        dfe_res=expand(EXP_FOLDER + "/{{species}}-{{popu}}-{{level}}-{{method}}-{{pp}}/{{sfs}}/{batch}.txt",batch=BATCHES),
         script=f'{ROOT}/scripts/parse_results.py'
     params:
-        folder=lambda wildcards: f"--folder {EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.granularity}/{wildcards.sfs}"
+        folder=lambda wildcards: f"--folder {EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.level}-{wildcards.method}-{wildcards.pp}/{wildcards.sfs}"
     output:
-        plot=EXP_FOLDER + "/{species}-{popu}-{granularity}/results-{model}-{sfs}.tsv"
+        plot=EXP_FOLDER + "/{species}-{popu}-{level}-{method}-{pp}/results-{model}-{sfs}.tsv"
     shell:
         'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot}'
 
@@ -125,11 +125,11 @@ rule plot_heatmap:
 rule generate_DoFE_genome:
     input:
         tsv=lambda wildcards: glob(f'{ROOT}/Polymorphism/{wildcards.species}/CDS.ANNOT.*.{wildcards.popu}.tsv.gz'),
-        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle.{wildcards.species}.gene.pk1.bz2"
+        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle-{wildcards.species}-gene-0.025.pk1.bz2"
     params:
         dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
         script=f'{ROOT}/scripts/generate_DoFE_genome.py',
-        time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: "{wildcards.species}-{wildcards.popu}-{wildcards.granularity}-{wildcards.batch}",
+        time="2-00:00",mem=3000,threads=1,queue="normal",name=lambda wildcards: f"{wildcards.species}-{wildcards.popu}-genome",
         tmp_folder=lambda wildcards: f"{EXP_FOLDER}/genome/{wildcards.species}-{wildcards.popu}-{wildcards.sfs}/tmp/",
         output=lambda wildcards: f"{EXP_FOLDER}/genome/{wildcards.species}-{wildcards.popu}-{wildcards.sfs}/",
         species=lambda wildcards: f"--focal_species {wildcards.species} --sister_species {SPECIES_SISTER_K[wildcards.species]} --sfs {wildcards.sfs} --subsample {SUBSAMPlE_SFS[wildcards.popu]}"
@@ -164,9 +164,18 @@ rule plot_scatter:
         folder=f'{ROOT}/OrthoMam/Experiments',
         script=f'{ROOT}/scripts/plot_scatter.py'
     output:
-        plot="scatterplot_{granularity}.pdf"
+        plot="scatterplot-{level}-{method}-{pp}.pdf"
     shell:
-        'python3 {input.script} --folder {input.folder} --granularity {wildcards.granularity} --output {output.plot}'
+        'python3 {input.script} --folder {input.folder} --level {wildcards.level} --method {wildcards.method} --pp {wildcards.pp} --output {output.plot}'
+
+rule plot_venn:
+    input:
+        folder=f'{ROOT}/OrthoMam/Experiments',
+        script=f'{ROOT}/scripts/plot_venn.py'
+    output:
+        plot="venn_diagram-{granularity}.pdf"
+    shell:
+        "python3 {input.script} --folder {input.folder} --granularity {GRANULARITY} --output {output.plot}"
 
 rule table_ontology:
     input:
@@ -174,7 +183,7 @@ rule table_ontology:
         xml=f'{ROOT}/OrthoMam/Datasets/omm_markers',
         script=f'{ROOT}/scripts/table_ontology.py'
     output:
-        tex="ontology/{granularity}_{category}_table.tex",
-        pdf="ontology/{granularity}_{category}_table.pdf"
+        tex="ontology/{level}-{method}-{pp}-table.tex",
+        pdf="ontology/{level}-{method}-{pp}-table.pdf"
     shell:
-        'python3 {input.script} --folder {input.folder} --xml {input.xml} --granularity {wildcards.granularity} --category {wildcards.category} --output {output.tex}'
+        'python3 {input.script} --folder {input.folder} --xml {input.xml} --level {wildcards.level} --method {wildcards.method} --pp {wildcards.pp} --output {output.tex}'

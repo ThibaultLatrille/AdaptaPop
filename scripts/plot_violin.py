@@ -22,13 +22,13 @@ if __name__ == '__main__':
     groups = defaultdict(list)
     for filepath in args.tsv:
         _, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")
-        sp, pop, granu = filepath.split("/")[-2].replace("_", " ").split("-")
+        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")
         pop2sp[format_pop(pop)] = sp
-        groups[(model, sfs, granu)].append(filepath)
+        groups[(model, sfs, level, method, pp)].append(filepath)
 
     for y in ["wA", "w"]:
         order = [pop for pop, sp in sorted(pop2sp.items(), key=lambda kv: sp_sorted(*kv))]
-        for (model, sfs, granu), files in groups.items():
+        for (model, sfs, level, method, pp), files in groups.items():
             dico_ada, dico_nn = defaultdict(list), defaultdict(list)
             phylo_ada, phylo_nn = defaultdict(list), defaultdict(list)
             for filepath in files:
@@ -56,7 +56,7 @@ if __name__ == '__main__':
                     phylo_ada[y].extend(ddf_phylo_ada["OMEGA"])
                     phylo_nn[y].extend(ddf_phylo_nn["OMEGA"])
 
-                _, pop, _ = filepath.split("/")[-2].replace("_", " ").split("-")
+                _, pop, _, _, _ = filepath.split("/")[-2].replace("_", " ").split("-")
                 dico_ada["pop"].extend([format_pop(pop)] * len(ddf_ada))
                 dico_nn["pop"].extend([format_pop(pop)] * len(ddf_nn))
                 phylo_ada["pop"].extend([format_pop(pop)] * len(ddf_phylo_ada))
@@ -69,11 +69,11 @@ if __name__ == '__main__':
             nbr_pop = len(sub_pop)
             sub_order = [pop for pop in order if pop in sub_pop]
 
-            fig, ax = plt.subplots(figsize=(140 * (nbr_pop + 1) / my_dpi, 1080 / my_dpi), dpi=my_dpi)
+            fig, ax = plt.subplots(figsize=(180 * (nbr_pop + 1) / my_dpi, 1080 / my_dpi), dpi=my_dpi)
             graph = sns.violinplot(x="pop", y=y, data=df_nn, ax=ax, color=GREEN, inner="quartile", order=sub_order,
-                                   label=f"Nearly-neutral {granu}s (subsampled)")
+                                   label=f"Nearly-neutral {level}s (subsampled)")
             sns.stripplot(x="pop", y=y, data=df_ada, ax=ax, color=RED, edgecolor="gray", size=10, jitter=0,
-                          order=sub_order, label=f"Adaptive {granu}s")
+                          order=sub_order, label=f"Adaptive {level}s")
             '''
             graph = sns.violinplot(x="pop", y=y, data=df_phylo_nn, ax=ax, color='black', inner="quartile",
                                    order=sub_order)
@@ -84,7 +84,6 @@ if __name__ == '__main__':
             graph.axhline(np.mean(df_phylo_ada[y]), color=RED, linestyle="--")
 
             # plt.legend(fontsize=fontsize)
-
 
             ax.set_xlabel("", fontsize=fontsize_legend)
             if y == "wA":
@@ -97,6 +96,6 @@ if __name__ == '__main__':
             for tick_label in graph.axes.get_yticklabels():
                 tick_label.set_fontsize(fontsize_legend)
             plt.tight_layout()
-            plt.savefig(args.output + "/{0}-{1}-{2}-{3}.pdf".format(granu, sfs, model, y), format="pdf")
+            plt.savefig(f"{args.output}/{level}-{method}-{pp}-{sfs}-{model}-{y}.pdf", format="pdf")
             plt.clf()
             plt.close("all")

@@ -14,8 +14,9 @@ if __name__ == '__main__':
                         help="folder containing the OrthoMam alignments")
     parser.add_argument('--div_folder', required=True, type=str, dest="div_folder",
                         help="folder containing OrthoMam results")
-    parser.add_argument('--granularity', required=False, type=str, default="gene", dest="granularity",
+    parser.add_argument('--level', required=False, type=str, default="gene", dest="level",
                         help="Gene or site level")
+    parser.add_argument('-p', '--pp', required=True, type=str, dest="pp", help="Posterior probability")
     parser.add_argument('--focal_species', required=True, type=str, dest="focal_species",
                         help="Focal species (containing polymorphism)")
     parser.add_argument('--sister_species', required=True, type=str, dest="sister_species",
@@ -36,10 +37,10 @@ if __name__ == '__main__':
         dico_trid["CHR"].append(chr)
         dico_trid["STRAND"].append(strand)
 
-    gene = args.granularity.lower() == "gene"
+    gene = args.level.lower() == "gene"
     ensg_annot = pd.DataFrame(dico_trid)
     filter_set = set(ensg_annot[-ensg_annot["CHR"].isin(["X", "Y", "MT", "None"])]["ENSG"])
-    dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, filter_set, gene_level=gene)
+    dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, filter_set, gene_level=gene, pp=args.pp)
     dico_alignments = load_alignments(dico_omega, args.focal_species, args.sister_species, args.ali_folder)
     filter_set = filter_set.intersection(set(dico_alignments))
 

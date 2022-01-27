@@ -26,7 +26,8 @@ SelCoeff/sfs-list-include.tex
 /scripts/__pycache__/
 /Contrasts/*/
 /utils/
-*corrections.txt
+manuscript/corrections.md
+manuscript/discussion.md
 *.est-sfs.pvalues.txt
 *.est-sfs.txt
 *.est-sfs.usfs

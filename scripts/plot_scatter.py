@@ -38,19 +38,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-f', '--folder', required=True, type=str, dest="folder",
                         help="folder containing OrthoMam results")
-    parser.add_argument('-g', '--granularity', required=True, type=str, dest="granularity", help="Gene or site level")
+    parser.add_argument('-l', '--level', required=True, type=str, dest="level", help="Gene or site level")
+    parser.add_argument('-m', '--method', required=False, type=str, default='MutSel', dest="method",
+                        help="Method to detect adaptation (MutSel, Classical, MutSelExclu)")
+    parser.add_argument('-p', '--pp', required=True, type=str, dest="pp", help="Posterior probability")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
     args = parser.parse_args()
 
-    gene = "gene" in args.granularity.lower()
+    gene = "gene" in args.level.lower()
     list_ensg = [i[:-3] for i in os.listdir(args.folder)]
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene)
-    strg_ada_dico, ada_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene, pp=args.pp)
+    ada_dico, nn_dico, unclass_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene, method=args.method)
 
     unclass_omega_0 = filtered_table_omega(dico_omega_0, unclass_dico, gene_level=gene)
     unclass_omega = filtered_table_omega(dico_omega, unclass_dico, gene_level=gene)
-    strg_ada_omega_0 = filtered_table_omega(dico_omega_0, strg_ada_dico, gene_level=gene)
-    strg_ada_omega = filtered_table_omega(dico_omega, strg_ada_dico, gene_level=gene)
     ada_omega_0 = filtered_table_omega(dico_omega_0, ada_dico, gene_level=gene)
     ada_omega = filtered_table_omega(dico_omega, ada_dico, gene_level=gene)
     nn_omega_0 = filtered_table_omega(dico_omega_0, nn_dico, gene_level=gene)
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         print('{0} adaptive genes'.format(len(ada_dico)))
         print('{0} nearly-neutral genes'.format(len(nn_dico)))
         print('{0} unclassified genes'.format(len(unclass_dico)))
-        t = sum([len(d) for d in [strg_ada_dico, ada_dico, nn_dico, unclass_dico]])
+        t = sum([len(d) for d in [ada_dico, nn_dico, unclass_dico]])
         print(r'{0} total genes.'.format(t))
         # model = sm.OLS(list(nn_omega[:, 1]), sm.add_constant(list(nn_omega_0[:, 1])))
         # results = model.fit()
@@ -88,13 +89,13 @@ if __name__ == '__main__':
                      fmt='o', marker=None, mew=0, ecolor=GREY, zorder=0, lw=.5, markersize=3.0)
 
     else:
-        xmin, xmax = 0.05, 1.4
-        ymin, ymax = 0.05, 1.4
+        xmin, xmax = 0.05, 2.0
+        ymin, ymax = 0.05, 2.0
         xbins, ybins = 100, 100
         colors = np.zeros((ybins, xbins, 4))
         list_plot = list()
         list_plot.append((GREY, unclass_omega_0, unclass_omega))
-        list_plot.append((RED, strg_ada_omega_0, strg_ada_omega))
+        list_plot.append((RED, ada_omega_0, ada_omega))
         list_plot.append((GREEN, nn_omega_0, nn_omega))
 
         heatmaps = list()
@@ -121,20 +122,19 @@ if __name__ == '__main__':
             cs = plt.contour(data, extent=extent, levels=set_levels, colors=[COLOR] * len(set_levels), linestyles='-')
             plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=10)
 
-        plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in strg_ada_dico.values()])),
+        plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in ada_dico.values()])),
                     color=RED)
         plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])),
                     color=GREEN)
         plt.scatter(0, 0, label=r'{0} unclassifed sites'.format(sum([len(v) for v in unclass_dico.values()])),
                     color=GREY)
         print(r'{0} unclassified sites'.format(sum([len(v) for v in unclass_dico.values()])))
-        t = sum([sum([len(v) for v in d.values()]) for d in [strg_ada_dico, ada_dico, nn_dico, unclass_dico]])
+        t = sum([sum([len(v) for v in d.values()]) for d in [ada_dico, nn_dico, unclass_dico]])
         print(r'{0} total sites.'.format(t))
     plt.legend(fontsize=fontsize_legend, loc="lower right")
     plt.ylim((ymin, ymax))
     plt.xticks(fontsize=fontsize_legend)
     plt.tight_layout()
     plt.savefig(args.output, format="pdf")
-    plt.savefig(args.output.replace(".pdf", ".png"), format="png")
 
     print('Plot completed')

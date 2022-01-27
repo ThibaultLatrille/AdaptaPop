@@ -19,7 +19,7 @@ if __name__ == '__main__':
         df_phylo = pd.read_csv(filepath.replace(".tsv", ".phylo.tsv"), sep="\t")
         df = df[df["OMEGA_NA"] != "None"]
 
-        sp, pop, granu = filepath.split("/")[-2].replace("_", " ").split("-")
+        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")
         plot, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")
 
         wa_test = np.mean(df[df["ADAPTIVE"]]["OMEGA_A"])
@@ -41,7 +41,9 @@ if __name__ == '__main__':
         dico_output["Δw_Control"].append(np.mean(df_phylo[~df_phylo["ADAPTIVE"]]["OMEGA_A"]))
         dico_output["species"].append(sp)
         dico_output["pop"].append(pop)
-        dico_output["granularity"].append(granu)
+        dico_output["level"].append(level)
+        dico_output["method"].append(method)
+        dico_output["pp"].append(pp)
         dico_output["sfs"].append(sfs)
         dico_output["model"].append(model)
         if "P_S" in df:

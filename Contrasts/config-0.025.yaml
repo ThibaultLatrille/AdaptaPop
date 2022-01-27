@@ -1,0 +1,10 @@
+EXPERIMENT: "MK_no_control_0.025"
+GRANULARITY: ["gene-MutSel-0.025", "site-MutSel-0.025", "site-MutSelExclu-0.025"]
+SUBSAMPLING_SITES: -1
+SUBSAMPLING_GENES: -1
+NBR_BATCHES: 50
+NBR_REPLICATES_PER_BATCH: 20
+SUBSAMPLING_WEIGHTED: false
+SAMPLE_LIST: "sample_all.tsv"
+SFS: ["unfolded"]
+DFE_MODELS: ["MK"]

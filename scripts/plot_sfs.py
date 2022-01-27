@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 my_dpi = 256
 weak = ["A", "T"]
 strong = ["G", "C"]
-nbr_replicates = 5
+nbr_replicates = 10
 subsample = 16
 
 
@@ -45,10 +45,10 @@ if __name__ == '__main__':
         info = split_line[header["INFO"]]
         dico_info = {k: v for k, v in [s.split("=") for s in info.split(";") if "=" in s]}
 
-        if args.method == "WS" and not ((dico_info["ANC"] in weak) and (dico_info["DER"] in strong)):
+        if args.method == "WS" and not ((dico_info["NUC_ANC"] in weak) and (dico_info["NUC_DER"] in strong)):
             continue
 
-        if args.method == "SW" and not ((dico_info["ANC"] in strong) and (dico_info["DER"] in weak)):
+        if args.method == "SW" and not ((dico_info["NUC_ANC"] in strong) and (dico_info["NUC_DER"] in weak)):
             continue
 
         polarized = dico_info["POLARIZED"] == "True"
@@ -60,11 +60,11 @@ if __name__ == '__main__':
         max_daf = min(n, subsample)
         if n > subsample:
             count = [np.random.hypergeometric(k, n - k, subsample) for i in range(nbr_replicates)]
-            count = [i if i != 0 and i != max_daf else 0 for i in count]
+            count = [i if i != max_daf else 0 for i in count]
         else:
             count = [k]
 
-        if np.all(np.isnan(count)):
+        if np.all([i == 0 for i in count]):
             continue
 
         if dico_info["SNP_TYPE"] == "Syn":

@@ -253,13 +253,16 @@ def adjusted_holm_pval(d, prefix="", alpha=0.05, format_p=True):
     return d
 
 
-def build_divergence_dico(folder, ensg_list, gene_level=True):
+def build_divergence_dico(folder, ensg_list, gene_level=True, pp=""):
     print('Loading divergence results.')
-    ci = "0.0025" if gene_level else "0.05"
+    if pp == "":
+        pp = "0.0025" if gene_level else "0.05"
+
+    assert pp in ["0", "0.05", "0.005", "0.25", "0.025", "0.0025"]
     dico_omega_0, dico_omega = {}, {}
     for engs in sorted(ensg_list):
-        sitemutsel_path = "{0}/{1}_NT/sitemutsel_1.run.ci{2}.tsv".format(folder, engs, ci)
-        siteomega_path = "{0}/{1}_NT/siteomega_1.run.ci{2}.tsv".format(folder, engs, ci)
+        sitemutsel_path = "{0}/{1}_NT/sitemutsel_1.run.ci{2}.tsv".format(folder, engs, pp)
+        siteomega_path = "{0}/{1}_NT/siteomega_1.run.ci{2}.tsv".format(folder, engs, pp)
         if not os.path.isfile(siteomega_path) or not os.path.isfile(sitemutsel_path):
             sitemutsel_path = sitemutsel_path.replace("_null_", "__")
             siteomega_path = siteomega_path.replace("_null_", "__")
@@ -276,8 +279,15 @@ def build_divergence_dico(folder, ensg_list, gene_level=True):
     return dico_omega_0, dico_omega
 
 
-def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
-    strongly_adaptive_dico, adaptive_dico, nearly_neutral_dico, unclassify_dico = {}, {}, {}, {}
+def is_adaptive(omega, omega_0, method):
+    return (method == "Classical" and (1.0 < omega.low)) or (
+            method == "MutSel" and (omega_0.up < omega.low)) or (
+                   method == "MutSelExclu" and (omega_0.up < omega.low and omega.mean <= 1.0))
+
+
+def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False, method="MutSel"):
+    assert method in ["MutSel", "Classical", "MutSelExclu"]
+    adaptive_dico, nearly_neutral_dico, unclassify_dico = {}, {}, {}
 
     for ensg in dico_omega:
         if filter_set and (ensg not in filter_set):
@@ -288,9 +298,7 @@ def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
             omega_0 = confidence_interval(*dico_omega_0[ensg])
             if (omega.up - omega.low > 0.3) or (omega_0.up - omega_0.low > 0.3):
                 unclassify_dico[ensg] = None
-            elif 1.0 < omega.mean:
-                strongly_adaptive_dico[ensg] = None
-            elif omega_0.up < omega.low and omega.mean <= 1.0:
+            elif is_adaptive(omega, omega_0, method):
                 adaptive_dico[ensg] = None
             elif (0.05 <= omega.low and omega.mean <= 1.0) and (
                     (omega_0.mean <= omega.mean <= omega_0.up and omega.low <= omega_0.mean <= omega.mean) or
@@ -299,23 +307,18 @@ def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
             else:
                 unclassify_dico[ensg] = None
         else:
-            omega = [confidence_interval(*i) for i in dico_omega[ensg]]
-            omega_0 = [confidence_interval(*i) for i in dico_omega_0[ensg]]
-            strongly_adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i].up < w.low]
-            adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i].up < w.low and w.mean <= 1.0]
-            nearly_neutral_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w.low and w.mean <= 1.0 and (
-                    (omega_0[i].mean <= w.mean <= omega_0[i].up and w.low <= omega_0[i].mean <= w.mean) or
-                    (w.mean <= omega_0[i].mean <= w.up and omega_0[i].low <= w.mean <= omega_0[i].mean))]
+            w_list = [confidence_interval(*i) for i in dico_omega[ensg]]
+            w_0_list = [confidence_interval(*i) for i in dico_omega_0[ensg]]
+            adaptive_dico[ensg] = [i for i, w in enumerate(w_list) if is_adaptive(w, w_0_list[i], method)]
+            nearly_neutral_dico[ensg] = [i for i, w in enumerate(w_list) if 0.05 <= w.low and w.mean <= 1.0 and (
+                    (w_0_list[i].mean <= w.mean <= w_0_list[i].up and w.low <= w_0_list[i].mean <= w.mean) or
+                    (w.mean <= w_0_list[i].mean <= w.up and w_0_list[i].low <= w.mean <= w_0_list[i].mean))]
 
             assert (len(set(nearly_neutral_dico[ensg]) & set(adaptive_dico[ensg])) == 0)
-            assert (len(set(nearly_neutral_dico[ensg]) & set(strongly_adaptive_dico[ensg])) == 0)
+            classified = set(adaptive_dico[ensg]).union(set(nearly_neutral_dico[ensg]))
+            unclassify_dico[ensg] = [i for i in range(len(w_list)) if i not in classified]
 
-            classified = set(strongly_adaptive_dico[ensg]).union(set(adaptive_dico[ensg])).union(
-                set(nearly_neutral_dico[ensg]))
-
-            unclassify_dico[ensg] = [i for i in omega if i not in classified]
-
-    return strongly_adaptive_dico, adaptive_dico, nearly_neutral_dico, unclassify_dico
+    return adaptive_dico, nearly_neutral_dico, unclassify_dico
 
 
 def split_outliers_legacy(dico_omega_0, dico_omega, gene_level=True, filter_set=False):

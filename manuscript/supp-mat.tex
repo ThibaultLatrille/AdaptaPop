@@ -61,52 +61,91 @@ urlcolor=BLUELINK
  
 \pagebreak
 
-\section{Rate of adaptation enrichment}
-\subsection{Method summary}
+\section{Pipeline summary}
+\label{subsec:method-summary}
 
 \begin{center}
     \includegraphics[width=\linewidth]{pipeline}
 \end{center}
 
-\subsection{Comparison - MK/PolyDFE/grapes}
+\pagebreak
+\section{Rate of adaptation enrichment with $\alpha=0.005$}
+\label{sec:threshold}
+For each protein-coding DNA alignment, the Monte-Carlo Markov-Chain (MCMC) is run during $2000$ points using the \href{https://github.com/bayesiancook/bayescode}{BayesCode} software, after a burn-in of $1000$ points.
+The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $\bm{99.5}$\% confidence interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
+Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the confidence interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the confidence interval of  $\omega$, meaning $\omega = \omega_{0}$.
+Genes and sites that do not fall in any of these categories are considered unclassified.
+
+\subsection{Scatterplot with $\alpha=0.005$}
 
 \begin{center}
-    \includegraphics[width=\linewidth]{results.pval}
-    \includegraphics[width=\linewidth]{results.delta_wa} \\
-    $\Delta \omega_{\text{A}} = \omega_{\text{A}}^{\text{Adaptive set}} - \omega_{\text{A}}^{\text{Nearly-neutral set}}$
+    \begin{minipage}{0.32\linewidth}
+        \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025}
+    \end{minipage}
+    \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
+    \begin{minipage}{0.32\linewidth}
+        \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.0025}
+    \end{minipage}
+    \llap{\raisebox{1.2cm}{\scriptsize B\hspace{4.7cm}}}\hfill
+    \begin{minipage}{0.32\linewidth}
+        \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.0025}
+    \end{minipage}
+    \llap{\raisebox{1.2cm}{\scriptsize C\hspace{4.7cm}}}\hfill
 \end{center}
 
-\input{results.tex}
+$\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
+Scatter plot of $14,509$ genes in panel A, with $99.5$\% confidence interval ($\alpha=0.005$).
+Density plot of sites in panel B and C.
+Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
+In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
 
-\section{Genes ontology enrichment}
+\input{no_control/results.tex}
 
-\subsection{Gene adaptive}
-Only the first entries are shown below, the full table is available at:
-\url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/gene_adaptive_table.tsv}.
-\input{gene_adaptive_table.core.tex}
+\pagebreak
+\section{Rate of adaptation enrichment while controlling for $\omega$}
+\label{sec:controlling-for-omega}
 
-\subsection{Gene epistasis}
-Only the first entries are shown below, the full table is available at:
-\url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/gene_epistasis_table.tsv}.
+$\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes, such as to alleviate the fact that genes classified as adaptive have a higher $\omega$ than genes classified as nearly-neutral, which could bias our comparison since $\omega_{\mathrm{A}}$ could simply be higher for genes with higher $\omega$.
 
-\input{gene_epistasis_table.core.tex}
+\begin{center}
+    \includegraphics[width=\linewidth]{polymorphism-method-control}
+\end{center}
 
-\section{Sites ontology enrichment}
+The random sampling is weighted to control for $\omega$ in the set of nearly-neutral genes/sites.
+First, a normal distribution is fitted to $\omega$ in both sets, and the probability density is called $f$ for the adaptive set and $g$ for the nearly-neutral set.
+Secondly, for each gene/site classified as nearly-neutral the weight is computed as the ratio $f(\omega)/g(\omega)$ for this specific gene/site.
+Sampling with this procedure produce a set of genes/sites classified as nearly-neutral with the same $\omega$ on average than the set of adaptive genes/sites.
 
-\subsection{Site strongly adaptive}
-Only the first entries are shown below, the full table is available at:
-\url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/site_strongly-adaptive_table.tsv}.
-\input{site_strongly-adaptive_table.core.tex}
+\input{control/results.tex}
 
-\subsection{Site adaptive}
-Only the first entries are shown below, the full table is available at:
-\url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/site_adaptive_table.tsv}.
-\input{site_adaptive_table.core.tex}
+\pagebreak
+\section{Gene ontology enrichment at site level}
+\label{sec:gene-ontology-enrichment}
 
-\subsection{Site epistasis}
-Only the first entries are shown below, the full table is available at:
-\url{https://github.com/ThibaultLatrille/AdaptaPop/blob/master/Contrasts/ontology/site_epistasis_table.tsv}.
-\input{site_epistasis_table.core.tex}
+Genes are considered under adaptation if at least one site has been detected under adaptation (unilateral test with $\alpha=0.0025$ for each site).
+
+\subsection{$\omega$-based codon model}
+\label{subsec:w-based-codon-method}
+\normalfont
+Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above 1.
+925 tests performed with 426 genes detected with $\omega$-based codon models, and with 5499 genes as control.
+\input{site-Classical-0.0025-table.core.tex}
+
+\subsection{Mutation-selection codon model}
+\label{subsec:mutation-selection-codon-method}
+\normalfont
+Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+2617 tests performed with 1793 genes detected with mutation-selection codon models, and with 4132 genes as control.
+\input{site-MutSel-0.0025-table.core.tex}
+
+\subsection{Exclusive to mutation-selection codon model}
+\label{subsec:exclusive-to-mutation-selection-codon-method}
+\normalsize
+
+Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$ and the mean $\omega$ is below $1$.
+817 tests performed with 263 genes detected exclusively by mutation-selection codon models, and with 5662 genes as control.
+\input{site-MutSelExclu-0.0025-table.core.tex}
 
 \printbibliography
 

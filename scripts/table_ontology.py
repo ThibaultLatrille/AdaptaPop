@@ -33,49 +33,40 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--folder', required=True, type=str, dest="folder",
                         help="folder containing OrthoMam results")
     parser.add_argument('-x', '--xml', required=True, type=str, dest="xml", metavar="<xml>", help="The xml folder")
-    parser.add_argument('-c', '--category', required=False, type=str, default='adaptive', dest="category",
-                        help="Category of genes or sites (either adaptive or strongly_adaptive)")
     parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
-    parser.add_argument('-g', '--granularity', required=True, type=str, default="gene", dest="granularity",
-                        help="Gene or site level")
-
+    parser.add_argument('-g', '--level', required=True, type=str, dest="level", help="Gene or site level")
+    parser.add_argument('-m', '--method', required=False, type=str, default='MutSel', dest="method",
+                        help="Method to detect adaptation (MutSel, Classical, MutSelExclu)")
+    parser.add_argument('-p', '--pp', required=True, type=str, dest="pp", help="Posterior probability")
     args = parser.parse_args()
 
-    gene = args.granularity.lower() == "gene"
+    gene = args.level.lower() == "gene"
     list_ensg = [i[:-3] for i in os.listdir(args.folder)]
-    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene)
-    strg_adap_dico, adap_dico, nn_dico, unclassified_dico = split_outliers(dico_omega_0, dico_omega, gene_level=gene)
-    focal_dico = adap_dico if args.category.lower() == "adaptive" else strg_adap_dico
+    dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=gene, pp=args.pp)
+    adap_dico, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene, method=args.method)
     go_id2cds_list, go_id2name, set_all_go_cds = ontology_table(args.xml)
+
     if gene:
-        cds_focal_set = set(focal_dico) & set_all_go_cds
-        cds_control_set = set(nn_dico) & set_all_go_cds
+        cds_focal_set = set(adap_dico) & set_all_go_cds
+        # cds_control_set = set(nn_dico) & set_all_go_cds
     else:
-        cds_focal_set, cds_control_set = set(), set()
-        for k, v in focal_dico.items():
-            if k not in set_all_go_cds: continue
-            cds_focal_set.update(set([k + str(i) for i in v]))
-        for k, v in nn_dico.items():
-            if k not in set_all_go_cds: continue
-            cds_control_set.update(set([k + str(i) for i in v]))
+        cds_focal_set = set()
+        for ensg, site_list in adap_dico.items():
+            if ensg in set_all_go_cds and len(site_list) > 1:
+                cds_focal_set.add(ensg)
+        # dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=True)
+        # _, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=True, method=args.method)
+        # cds_control_set = (set(nn_dico) & set_all_go_cds) - cds_focal_set
+    cds_control_set = set_all_go_cds - cds_focal_set
     assert len(cds_control_set & cds_focal_set) == 0
     cds_set = cds_focal_set.union(cds_control_set)
 
-    print("{0} {1}s in focal set.".format(len(cds_focal_set), args.granularity))
-    print("{0} {1}s in control set".format(len(cds_control_set), args.granularity))
+    print("{0} {1}s in focal set.".format(len(cds_focal_set), args.level))
+    print("{0} {1}s in control set".format(len(cds_control_set), args.level))
 
     dico_ouput = {"GO": [], "obs": [], "exp": [], "oddsratio": [], "pval": []}
     for go_id, cds_all_go_set in go_id2cds_list.items():
-        if gene:
-            cds_go_set = cds_all_go_set & cds_set
-        else:
-            cds_go_set = set()
-            for cds_go in cds_all_go_set:
-                if cds_go in focal_dico:
-                    cds_go_set.update(set([cds_go + str(i) for i in focal_dico[cds_go]]))
-                if cds_go in nn_dico:
-                    cds_go_set.update(set([cds_go + str(i) for i in nn_dico[cds_go]]))
-            print(go_id2name[go_id].replace("_", "-"))
+        cds_go_set = cds_all_go_set & cds_set
         cds_no_go_set = cds_set - cds_go_set
         obs = np.array([[len(cds_go_set & cds_focal_set),
                          len(cds_no_go_set & cds_focal_set)],
@@ -100,9 +91,8 @@ if __name__ == '__main__':
     df.sort_values(by="pval_adj", inplace=True)
     df.to_csv(args.output.replace(".tex", ".tsv"), index=False, sep="\t")
 
-    text_core = "{0} tests performed with {1} {4}s detected as {2} and {3} as nearly-neutral." \
-                "\n".format(len(df["pval"]), len(cds_focal_set), args.category.lower().replace("-", " "),
-                            len(cds_control_set), args.granularity)
+    text_core = f"{len(df['pval'])} tests performed with {len(cds_focal_set)} genes detected with {args.method.lower()}, and {len(cds_control_set)} as control."
+
     text_core += "\\scriptsize\n"
     df_head = format_pval(df[df["pval_adj"] < 1.0]).head(500)
     text_core += df_head.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=header,
