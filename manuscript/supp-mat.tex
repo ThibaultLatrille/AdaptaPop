@@ -9,12 +9,12 @@
 \usepackage[colorlinks=false ]{hyperref}
 % for linking between references, figures, TOC, etc in the pdf document
 \hypersetup{colorlinks,
-linkcolor=DARKBLUELINK,
-anchorcolor=DARKBLUELINK,
-citecolor=DARKBLUELINK,
-filecolor=DARKBLUELINK,
-menucolor=DARKBLUELINK,
-urlcolor=BLUELINK
+    linkcolor=DARKBLUELINK,
+    anchorcolor=DARKBLUELINK,
+    citecolor=DARKBLUELINK,
+    filecolor=DARKBLUELINK,
+    menucolor=DARKBLUELINK,
+    urlcolor=BLUELINK
 } % Color citation links in purple
 \PassOptionsToPackage{unicode}{hyperref}
 \PassOptionsToPackage{naturalnames}{hyperref}
@@ -44,11 +44,13 @@ urlcolor=BLUELINK
 \def\input@path{{artworks/}}
 \makeatother
 \pdfstringdefDisableCommands{%
-\renewcommand*{\bm}[1]{#1}%
+    \renewcommand*{\bm}[1]{#1}%
 % any other necessary redefinitions
 }
 \newcommand{\specialcell}[2][c]{%
-    \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+    \begin{tabular}[#1]{@{}c@{}}
+        #2
+    \end{tabular}}
 
 \usepackage{xfrac, nicefrac}
 \usepackage[backend=biber,style=nature]{biblatex}
@@ -56,97 +58,166 @@ urlcolor=BLUELINK
 \pdfinclusioncopyfonts=1
 
 \begin{document}
-\part*{Supplementary materials}
-\tableofcontents
- 
-\pagebreak
+    \part*{Supplementary materials}
+    \tableofcontents
 
-\section{Pipeline summary}
-\label{subsec:method-summary}
+    \pagebreak
 
-\begin{center}
-    \includegraphics[width=\linewidth]{pipeline}
-\end{center}
 
-\pagebreak
-\section{Rate of adaptation enrichment with $\alpha=0.005$}
-\label{sec:threshold}
-For each protein-coding DNA alignment, the Monte-Carlo Markov-Chain (MCMC) is run during $2000$ points using the \href{https://github.com/bayesiancook/bayescode}{BayesCode} software, after a burn-in of $1000$ points.
-The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $\bm{99.5}$\% confidence interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
-Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
-Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the confidence interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the confidence interval of  $\omega$, meaning $\omega = \omega_{0}$.
-Genes and sites that do not fall in any of these categories are considered unclassified.
+    \section{Gene ontology enrichment at gene and site level}
+    \label{sec:gene-ontology-enrichment}
 
-\subsection{Scatterplot with $\alpha=0.005$}
+    Using site-specific codon model, we considered that a gene is under adaptation if at least one site is under adaptation at the site level.
+    We considered a more stringent $99.5$\% confidence interval ($\alpha=0.005$) for each site than the $95$\% interval ($\alpha=0.05$) for each gene considered previously.
 
-\begin{center}
-    \begin{minipage}{0.32\linewidth}
-        \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025}
-    \end{minipage}
-    \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
-    \begin{minipage}{0.32\linewidth}
-        \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.0025}
-    \end{minipage}
-    \llap{\raisebox{1.2cm}{\scriptsize B\hspace{4.7cm}}}\hfill
-    \begin{minipage}{0.32\linewidth}
-        \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.0025}
-    \end{minipage}
-    \llap{\raisebox{1.2cm}{\scriptsize C\hspace{4.7cm}}}\hfill
-\end{center}
+    \begin{itemize}
+        \item \textbf{Site-specific $\bm{\omega}$-based model}: genes are classified under an adaptive regime if it contains at least one site for which the lower bound for the confidence interval of $\omega$ ($\alpha=0.005$) is above 1. Because this is a unilateral test ($\omega > 1$) the risk is $\alpha/2=0.005/2=0.0025$ for each site.
+        \item \textbf{Site-specific mutation-selection model}: genes are classified under an adaptive regime if it contains at least one site for which the lower bound for the confidence interval of $\omega$ ($\alpha=0.005$) is above the upper bound of the confidence interval of $\omega_{0}$ ($\alpha=0.005$). Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.0025^2=6.25 \times 10^{-6}$ for each site.
+        \item \textbf{Exclusive to site-specific mutation-selection model}: genes are classified under an adaptive regime if it contains at least one site for which the lower bound for the confidence interval of $\omega$ ($\alpha=0.005$) is above the upper bound of the confidence interval of $\omega_{0}$ ($\alpha=0.005$), while the mean $\omega$ is below $1$. Thus, these sites cannot be detected by site-specific mutation-selection model. Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.0025^2=6.25 \times 10^{-6}$ for each site.
+    \end{itemize}
 
-$\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
-Scatter plot of $14,509$ genes in panel A, with $99.5$\% confidence interval ($\alpha=0.005$).
-Density plot of sites in panel B and C.
-Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
-In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
+    \begin{center}
+        \includegraphics[width=0.6\linewidth]{venn_diagram-site-MutSel-0.0025-site-MutSelExclu-0.0025-site-Classical-0.0025}
+    \end{center}
+    Venn diagram for the overlap between the different methods to detect genes under adaptive evolution.
+    Site-specific mutation-selection codon models can detect more genes (4233 genes) than site-specific $\omega$-based model (989 genes), with a lower risk $\alpha$ per site.
+% Gene-specific mutation-selection codon models detected 822 genes under adaptation, which is similar to the number of genes detected by site-specific $\omega$-based model, although the gene-specific mutation-selection model has a lower risk $\alpha$ per gene than the $\omega$-based model has per site.
+% Out of the 822 genes detected at the gene level by mutation-selection model, 33 are not detected by any other method at the site-specific level.
+% 40 genes are detected by all four methods.
 
-\input{no_control/results.tex}
+    \subsection{Site-specific $\bm{\omega}$-based model}
+    \label{subsec:w-based-codon-method}
+    925 Fisher's exact test are performed with 426 genes detected with site-specific $\omega$-based codon models, and with 5499 genes as control for which ontologies are available.
+    The genes are enriched primarily with ontologies related to immune processes.
 
-\pagebreak
-\section{Rate of adaptation enrichment while controlling for $\omega$}
-\label{sec:controlling-for-omega}
+    \input{site-Classical-0.0025-table.core.tex}
 
-$\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes, such as to alleviate the fact that genes classified as adaptive have a higher $\omega$ than genes classified as nearly-neutral, which could bias our comparison since $\omega_{\mathrm{A}}$ could simply be higher for genes with higher $\omega$.
+    \subsection{Site-specific mutation-selection model}
+    \label{subsec:mutation-selection-codon-method}
 
-\begin{center}
-    \includegraphics[width=\linewidth]{polymorphism-method-control}
-\end{center}
+    2617 Fisher's exact test are performed with 1793 genes detected with site-specific mutation-selection codon models, and with 4132 genes as control for which ontologies are available.
+    The genes are enriched with ontologies related to immune processes, but also with ontologies related to the external membrane, for which the signal of adaptation is not strong enough to be detected by site-specific $\omega$-based model.
 
-The random sampling is weighted to control for $\omega$ in the set of nearly-neutral genes/sites.
-First, a normal distribution is fitted to $\omega$ in both sets, and the probability density is called $f$ for the adaptive set and $g$ for the nearly-neutral set.
-Secondly, for each gene/site classified as nearly-neutral the weight is computed as the ratio $f(\omega)/g(\omega)$ for this specific gene/site.
-Sampling with this procedure produce a set of genes/sites classified as nearly-neutral with the same $\omega$ on average than the set of adaptive genes/sites.
+    \input{site-MutSel-0.0025-table.core.tex}
 
-\input{control/results.tex}
+    \subsection{Exclusive to site-specific mutation-selection model}
+    \label{subsec:exclusive-to-mutation-selection-codon-method}
 
-\pagebreak
-\section{Gene ontology enrichment at site level}
-\label{sec:gene-ontology-enrichment}
+    817 tests performed with 263 genes detected exclusively by site-specific mutation-selection codon models, and with 5662 genes as control for which ontologies are available.
+    The genes are enriched with ontologies related to the external membrane, for which the signal of adaptation is not strong enough to be detected by site-specific $\omega$-based model.
 
-Genes are considered under adaptation if at least one site has been detected under adaptation (unilateral test with $\alpha=0.0025$ for each site).
+    \input{site-MutSelExclu-0.0025-table.core.tex}
 
-\subsection{$\omega$-based codon model}
-\label{subsec:w-based-codon-method}
-\normalfont
-Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above 1.
-925 tests performed with 426 genes detected with $\omega$-based codon models, and with 5499 genes as control.
-\input{site-Classical-0.0025-table.core.tex}
+    \pagebreak
 
-\subsection{Mutation-selection codon model}
-\label{subsec:mutation-selection-codon-method}
-\normalfont
-Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
-2617 tests performed with 1793 genes detected with mutation-selection codon models, and with 4132 genes as control.
-\input{site-MutSel-0.0025-table.core.tex}
 
-\subsection{Exclusive to mutation-selection codon model}
-\label{subsec:exclusive-to-mutation-selection-codon-method}
-\normalsize
+    \section{Graphical abstract for the pipeline.}
+    \label{subsec:method-summary}
 
-Sites are classified under an adaptive regime if the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$ and the mean $\omega$ is below $1$.
-817 tests performed with 263 genes detected exclusively by mutation-selection codon models, and with 5662 genes as control.
-\input{site-MutSelExclu-0.0025-table.core.tex}
+    \begin{center}
+        \includegraphics[width=\linewidth]{pipeline}
+    \end{center}
 
-\printbibliography
+    \pagebreak
+
+
+    \section{Rate of adaptation enrichment while controlling for $\bm{\omega}$}
+    \label{sec:controlling-for-omega}
+
+    $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes, such as to alleviate the fact that genes classified as adaptive have a higher $\omega$ than genes classified as nearly-neutral, which could bias our comparison since $\omega_{\mathrm{A}}$ could simply be higher for genes with higher $\omega$.
+
+    \begin{center}
+        \includegraphics[width=\linewidth]{polymorphism-method-control}
+    \end{center}
+
+    The random sampling is weighted to control for $\omega$ in the set of nearly-neutral genes/sites.
+    First, a normal distribution is fitted to $\omega$ in both sets, and the probability density is called $f$ for the adaptive set and $g$ for the nearly-neutral set.
+    Secondly, for each gene/site classified as nearly-neutral the weight is computed as the ratio $f(\omega)/g(\omega)$ for this specific gene/site.
+    Sampling with this procedure produce a set of genes/sites classified as nearly-neutral with the same $\omega$ on average than the set of adaptive genes/sites.
+
+    \input{control/results.tex}
+
+    \pagebreak
+
+
+    \section{Rate of adaptation enrichment with $\bm{\alpha=0.005}$}
+    \label{sec:threshold}
+    For each protein-coding DNA alignment, the Monte-Carlo Markov-Chain (MCMC) is run during $2000$ points using the \href{https://github.com/bayesiancook/bayescode}{BayesCode} software, after a burn-in of $1000$ points.
+    The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $99.5$\% confidence interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
+    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+    Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the confidence interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the confidence interval of  $\omega$, meaning $\omega = \omega_{0}$.
+    Genes and sites that do not fall in any of these categories are considered unclassified.
+
+    \subsection{Scatterplot with $\bm{\alpha=0.005}$}
+
+    \begin{center}
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025}
+        \end{minipage}
+        \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.0025}
+        \end{minipage}
+        \llap{\raisebox{1.2cm}{\scriptsize B\hspace{4.7cm}}}\hfill
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.0025}
+        \end{minipage}
+        \llap{\raisebox{1.2cm}{\scriptsize C\hspace{4.7cm}}}\hfill
+    \end{center}
+
+    $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
+    Scatter plot of $14,509$ genes in panel A, with $99.5$\% confidence interval ($\alpha=0.005$).
+    Density plot of sites in panel B and C.
+    Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
+    In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
+
+    \input{no_control/results.tex}
+
+
+    \section{Exome level}
+    $\omega_{\mathrm{A}}$ and $\omega_{\mathrm{A}}^{\mathrm{phy}}$ are computed on the whole dataset on protein-coding sequences.
+    \begin{table*}[!ht]
+        \centering
+        \begin{adjustbox}{width = 1\textwidth}
+            \small
+            \begin{tabular}{|l|l|r|r|r|r|}
+                \toprule
+                Species             & Population                     & $\omega_{\mathrm{A}}$ & $\omega_{\mathrm{A}}^{\mathrm{phy}}$ \\
+                \midrule
+                Equus caballus      & Diverse (Equus)                & -0.032                & -1.9$\times 10^{-6}$                 \\
+                Canis familiaris    & Diverse (Canis)                & -0.038                & -1.9$\times 10^{-6}$                 \\
+                Bos taurus          & Iran (IRBT)                    & 0.070                 & -1.9$\times 10^{-6}$                 \\
+                Bos taurus          & Uganda (UGBT)                  & 0.059                 & -1.9$\times 10^{-6}$                 \\
+                Capra hircus        & Australia (AUCH)               & 0.006                 & -1.9$\times 10^{-6}$                 \\
+                Capra hircus        & France (FRCH)                  & 0.010                 & -1.9$\times 10^{-6}$                 \\
+                Capra aegagrus      & Iran (IRCA)                    & 0.017                 & -1.9$\times 10^{-6}$                 \\
+                Capra hircus        & Iran (IRCH)                    & 0.011                 & -1.9$\times 10^{-6}$                 \\
+                Capra hircus        & Italy (ITCH)                   & 0.010                 & -1.9$\times 10^{-6}$                 \\
+                Capra hircus        & Morocco (MOCH)                 & 0.009                 & -1.9$\times 10^{-6}$                 \\
+                Ovis aries          & Iran (IROA)                    & 0.045                 & -2.1$\times 10^{-6}$                 \\
+                Ovis orientalis     & Iran (IROO)                    & 0.053                 & -2.1$\times 10^{-6}$                 \\
+                Ovis vignei         & Iran (IROV)                    & 0.066                 & -2.1$\times 10^{-6}$                 \\
+                Ovis aries          & Various (ISGC)                 & 0.050                 & -2.1$\times 10^{-6}$                 \\
+                Ovis aries          & Morocco (MOOA)                 & 0.047                 & -2.1$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Barbados                       & -0.014                & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Central African Republic (CAR) & 0.007                 & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Ethiopia                       & -0.017                & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Gambia                         & -0.009                & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Kenya                          & 0.010                 & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Nevis                          & -0.017                & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & South Africa (SA)              & -0.00077              & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Saint Kitts (SK)               & -0.016                & -1.9$\times 10^{-6}$                 \\
+                Chlorocebus sabaeus & Zambia                         & 0.002                 & -1.9$\times 10^{-6}$                 \\
+                Homo sapiens        & African (AFR)                  & -0.026                & -1.8$\times 10^{-6}$                 \\
+                Homo sapiens        & Ad Mixed American (AMR)        & -0.031                & -1.8$\times 10^{-6}$                 \\
+                Homo sapiens        & East Asian (EAS)               & -0.038                & -1.8$\times 10^{-6}$                 \\
+                Homo sapiens        & European (EUR)                 & -0.034                & -1.8$\times 10^{-6}$                 \\
+                Homo sapiens        & South Asian (SAS)              & -0.033                & -1.8$\times 10^{-6}$                 \\
+                \bottomrule
+            \end{tabular}
+        \end{adjustbox}
+    \end{table*}
+
+% \printbibliography
 
 \end{document}

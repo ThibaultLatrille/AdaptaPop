@@ -113,28 +113,29 @@ def column_format(data_frame):
 
 
 my_dpi = 256
-header = {"pop": "Population", "species": "Species"}
-header["wA_Test"] = "\\specialcell{$\\omega_{\\mathrm{A}}^{\\mathrm{pop}}$ \\\\ Adaptive}"
-header["wA_Control"] = "\\specialcell{$\\left< \\omega_{\\mathrm{A}}^{\\mathrm{pop}} \\right>$ \\\\ Control}"
-header["w_Test"] = "\\specialcell{$d_{\\mathrm{N}} / d_{\\mathrm{S}}$ \\\\ test}"
-header["w_Control"] = "\\specialcell{$\\left< d_{\\mathrm{N}} / d_{\\mathrm{S}} \\right>$ \\\\ control}"
-header["r"] = "$\\frac{\\Delta\\omega_{\\mathrm{A}}^{\\mathrm{pop}}}{\\Delta\\omega_{\\mathrm{A}}^{\\mathrm{phy}}}$"
-header["wA_pval"] = header["w_pval"] = "$p_{\\mathrm{v}}$"
-header["wA_pval_adj"] = header["w_pval_adj"] = "$p_{\\mathrm{v}}^{\\mathrm{adj}}$"
-header["P_S"] = "$\\pi_{\\textrm{S}}$"
+header = {"pop": "Population", "species": "Species",
+          "wA_Test": "\\specialcell{$\\omega_{\\mathrm{A}}$ \\\\ Adaptive}",
+          "wA_Control": "\\specialcell{$\\left< \\omega_{\\mathrm{A}} \\right>$ \\\\ Nearly-neutral}",
+          "wA_Delta": "$\\Delta \\omega_{\\mathrm{A}} $",
+          "w_Test": "\\specialcell{$d_{\\mathrm{N}} / d_{\\mathrm{S}}$ \\\\ Adaptive}",
+          "w_Control": "\\specialcell{$\\left< d_{\\mathrm{N}} / d_{\\mathrm{S}} \\right>$ \\\\ Nearly-neutral}",
+          "r": "$\\frac{\\Delta\\omega_{\\mathrm{A}}}{\\Delta\\omega_{\\mathrm{A}}^{\\mathrm{phy}}}$",
+          "wA_pval": "$p_{\\mathrm{v}}$", "w_pval": "$p_{\\mathrm{v}}$",
+          "wA_pval_adj": "$p_{\\mathrm{v}}^{\\mathrm{adj}}$", "w_pval_adj": "$p_{\\mathrm{v}}^{\\mathrm{adj}}$",
+          "P_S": "$\\pi_{\\textrm{S}}$"}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, dest="tsv", help="Input tsv file")
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output tex file")
-    
+
     parser.add_argument('-s', '--sample_list', required=False, type=str, dest="sample_list", help="Sample list file")
     args = parser.parse_args()
 
     df = pd.read_csv(args.tsv, sep="\t")
-    df["r"] = (df["wA_Test"] - df["wA_Control"]) / (df["Δw_Test"] - df["Δw_Control"])
-    df.pop("Δw_Test")
-    df.pop("Δw_Control")
+    df["wA_Delta"] = df["wA_Test"] - df["wA_Control"]
+    df["w_Delta"] = df["Δw_Test"] - df["Δw_Control"]
+    df["r"] = df["wA_Delta"] / df["w_Delta"]
 
     dico_pval, dico_delta_wa = defaultdict(dict), defaultdict(dict)
     pop2sp = {}
@@ -145,7 +146,7 @@ if __name__ == '__main__':
             fpop = format_pop(pop)
             pop2sp[fpop] = pop_ddf["species"].values[0]
             dico_pval[fpop][m] = pop_ddf["wA_pval"].values[0]
-            dico_delta_wa[fpop][m] = pop_ddf["wA_Test"].values[0] - pop_ddf["wA_Control"].values[0]
+            dico_delta_wa[fpop][m] = pop_ddf["wA_Delta"].values[0]
 
     models = set()
     for s in dico_pval.values():
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 
     YlGn = matplotlib.cm.YlGn
-    im, cbar = heatmap(pval_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=r"$p_{\mathrm{value}}$")
+    im, cbar = heatmap(pval_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=header["w_pval"])
     texts = annotate_heatmap(im, valfmt=lambda p: "0" if abs(p) < 1e-1 else "{0:.1g}".format(p), fontsize=6)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".pval.pdf"), format="pdf")
@@ -177,7 +178,7 @@ if __name__ == '__main__':
     midpoint = - start / (np.nanmax(delta_wa_matrix) - start)
     shifted_RdBu = shiftedColorMap(RdBu, midpoint=midpoint, name='shifted')
     im, cbar = heatmap(delta_wa_matrix.T, models, species, ax=ax, cmap=shifted_RdBu,
-                       cbarlabel="$\\Delta \\omega_{\\mathrm{A}}^{\\mathrm{pop}} $")
+                       cbarlabel=header["wA_Delta"])
     texts = annotate_heatmap(im, valfmt=lambda p: "{0:.2f}".format(p), div=True, fontsize=5)
     plt.tight_layout()
     plt.savefig(args.output.replace(".tex", ".delta_wa.pdf"), format="pdf")
@@ -200,10 +201,10 @@ if __name__ == '__main__':
         o.write("\\begin{center}\n")
 
         for prefix in ["wA", "w"]:
-            columns = ["pop", "species"] + [f"{prefix}_{i}" for i in ["Test", "Control", "pval", "pval_adj"]]
             if prefix == "wA":
-                columns += ["r"]
-            columns += ["P_S"]
+                columns = ["pop", "species", "wA_Test", "wA_Control", "wA_Delta", "wA_pval", "wA_pval_adj", "r", "P_S"]
+            else:
+                columns = ["pop", "species", "w_Test", "w_Control", "w_pval", "w_pval_adj", "P_S"]
             ddf = adjusted_holm_pval(ddf, prefix=prefix + "_")
             o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
                     f"{level}-{method}-{pp}-{sfs}-{model}-{prefix}.pdf" + "} \n")
@@ -223,7 +224,7 @@ if __name__ == '__main__':
         list_df = list(ddg.values())
         merge = reduce(lambda l, r: pd.merge(l, r, how="inner", on=["pop", "species"]), list_df)
 
-        columns, df_columns = ["pop", "species"], ["wA_Test", "wA_Control", "wA_pval_adj", "r"]
+        columns, df_columns = ["pop", "species"], ["wA_Delta", "wA_pval_adj", "r"]
         sub_header = [header[i] for i in columns]
 
         for key in ["_x", "_y", ""][:len(list_df)]:

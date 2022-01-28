@@ -48,15 +48,11 @@ if __name__ == '__main__':
 
     if gene:
         cds_focal_set = set(adap_dico) & set_all_go_cds
-        # cds_control_set = set(nn_dico) & set_all_go_cds
     else:
         cds_focal_set = set()
         for ensg, site_list in adap_dico.items():
             if ensg in set_all_go_cds and len(site_list) > 1:
                 cds_focal_set.add(ensg)
-        # dico_omega_0, dico_omega = build_divergence_dico(args.folder, list_ensg, gene_level=True)
-        # _, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=True, method=args.method)
-        # cds_control_set = (set(nn_dico) & set_all_go_cds) - cds_focal_set
     cds_control_set = set_all_go_cds - cds_focal_set
     assert len(cds_control_set & cds_focal_set) == 0
     cds_set = cds_focal_set.union(cds_control_set)

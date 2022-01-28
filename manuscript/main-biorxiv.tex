@@ -102,11 +102,12 @@
 
 \author{
     \large
-    T. {Latrille}$^{1,2}$, N. {Rodrigue}$^{3}$, N. {Lartillot}$^{1}$\\
+    T. {Latrille}$^{1,2,3}$, N. {Rodrigue}$^{4}$, N. {Lartillot}$^{1}$\\
     \normalsize
     $^{1}$Université de Lyon, Université Lyon 1, CNRS, Laboratoire de Biométrie et Biologie Évolutive UMR 5558, F-69622 Villeurbanne, France.\\
     $^{2}$École Normale Supérieure de Lyon, Université de Lyon, Université Lyon 1, Lyon, France\\
-    $^{3}$Department of Biology, Institute of Biochemistry, and School of Mathematics and Statistics, Carleton University, Ottawa, Canada \\
+    $^{3}$Université de Lausanne, Lausanne, Switzerland\\
+    $^{4}$Department of Biology, Institute of Biochemistry, and School of Mathematics and Statistics, Carleton University, Ottawa, Canada \\
     \texttt{\href{mailto:thibault.latrille@ens-lyon.org}{thibault.latrille@ens-lyon.org}} \\
 }
 
@@ -136,35 +137,36 @@
     In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although there are instance where they are indeed under selection\cite{bailey_adaptive_2014}.
     Non-synonymous mutations, on the other hand, might be under a mixture of varying degrees of adaptive and purifying selection.
     Contrasting synonymous and non-synonymous changes, two different types of methods have emerged to quantify both positive and purifying selection acting on protein-coding sequences.
-    One method, stemming from phylogeny, uses a multiple sequence alignment comprised of genes from different species and codon models to quantify adaptation.
-    Starting with the work of McDonald and Kreitman\cite{mcdonald_adaptative_1991}, another method, stemming from population genetics, contrasts polymorphism within a population and divergence to a close species.
+    One method, stemming from phylogeny, uses a multiple sequence alignment comprised of genes from different species and codon models to quantify adaptation\cite{muse_likelihood_1994,goldman_codonbased_1994}.
+    Starting with the work of McDonald \& Kreitman\cite{mcdonald_adaptative_1991}, another method, stemming from population genetics, contrasts polymorphism within a population and divergence to a close species.
+
+    At the population-genetic scale, one of the most widely used tests for adaptation rely on the substitutions between two close species and polymorphism within one population\cite{mcdonald_adaptative_1991}.
+    Deleterious mutations are quickly removed by selection, and the ratio of non-synonymous substitutions over synonymous substitutions ($\dnds$) is expected to be lower than one, since very few of the non-synonymous deleterious mutations will reach fixation.
+    The ratio of non-synonymous polymorphism over synonymous polymorphism ($\pnps$) is also expected to be lower than one, since the non-synonymous deleterious mutations will be removed quickly from the population.
+    Most importantly, in the absence of advantageous mutations, these two ratios are expected to be the same ($\dnds=\pnps$).
+    If advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to a strictly positive adaptive rate $\omega_{\mathrm{A}} = \dnds-\pnps$\cite{smith_adaptive_2002}.
+    This method is, however, plagued by the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\cite{eyre-walker_quantifying_2002}.
+    Subsequent developments have tried to correct for this effect by relying on an explicit nearly-neutral model\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}, so as to estimate the rate of evolution expected in the absence of adaptation (called $\omega_0$) based on polymorphism, and then to compare it with the observed rate of evolution, $\omega=\dnds$, to get an estimate of the rate of adaptation as $\omega_{\mathrm{A}} = \omega-omega_0$.
 
     In phylogeny-based methods, the ratio of non-synonymous substitutions over synonymous substitutions, called $\omega$, is estimated a from protein-coding DNA alignment\cite{muse_likelihood_1994,goldman_codonbased_1994}.
     Assuming synonymous mutations are neutral, $\omega>1$ signals an excess in the rate of non-synonymous substitutions, indicating that the protein is under adaptive evolution.
     Conversely, a deficit in non-synonymous substitutions, leading to $\omega<1$, means the protein is under purifying selection.
     In practice, proteins are typically under a mix of adaptive and purifying selection dominated by the latter, thus typically leading to an $\omega<1$ even in the presence of positive selection.
     At a finer scale, site models detect specific site ($i$) of the sequence with a $\omega^{(i)}>1$\cite{yang_codonsubstitution_2000, kosiol_patterns_2008}.
-    An alternative approach to detect adaptation would be to rely on an explicit \textit{nearly-neutral model} as the null model against which to detect deviations.
+    Site models have two advantages: greater sensitivity, and ability to localize exactly where positive selection acts in the protein.
+    However, even at the site level, not all amino acids are acceptable, leading to $\omega^{(i)}$ capturing a mix of adaptive and purifying selection, reducing the sensitivity of test.
+    An alternative approach to detect adaptation would be to rely on an explicit nearly-neutral model as the null model against which to detect deviations, similarly to the McDonald \& Kreitman test.
     Recent development in this direction, the so-called phylogenetic mutation-selection models, provide a null model by estimating the fitness landscape over amino-acid sequences, for each site of the sequence\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
     At the mutation-selection balance, the probability for a specific codon to be fixed in the population is proportional to its fitness, and a mutation from a high fitness amino-acid towards a low fitness amino-acid will have a small probability of fixation, genuinely accounting for purifying selection.
     Conversely, only nearly-neutral mutations between high fitness amino acids will tend to be permitted by the model, allowing for the explicit calculation of the nearly-neutral rate of non-synonymous substitutions at mutation-selection balance, called $\omega_{0}$\cite{spielman_relationship_2015, rodrigue_detecting_2017}.
     By contrasting $\omega$ estimated by $\omega$-based codon models and $\omega_{0}$ calculated from mutation-selection models, one can hope to extract the rate of adaptation $\omega_{\mathrm{A}}^{\mathrm{phy}} = \omega - \omega_{0}$.
     However, mutation-selection models have not yet been applied to large-scale divergence data to quantify the rate of adaptation\cite{rodrigue_detecting_2017}.
+
     In this study, we thus first applied $\omega$-based and mutation-selection codon models to whole exome data from placental mammals, such as to quantify the rate $\omega_{\mathrm{A}}^{\mathrm{phy}}$ for each site and protein and detect signature of adaptive evolution at the phylogenetic scale.
-
-    At the population-genetic scale, one of the most widely used tests for adaptation was proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}.
-    This method uses the substitutions between two close species and polymorphism within one population.
-    Deleterious mutations are quickly removed by selection, and the ratio of non-synonymous substitutions over synonymous substitutions ($\dnds$) is expected to be lower than one, since very few of the non-synonymous deleterious mutations will reach fixation.
-    The ratio of non-synonymous polymorphism over synonymous polymorphism ($\pnps$) is also expected to be lower than one, since the non-synonymous deleterious mutations will be removed quickly from the population.
-    Most importantly, in the absence of advantageous mutations, these two ratios are expected to be the same ($\dnds=\pnps$).
-    If advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to a strictly positive adaptive rate $\omega_{\mathrm{A}} = \dnds-\pnps$\cite{smith_adaptive_2002}.
-    This method is, however, plagued by the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\cite{eyre-walker_quantifying_2002}.
-    Subsequent developments have tried to correct for this effect by relying on an explicit nearly-neutral model, such as to derive an estimate of the rate of adaptation\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}.
-
-    Altogether, the rate of adaptation is directly comparable between phylogenetic and population-genetic methods since they seek a deviation of $\omega$ from a nearly-neutral null model, estimated with mutation-selection models in phylogenetic context ($\omega_{0}$) or from standing polymorphism in a population-genetic context ($\pnps$).
+    Moreover, the rate of adaptation is directly comparable between phylogenetic and population-genetic methods since they seek a deviation of $\omega$ from a nearly-neutral null model, estimated with mutation-selection models in phylogenetic context ($\omega_{0}$) or from standing polymorphism in a population-genetic context ($\pnps$).
     Accordingly, the goal of this study is to assess whether the two signals of adaptation are correlated, which represents a unique opportunity to confront phylogenetic and population-genetic methods.
-    However, the population- and phylogeny-based methods work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny based methods versus isolated events of adaptation along a particular lineage for population-based method.
-    Nonetheless, we expect sites and proteins under long-term evolutionary Red-Queen to maintain their signal of adaptation in several independent lineages.
+    The population- and phylogeny-based methods work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny based methods versus events of adaptation in specific lineages for population-based method.
+    Nonetheless, we expect sites and proteins under long-term evolutionary Red-Queen to maintain their signal of adaptation in several independent lineages for which the McDonald \& Kreitman test is applied.
     To test this hypothesis, we develop a pipeline integrating divergence and polymorphism data across the entire exome for 29 populations across 7 genera, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
 
     The pipeline then testes if the group of sequences detected with a high rate of adaptation in the phylogeny-based method also displays a high rate of adaptation in the population-based method, leveraging polymorphism available in each population.
@@ -176,70 +178,86 @@
 
     We derived a two-step approach (see methods), applied to mammalian orthologs.
     The value of $\omega$ estimated by the site model is shown as a function of $\omega_{0}$ estimated by the mutation-selection model for genes (scatter plot in figure~\ref{fig:scatterplot}A) and sites (density plot in figure~\ref{fig:scatterplot}B).
-    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that the lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning that the value of their $\omega$ is higher than that of their $\omega_{0}$.
-    The nearly-neutral model assumption appears to be rejected for $822$ genes and $104,129$ sites, which are putatively under a long-term evolutionary Red-Queen.
-    Of note, this test is more sensitive than testing for $\omega>1$, since $\omega_{0}$ is always lower than $1$ by definition\cite{spielman_relationship_2015}.
-    Thus, we can define the set of sites that could not have been by detected by homogeneous $\omega$-based codon models solely based on their value of $\omega$, for which the mean $\omega < 1 $ ($29,543$ sites in figure~\ref{fig:scatterplot}C).
+    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that the lower bound for the confidence interval of $\omega$ ($\alpha=0.05$) is above the upper bound of the confidence interval of $\omega_{0}$ ($\alpha=0.05$), meaning that the value of their $\omega$ is higher than that of their $\omega_{0}$.
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.025^2=0.000625$ for each test.
+    The nearly-neutral model assumption appears to be rejected for $822$ out $14,509$ genes, which are putatively under a long-term evolutionary Red-Queen.
+    Due to the multiple testing, $0.000625 * 14,509 \simeq 9$ genes are expected, suggesting a $9 / 822 \simeq 1\%$ rate of false positive at the gene level.
+
+    At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites, while $0.000625 * 8,895,374 \simeq 5560$ are expected due to the multiple testing, suggesting a $5560 / 104,129 \simeq 5\%$ rate of false positive at the site level.
+
+    Of note, testing for $\omega>\omega_{0}$ is always more sensitive than testing for $\omega>1$, since $\omega_{0}$ is always lower than $1$ by definition\cite{spielman_relationship_2015}.
+    Thus, we can define the set of sites under adaptation ($\omega>\omega_{0}$) with a mean $\omega$ lower than $1$ ($29,543$ sites in figure~\ref{fig:scatterplot}C), which could not have been by detected by homogeneous $\omega$-based codon models solely based on their value of $\omega$.
 
     \subsection*{Ontology enrichment tests}
 
     Next, we investigated whether the genes classified as adaptive showed enrichment in ontology terms.
-    Thus, we performed 490 instances of Fisher's exact test to estimate ontology enrichment by contrasting with genes in the control group, not classified as adaptive.
-    $19$ ontologies are observed with a $p_{\mathrm{v}}$ corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (see table~\ref{table:ontology}).
-    The most enriched ontologies are immune system processes and innate immune response.
-    An enrichment in genes involved in immune processes was also found in large-scale analysis based on $\omega$-based site codon models\cite{kosiol_patterns_2008}.
+    Thus, we performed $775$ instances of Fisher's exact test to estimate ontology enrichment by contrasting with genes in the control group, not classified as adaptive.
+    $42$ ontologies are observed with a $p_{\mathrm{v}}$ corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (see table~\ref{table:ontology}).
 
-    Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
+    The most enriched ontologies are immune system processes and innate immune response, as expected for genes under adaptation.
+    Moreover, ontologies related to the external membrane of cells and cell adhesion are also found.
+    At a finer scale, we considered that a gene is under adaptation if at least one site is under adaptation at the site level, with a risk $\alpha=0.005$ for each site (see supplementary materials).
+    The genes detected solely based on their value of $\omega$ are enriched with ontologies related to immune processes, while genes detected based on the comparison of $\omega$ to $\omega_{0}$ are also enriched with ontologies related to the external membrane and cellular adhesion.
 
     \subsection*{Congruence between phylogeny- and population-based methods}
 
     Finally, we investigated whether the phylogeny-based and the population-based methods give congruent results in terms of detection of adaptive evolution.
-    At the population-genetic scale, $\omega_{\mathrm{A}}$ is the rate of adaptive evolution as proposed by McDonald and Kreitman\cite{mcdonald_adaptative_1991}.
+    At the population-genetic scale, $\omega_{\mathrm{A}}$ is the rate of adaptive evolution as proposed by McDonald \& Kreitman\cite{mcdonald_adaptative_1991}.
     On the one hand, the ratio of non-synonymous over synonymous polymorphism ($\pnps$) only contains non-adaptive polymorphisms.
     On the other hand, divergence data with regard to a close species allows one to estimate the ratio of non-synonymous over synonymous substitutions ($\dnds$) between these species, containing a mixture of both advantageous mutation and non-adaptive substitution.
     As a result, $\omega_{\mathrm{A}} = \dnds - \pnps$ only contains the rate of adaptive substitution, and it should be higher for genes classified as adaptive in the phylogeny-based method, compared to genes classified as nearly-neutral.
 
     For each of the $29$ population across $7$ genera and their sister species, $\omega_{\mathrm{A}}$ is computed on the concatenate of the $822$ genes classified as adaptive by the phylogeny-based method.
     The result is compared to the empirical distribution of $\omega_{\mathrm{A}}$ over random sets of $822$ nearly-neutral genes (1000 sampling replicates), see figure~\ref{fig:method}.
-    $p_{\mathrm{v}}$ are computed as the proportion of replicates for which $\omega_{\mathrm{A}}$ is higher in the nearly-neutral replicate than in the adaptive genes (computed only once).
-    The results are shown for the $29$ populations as violin plots in figure~\ref{fig:unfolded-MK}A and their values are shown in table~\ref{table:unfolded-MK}.
-    Out of $29$ populations, $24$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
-    Of note, the only populations for which the test is not significant are human populations.
+    $p_{\mathrm{v}}$ are computed as the proportion of replicates for which $\omega_{\mathrm{A}}$ is higher in the nearly-neutral replicate than in the adaptive genes concatenate.
+    The results are shown for the $29$ populations as violin plots in figure~\ref{fig:unfolded-MK}A and $\Delta \omega_{\mathrm{A}}$ and in table~\ref{table:unfolded-MK}.
+    All $29$ populations have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+
+    The average difference in $\omega_{\mathrm{A}}$ between the set of adaptive and nearly-neutral genes is called $\Delta \omega_{\mathrm{A}}$ (see figure~\ref{fig:method}).
+    We thus compared the enrichment of adaptation $\Delta \omega_{\mathrm{A}}$ at the population-genetic level to its counterpart $\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}$ at the phylogenetic level, and we computed the ratio $\frac{\Delta\omega_{\mathrm{A}}}{\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}}$ for each population (table~\ref{table:unfolded-MK}).
+    A ratio close to 1 means that both method are equivalent to quantify adaptation.
+    A ratio lower than one means that the phylogeny-based method is overestimating adaptation or the population-based method is underestimating adaptation.
 
     The same procedure is applied at a finer scale with sites instead of genes.
     For each population, $\omega_{\mathrm{A}}$ is computed on the concatenate of the $104,129$ sites classified as adaptive by the phylogeny-based method, and compared to the empirical null distribution (figure~\ref{fig:unfolded-MK}B) and table~\ref{table:unfolded-MK}.
-    Out of $29$ populations, $8$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
-    After discarding sites with a mean $\omega > 1$ (considered under a strong adaptive regime), the remaining $29,543$ sites classified as being under an adaptive regime have $1 > \omega > \omega_{0}$ and are also compared to the empirical null distribution (figure~\ref{fig:unfolded-MK}C) and table~\ref{table:unfolded-MK}.
-    Out of $29$ populations, $8$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+    Out of $29$ populations, $24$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+    Of note, the only populations for which the test is not significant are human populations.
+
+    After discarding sites with a mean $\omega > 1$, the remaining $29,543$ sites classified as being under an adaptive regime have $1 > \omega > \omega_{0}$ and are also compared to the empirical null distribution (figure~\ref{fig:unfolded-MK}C) and table~\ref{table:unfolded-MK}.
+    Out of $29$ populations, $17$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
     In other words, the approach can detect a long-term evolutionary Red-Queen even for a site with $\omega < 1$ that is still under adaptation at the population-genetic scale.
+
+    Because genes and sites classified as adaptive have a higher $\omega$ than genes/sites classified as nearly-neutral, $\omega_{\mathrm{A}}$ could simply be higher for genes with higher $\omega$ due to this confounding factor.
+    Thus we performed additional experiments (see supplementary materials) where $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes.
+    Additionally, we performed the same experiments with a more stringent risk $\alpha=0.005$ (10 times greater) to classify genes and sites as adaptive, as shown in supplementary materials.
+    Our result are robust to both controlling for $\omega$ and with a different threshold to classify genes and sites as adaptive.
 
     \section*{Discussion}\label{sec:discussion}
 
     This study is the first large-scale application of the phylogenetic mutation-selection codon models for detecting adaptation.
-    This method contrast the observed ratio of non-synonymous over synonymous substitution rates ($\omega$) to a ratio calculated under a nearly-neutral regime ($\omega_{0}$)
-    Its application on mammalian genes suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes.
-    Mutation-selection models at the gene-level have a somewhat comparable sensitivity to site-specific $\omega$-based codon models, for which $400$ genes were detected out of $16,529$ in a previous study~\cite{kosiol_patterns_2008}.
-    Moreover $104,129$ sites are found to be under an adaptive regime ($1 < \omega < 1$), which could theoretically never be detected by site-specific $\omega$-based codon models due to their $\omega$ lower than 1.
+    This method contrast the observed ratio of non-synonymous over synonymous substitution rates ($\omega$) to a ratio calculated under a nearly-neutral regime ($\omega_{0}$).
+    Its application on mammalian genes suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
+    Enrichment of ontologies related to immune processes is expected, as found by many studies\cite{kosiol_patterns_2008, enard_viruses_2016, ebel_high_2017}.
+    However, we also detect an enrichment with ontologies related to the external membrane and cell adhesion, which are the target of virus and parasites.
+    We suspect the signal for these genes is not not strong enough to be detected by site-specific codon model based solely on $\omega$.
+    Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
 
-    At the population-genetic scale, the availability of approaches to detect adaptation\cite{mcdonald_adaptative_1991, messer_frequent_2013} raises the question whether the signal is congruent between phylogenetic and population genetics.
+    At the population-genetic scale, the availability of approaches to detect adaptation\cite{mcdonald_adaptative_1991, messer_frequent_2013} raises the question whether the rate of adaptation calculated at the phylogenetic scale as $\omega_{\mathrm{A}}^{\mathrm{phy}} = \omega - \omega_{0}$ is congruent with the rate calculated at the population genetics scale as $\omega_{\mathrm{A}} = \dnds - \pnps$.
     In this light, we aligned divergence and polymorphism data across the entire exome for 29 populations across 7 genera, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
-    In $25$ out of $29$ populations, the set of genes detected to be under adaptation at the phylogenetic scale showed a significant increase in the rate of adaptation ($\omega_{\mathrm{A}} = \dnds - \pnps$) such as inferred by population-based method.
-    Notably, the $4$ populations for which the test is not conclusive are human populations, meaning that recent episode of adaptation in the \textit{Hominini} lineages does not reflect the long-term patterns of adaptation.
+    In all $29$ populations, the set of genes detected to be under adaptation at the phylogenetic scale showed a significant increase in $\omega_{\mathrm{A}}$ such as inferred by population-based method.
     This result is in stark contrast with studies comparing $\omega$-based codon models at the gene level with MK methods, which found that the set of genes detected at different scales does not seem to overlap beyond random expectations\cite{chen_two_2021}.
 
-    Additionally, zooming in at the site level, for $8$ out of $29$ populations, the set of sites detected to be under adaptation ($104,129$ out of $8,895,374$) at the phylogenetic scale showed a significant increase in $\omega_{\mathrm{A}}$ inferred by population-based method.
+    Additionally, zooming in at the site level, for $24$ out of $29$ populations, the set of sites detected to be under adaptation ($104,129$ out of $8,895,374$) at the phylogenetic scale showed a significant increase in $\omega_{\mathrm{A}}$ inferred by population-based method.
     This result is congruent with other studies at the site level showing that $\omega$-based codon models are congruent with MK methods, with most adaptive mutations occurring at the surface of proteins in both methods\cite{moutinho_impact_2019}.
     Moreover studies have shown that estimating the distribution of fitness effect at the population-genetic scale conditioning on SIFT scores estimated at the phylogenetic scale improves goodness of fit\cite{chen_hunting_2021}.
     In practice our result are in the same direction, although our test might lack statistical power.
     For example, there could be some background adaptation in proteins categorized here as being in a nearly-neutral regime, which might not have been detected.
     This explanation can be seen in the violin plots, since $\omega_{\mathrm{A}}$ is not equal to $0$ for genes and sites classified as nearly-neutral.
     To confirm the congruence of results at different scales, our study could be replicated across different phylogenies, for example in birds for which polymorphism datasets are readily available.
+    Notably, the $4$ populations for which the test is not conclusive are human populations, meaning that recent episode of adaptation in the \textit{Hominini} lineages does not reflect the long-term patterns of adaptation.
 
     This study stands at the crossroad between the phylogenetic and population-genetic tests of adaptation and highlights their respective limitations.
-    On the one hand, the phylogeny-based method is computationally intensive;
-    it requires well-resolved trees;
-    it is crucially dependent on the quality of alignments;
-    and can be gravely mis-led by paralogs erroneously identified as orthologs.
+    On the one hand, the phylogeny-based method is computationally intensive; it requires well-resolved trees; it is crucially dependent on the quality of alignments;  and can be gravely mis-led by paralogs erroneously identified as orthologs.
     Additionally, all differences observed in the alignment are assumed to be substitutions, while some might in fact be polymorphisms segregating in the population.
     Mistaking polymorphisms for substitutions is problematic, since both are not sensitive to mutation, selection and drift to the same extent\cite{mugal_why_2014}.
     On the other hand, at the population-genetic scale, the greatest limitation is the lack of power determined by the genetic diversity since polymorphisms are rare and estimation of $\pnps$ requires to pool many sites for which SNPs are available.
@@ -247,7 +265,7 @@
     To overcome this bias, both Grapes\cite{galtier_adaptive_2016} and polyDFE\cite{tataru_polydfe_2020} are also used (supplementary materials), which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), modeled as a continuous distribution.
     However, the high range of $\omega_{\mathrm{A}}$ estimated on sets of genes/sites classified as nearly-neutral shows these models are lacking power (even more than the MK test) because of the sparsity of the SFS, stressing the limitations and difficulties of our study centered on confronting the rate of adaptive evolution at different time scales.
 
-    More broadly on a theoretical level, this study leverages only one specific overlap between phylogenetic and population genetics, namely that the rate of adaptation $\omega - \omega_{0}$ in phylogenetic codon models and $\dnds - \pnps$ in the MK test should theoretically be directly comparable.
+    More broadly on a theoretical level, this study leverages only one specific overlap between phylogenetic and population genetics, namely that the rate of adaptation $\omega_{\mathrm{A}}^{\mathrm{phy}}$ in phylogenetic codon models and $\omega_{\mathrm{A}}$ in the MK test should theoretically be directly comparable.
     This comparison is grounded in the principle that the rate of non-adaptive substitution is approximated by $\pnps$ in the context of population genetics, which is referred to as $\omega_{0}$ in the context of the mutation-selection codon models.
     Based on this theoretical relationship, our objective was to highlight that mutation-selection codon model provides a null (nearly-neutral) model from which we can disentangle purifying and adaptive evolution.
     This result suggests that mutation-selection models could be applied at a finer scale to quantify selection, rather than relying on a summary statistics (i.e. $\omega_{0}$).
@@ -386,61 +404,60 @@
                 $\bm{p_{\mathrm{v}}}$ &
                 $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$ \\
                 \midrule
-                immune system process                             & 48  & 5.625 & 8.533 & 9.8$\times 10^{-24}$ & 7.6$\times 10^{-21}$$\bm{^*}$ \\
-                extracellular space                               & 82  & 19.8  & 4.151 & 6.2$\times 10^{-21}$ & 4.8$\times 10^{-18}$$\bm{^*}$ \\
-                innate immune response                            & 41  & 5.245 & 7.817 & 1.6$\times 10^{-19}$ & 1.2$\times 10^{-16}$$\bm{^*}$ \\
-                extracellular region                              & 99  & 30.5  & 3.251 & 5$\times 10^{-18}$   & 3.9$\times 10^{-15}$$\bm{^*}$ \\
-                regulation of complement activation               & 14  & 0.359 & 39.0  & 1.2$\times 10^{-13}$ & 9.4$\times 10^{-11}$$\bm{^*}$ \\
-                extracellular exosome                             & 100 & 38.2  & 2.618 & 3.6$\times 10^{-13}$ & 2.7$\times 10^{-10}$$\bm{^*}$ \\
-                complement activation                             & 12  & 0.180 & 66.6  & 5.3$\times 10^{-13}$ & 4$\times 10^{-10}$$\bm{^*}$   \\
-                immune response                                   & 28  & 4.054 & 6.907 & 6.5$\times 10^{-13}$ & 5$\times 10^{-10}$$\bm{^*}$   \\
-                blood microparticle                               & 17  & 1.247 & 13.6  & 7.1$\times 10^{-12}$ & 5.5$\times 10^{-9}$$\bm{^*}$  \\
-                serine-type endopeptidase activity                & 20  & 2.243 & 8.917 & 3.1$\times 10^{-11}$ & 2.4$\times 10^{-8}$$\bm{^*}$  \\
-                inflammatory response                             & 27  & 5.129 & 5.264 & 2.5$\times 10^{-10}$ & 1.9$\times 10^{-7}$$\bm{^*}$  \\
-                integral component of membrane                    & 149 & 78.4  & 1.901 & 1.4$\times 10^{-8}$  & 1.1$\times 10^{-5}$$\bm{^*}$  \\
-                defense response to virus                         & 15  & 1.795 & 8.355 & 1.7$\times 10^{-8}$  & 1.3$\times 10^{-5}$$\bm{^*}$  \\
-                complement activation                             & 8   & 0.182 & 43.9  & 1.8$\times 10^{-8}$  & 1.4$\times 10^{-5}$$\bm{^*}$  \\
-                integral component of plasma membrane             & 58  & 23.0  & 2.516 & 2$\times 10^{-8}$    & 1.5$\times 10^{-5}$$\bm{^*}$  \\
-                leukocyte migration                               & 16  & 2.210 & 7.239 & 2.8$\times 10^{-8}$  & 2.1$\times 10^{-5}$$\bm{^*}$  \\
-                neutrophil degranulation                          & 28  & 7.432 & 3.767 & 6$\times 10^{-8}$    & 4.5$\times 10^{-5}$$\bm{^*}$  \\
-                external side of plasma membrane                  & 18  & 3.156 & 5.703 & 7.6$\times 10^{-8}$  & 5.7$\times 10^{-5}$$\bm{^*}$  \\
-                plasma membrane                                   & 131 & 70.7  & 1.852 & 1.2$\times 10^{-7}$  & 9.1$\times 10^{-5}$$\bm{^*}$  \\
-                lipid metabolic process                           & 31  & 9.452 & 3.280 & 1.9$\times 10^{-7}$  & 0.00014$\bm{^*}$              \\
-                proteolysis                                       & 34  & 11.2  & 3.047 & 2.4$\times 10^{-7}$  & 0.00018$\bm{^*}$              \\
-                platelet degranulation                            & 14  & 1.982 & 7.064 & 2.5$\times 10^{-7}$  & 0.00019$\bm{^*}$              \\
-                cell surface                                      & 29  & 9.210 & 3.149 & 9.1$\times 10^{-7}$  & 0.00069$\bm{^*}$              \\
-                extracellular vesicle                             & 10  & 0.969 & 10.3  & 9.5$\times 10^{-7}$  & 0.00072$\bm{^*}$              \\
-                serine-type peptidase activity                    & 13  & 1.927 & 6.746 & 1$\times 10^{-6}$    & 0.00076$\bm{^*}$              \\
-                toll-like receptor signaling pathway              & 9   & 0.729 & 12.4  & 1.1$\times 10^{-6}$  & 0.00086$\bm{^*}$              \\
-                chemotaxis                                        & 13  & 1.988 & 6.540 & 1.3$\times 10^{-6}$  & 0.001$\bm{^*}$                \\
-                defense response to bacterium                     & 12  & 1.690 & 7.100 & 1.7$\times 10^{-6}$  & 0.001$\bm{^*}$                \\
-                adaptive immune response                          & 13  & 2.048 & 6.347 & 1.7$\times 10^{-6}$  & 0.001$\bm{^*}$                \\
-                cilium movement                                   & 7   & 0.366 & 19.1  & 2.8$\times 10^{-6}$  & 0.002$\bm{^*}$                \\
-                apical plasma membrane                            & 21  & 5.830 & 3.602 & 4.2$\times 10^{-6}$  & 0.003$\bm{^*}$                \\
-                chemokine-mediated signaling pathway              & 7   & 0.488 & 14.3  & 9.5$\times 10^{-6}$  & 0.007$\bm{^*}$                \\
-                cell surface receptor signaling pathway           & 18  & 4.787 & 3.760 & 1.2$\times 10^{-5}$  & 0.009$\bm{^*}$                \\
-                cytolysis                                         & 5   & 0.123 & 40.8  & 1.3$\times 10^{-5}$  & 0.009$\bm{^*}$                \\
-                antimicrobial humoral response                    & 5   & 0.123 & 40.8  & 1.3$\times 10^{-5}$  & 0.009$\bm{^*}$                \\
-                positive regulation of heterotypic cell-cell a... & 5   & 0.123 & 40.8  & 1.3$\times 10^{-5}$ & 0.009$\bm{^*}$ \\
-                hemostasis                                        & 9   & 1.094 & 8.225 & 1.3$\times 10^{-5}$  & 0.010$\bm{^*}$                \\
-                cellular protein metabolic process                & 14  & 3.134 & 4.468 & 2$\times 10^{-5}$    & 0.015$\bm{^*}$                \\
-                positive regulation of ERK1 and ERK2 cascade      & 14  & 3.194 & 4.383 & 2.5$\times 10^{-5}$  & 0.018$\bm{^*}$                \\
-                platelet alpha granule                            & 5   & 0.184 & 27.2  & 3.2$\times 10^{-5}$  & 0.024$\bm{^*}$                \\
-                dynein light chain binding                        & 5   & 0.184 & 27.2  & 3.2$\times 10^{-5}$  & 0.024$\bm{^*}$                \\
-                lysosome                                          & 21  & 7.167 & 2.930 & 6.1$\times 10^{-5}$  & 0.045$\bm{^*}$                \\
-                negative regulation of viral genome replication   & 5   & 0.245 & 20.4  & 6.9$\times 10^{-5}$ & 0.051~~ \\
-                regulation of immune response                     & 8   & 1.097 & 7.289 & 7.9$\times 10^{-5}$  & 0.057~~                       \\
-                receptor activity                                 & 15  & 4.158 & 3.607 & 8.8$\times 10^{-5}$  & 0.064~~                       \\
-                peptidase activity                                & 25  & 9.815 & 2.547 & 0.0001               & 0.074~~                       \\
-                receptor binding                                  & 21  & 7.473 & 2.810 & 0.0001               & 0.075~~                       \\
-                membrane                                          & 185 & 122.7 & 1.508 & 0.00013              & 0.095~~                       \\
-                fibrinolysis                                      & 5   & 0.307 & 16.3  & 0.00013              & 0.096~~                       \\
+                immune system process                             & 48  & $ 5.625$ & $ 8.533$ & $9.8\times 10^{-24}$ & $\bm{7.6\times 10^{-21}{^*}}$ \\
+                extracellular space                               & 82  & $  19.8$   & $ 4.151$ & $6.2\times 10^{-21}$ & $\bm{4.8\times 10^{-18}{^*}}$ \\
+                innate immune response                            & 41  & $ 5.245$ & $ 7.817$ & $1.6\times 10^{-19}$ & $\bm{1.2\times 10^{-16}{^*}}$ \\
+                extracellular region                              & 99  & $  30.5$   & $ 3.251$ & $ 5\times 10^{-18}$  & $\bm{3.9\times 10^{-15}{^*}}$ \\
+                regulation of complement activation               & 14  & $ 0.359$ & $  39.0$   & $1.2\times 10^{-13}$ & $\bm{9.4\times 10^{-11}{^*}}$ \\
+                extracellular exosome                             & 100 & $  38.2$   & $ 2.618$ & $3.6\times 10^{-13}$ & $\bm{2.7\times 10^{-10}{^*}}$ \\
+                complement activation                             & 12  & $ 0.180$ & $  66.6$   & $5.3\times 10^{-13}$ & $\bm{ 4\times 10^{-10}{^*}}$  \\
+                immune response                                   & 28  & $ 4.054$ & $ 6.907$ & $6.5\times 10^{-13}$ & $\bm{ 5\times 10^{-10}{^*}}$  \\
+                blood microparticle                               & 17  & $ 1.247$ & $  13.6$   & $7.1\times 10^{-12}$ & $\bm{5.5\times 10^{-9}{^*}}$  \\
+                serine-type endopeptidase activity                & 20  & $ 2.243$ & $ 8.917$ & $3.1\times 10^{-11}$ & $\bm{2.4\times 10^{-8}{^*}}$  \\
+                inflammatory response                             & 27  & $ 5.129$ & $ 5.264$ & $2.5\times 10^{-10}$ & $\bm{1.9\times 10^{-7}{^*}}$  \\
+                integral component of membrane                    & 149 & $  78.4$   & $ 1.901$ & $1.4\times 10^{-8}$  & $\bm{1.1\times 10^{-5}{^*}}$  \\
+                defense response to virus                         & 15  & $ 1.795$ & $ 8.355$ & $1.7\times 10^{-8}$  & $\bm{1.3\times 10^{-5}{^*}}$  \\
+                complement activation                             & 8   & $ 0.182$ & $  43.9$   & $1.8\times 10^{-8}$  & $\bm{1.4\times 10^{-5}{^*}}$  \\
+                integral component of plasma membrane             & 58  & $  23.0$   & $ 2.516$ & $ 2\times 10^{-8}$   & $\bm{1.5\times 10^{-5}{^*}}$  \\
+                leukocyte migration                               & 16  & $ 2.210$ & $ 7.239$ & $2.8\times 10^{-8}$  & $\bm{2.1\times 10^{-5}{^*}}$  \\
+                neutrophil degranulation                          & 28  & $ 7.432$ & $ 3.767$ & $ 6\times 10^{-8}$   & $\bm{4.5\times 10^{-5}{^*}}$  \\
+                external side of plasma membrane                  & 18  & $ 3.156$ & $ 5.703$ & $7.6\times 10^{-8}$  & $\bm{5.7\times 10^{-5}{^*}}$  \\
+                plasma membrane                                   & 131 & $  70.7$   & $ 1.852$ & $1.2\times 10^{-7}$  & $\bm{9.1\times 10^{-5}{^*}}$  \\
+                lipid metabolic process                           & 31  & $ 9.452$ & $ 3.280$ & $1.9\times 10^{-7}$  & $\bm{0.00014{^*}}$            \\
+                proteolysis                                       & 34  & $  11.2$   & $ 3.047$ & $2.4\times 10^{-7}$  & $\bm{0.00018{^*}}$            \\
+                platelet degranulation                            & 14  & $ 1.982$ & $ 7.064$ & $2.5\times 10^{-7}$  & $\bm{0.00019{^*}}$            \\
+                cell surface                                      & 29  & $ 9.210$ & $ 3.149$ & $9.1\times 10^{-7}$  & $\bm{0.00069{^*}}$            \\
+                extracellular vesicle                             & 10  & $ 0.969$ & $  10.3$   & $9.5\times 10^{-7}$  & $\bm{0.00072{^*}}$            \\
+                serine-type peptidase activity                    & 13  & $ 1.927$ & $ 6.746$ & $ 1\times 10^{-6}$   & $\bm{0.00076{^*}}$            \\
+                toll-like receptor signaling pathway              & 9   & $ 0.729$ & $  12.4$   & $1.1\times 10^{-6}$  & $\bm{0.00086{^*}}$            \\
+                chemotaxis                                        & 13  & $ 1.988$ & $ 6.540$ & $1.3\times 10^{-6}$  & $\bm{ 0.001{^*}}$             \\
+                defense response to bacterium                     & 12  & $ 1.690$ & $ 7.100$ & $1.7\times 10^{-6}$  & $\bm{ 0.001{^*}}$             \\
+                adaptive immune response                          & 13  & $ 2.048$ & $ 6.347$ & $1.7\times 10^{-6}$  & $\bm{ 0.001{^*}}$             \\
+                cilium movement                                   & 7   & $ 0.366$ & $  19.1$   & $2.8\times 10^{-6}$  & $\bm{ 0.002{^*}}$             \\
+                apical plasma membrane                            & 21  & $ 5.830$ & $ 3.602$ & $4.2\times 10^{-6}$  & $\bm{ 0.003{^*}}$             \\
+                chemokine-mediated signaling pathway              & 7   & $ 0.488$ & $  14.3$   & $9.5\times 10^{-6}$  & $\bm{ 0.007{^*}}$             \\
+                cell surface receptor signaling pathway           & 18  & $ 4.787$ & $ 3.760$ & $1.2\times 10^{-5}$ & $\bm{ 0.009{^*}}$ \\
+                cytolysis                                         & 5   & $ 0.123$ & $  40.8$   & $1.3\times 10^{-5}$  & $\bm{ 0.009{^*}}$             \\
+                antimicrobial humoral response                    & 5   & $ 0.123$ & $  40.8$   & $1.3\times 10^{-5}$  & $\bm{ 0.009{^*}}$             \\
+                positive regulation of heterotypic cell-cell a... & 5   & $ 0.123$ & $  40.8$   & $1.3\times 10^{-5}$ & $\bm{ 0.009{^*}}$ \\
+                hemostasis                                        & 9   & $ 1.094$ & $ 8.225$ & $1.3\times 10^{-5}$  & $\bm{ 0.010{^*}}$             \\
+                cellular protein metabolic process                & 14  & $ 3.134$ & $ 4.468$ & $ 2\times 10^{-5}$   & $\bm{ 0.015{^*}}$             \\
+                positive regulation of ERK1 and ERK2 cascade      & 14  & $ 3.194$ & $ 4.383$ & $2.5\times 10^{-5}$ & $\bm{ 0.018{^*}}$ \\
+                platelet alpha granule                            & 5   & $ 0.184$ & $  27.2$   & $3.2\times 10^{-5}$  & $\bm{ 0.024{^*}}$             \\
+                dynein light chain binding                        & 5   & $ 0.184$ & $  27.2$   & $3.2\times 10^{-5}$  & $\bm{ 0.024{^*}}$             \\
+                lysosome                                          & 21  & $ 7.167$ & $ 2.930$ & $6.1\times 10^{-5}$  & $\bm{ 0.045{^*}}$             \\
+                negative regulation of viral genome replication   & 5   & $ 0.245$ & $  20.4$   & $6.9\times 10^{-5}$ & $ 0.051~~$ \\
+                regulation of immune response                     & 8   & $ 1.097$ & $ 7.289$ & $7.9\times 10^{-5}$  & $ 0.057~~$                    \\
+                receptor activity                                 & 15  & $ 4.158$ & $ 3.607$ & $8.8\times 10^{-5}$  & $ 0.064~~$                    \\
+                peptidase activity                                & 25  & $ 9.815$ & $ 2.547$ & $0.0001$             & $ 0.074~~$                    \\
+                receptor binding                                  & 21  & $ 7.473$ & $ 2.810$ & $0.0001$             & $ 0.075~~$                    \\
+                membrane                                          & 185 & $ 122.7$ & $ 1.508$ & $0.00013$            & $ 0.095~~$                    \\
                 \bottomrule
             \end{tabular}
         \end{adjustbox}
         \caption{
             Ontology enrichment in the adaptive genes.
-            $775$ ontology Fisher's exact test are performed with $347$ genes detected as under adaptation and $5578$ genes as control for which ontologies are available.
+            $775$ ontology Fisher's exact test are performed with $347$ genes detected as under adaptation by mutation-selection codon model at the phylogenetic scale and $5578$ genes as control for which ontologies are available.
             $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
             $^*$ for $p_{\mathrm{v}}^{\mathrm{adj}} < 0.05$.
         }
@@ -475,66 +492,62 @@
     \begin{table*}[!ht]
         \centering
         \begin{adjustbox}{width = 1\textwidth}
-            \begin{tabular}{||l|l||r|r|r|r||r|r|r|r||r|r|r|r||}
+            \begin{tabular}{||l|l||r|r|r||r|r|r||r|r|r||}
                 \toprule
                 \multicolumn{2}{||c||}{} &
-                \multicolumn{4}{c||}{\textbf{Genes}} &
-                \multicolumn{4}{c||}{\textbf{Sites}} &
-                \multicolumn{4}{c||}{\textbf{Sites exclusive to Mutation-Selection}}
+                \multicolumn{3}{c||}{\textbf{Genes (822)}} &
+                \multicolumn{3}{c||}{\textbf{Sites (104,129)}} &
+                \multicolumn{3}{c||}{\textbf{Sites ($\bm{\omega < 1}$) (29,543)}}
                 \\ \hline
                 \textbf{Population} &
-                \textbf{Species} & 
-                \specialcell{$\bm{\omega_{\mathrm{A}}}$ \\ Adaptive} &
-                \specialcell{$\bm{\left< \omega_{\mathrm{A}} \right>}$ \\ Control} &
+                \textbf{Species} &
+                $\bm{\Delta \omega_{\mathrm{A}}}$ &
                 $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$    &
                 $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}}}$ &
-                \specialcell{$\bm{\omega_{\mathrm{A}}}$ \\ Adaptive} &
-                \specialcell{$\bm{\left< \omega_{\mathrm{A}} \right>}$ \\ Control} &
+                $\bm{\Delta \omega_{\mathrm{A}}}$ &
                 $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$          &
                 $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}}}$ &
-                \specialcell{$\bm{\omega_{\mathrm{A}}}$ \\ Adaptive} &
-                \specialcell{$\bm{\left< \omega_{\mathrm{A}} \right>}$ \\ Control} &
+                $\bm{\Delta \omega_{\mathrm{A}}}$ &
                 $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$ &
                 $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}}}$
                 \\                \midrule
-                Diverse (Equus)                                     & Equus caballus      & 0.079 & -0.014  & \textbf{0.0}$\bm{^*}$   & 0.928 & 0.364  & -0.035 & \textbf{0.0}$\bm{^*}$ & 0.459 & 0.213 & -0.045 & \textbf{0.0}$\bm{^*}$ & 0.446 \\
-                \rowcolor{LIGHTGREY}  Diverse (Canis)                 & Canis familiaris    & 0.059 & 0.00038 & \textbf{0.0}$\bm{^*}$   & 0.557 & 0.388  & -0.018  & \textbf{0.0}$\bm{^*}$ & 0.463 & 0.208 & -0.019 & \textbf{0.0}$\bm{^*}$ & 0.392 \\
-                Iran (IRBT)                                         & Bos taurus          & 0.097 & 0.068   & \textbf{0.020}$\bm{^*}$ & 0.278 & 0.311  & 0.074  & \textbf{0.0}$\bm{^*}$ & 0.272 & 0.210 & 0.076 & 0.150~~ & 0.231 \\
-                Uganda (UGBT)                                       & Bos taurus          & 0.101 & 0.065   & \textbf{0.0}$\bm{^*}$   & 0.355 & 0.291  & 0.069  & \textbf{0.0}$\bm{^*}$ & 0.254 & 0.225 & 0.069 & \textbf{0.017}$\bm{^*}$ & 0.270 \\
-                \rowcolor{LIGHTGREY} Australia (AUCH)               & Capra hircus        & 0.062 & 0.011   & \textbf{0.0}$\bm{^*}$   & 0.506 & 0.212  & 0.010  & \textbf{0.0}$\bm{^*}$ & 0.230 & 0.171 & 0.003 & 0.143~~ & 0.290 \\
-                \rowcolor{LIGHTGREY} France (FRCH)                  & Capra hircus        & 0.085 & 0.012   & \textbf{0.0}$\bm{^*}$   & 0.709 & 0.242  & 0.022  & \textbf{0.0}$\bm{^*}$ & 0.250 & 0.249 & 0.014 & \textbf{0.039}$\bm{^*}$ & 0.407 \\
-                \rowcolor{LIGHTGREY} Iran (IRCA)                    & Capra aegagrus      & 0.078 & 0.028   & \textbf{0.0}$\bm{^*}$   & 0.482 & 0.266  & 0.025  & \textbf{0.0}$\bm{^*}$ & 0.275 & 0.129 & 0.021 & 0.396~~ & 0.186 \\
-                \rowcolor{LIGHTGREY} Iran (IRCH)                    & Capra hircus        & 0.079 & 0.016   & \textbf{0.0}$\bm{^*}$   & 0.610 & 0.223  & 0.013  & \textbf{0.0}$\bm{^*}$ & 0.239 & 0.229 & 0.012 & \textbf{0.017}$\bm{^*}$ & 0.375 \\
-                \rowcolor{LIGHTGREY} Italy (ITCH)                   & Capra hircus        & 0.068 & 0.015   & \textbf{0.0}$\bm{^*}$   & 0.511 & 0.193  & 0.019  & \textbf{0.0}$\bm{^*}$ & 0.199 & 0.148 & 0.013 & 0.308~~ & 0.232 \\
-                \rowcolor{LIGHTGREY} Morocco (MOCH)                 & Capra hircus        & 0.078 & 0.014   & \textbf{0.0}$\bm{^*}$   & 0.626 & 0.268  & 0.012 & \textbf{0.0}$\bm{^*}$ & 0.292 & 0.205 & 0.004 & \textbf{0.0}$\bm{^*}$ & 0.347 \\
-                Iran (IROA)                                         & Ovis aries          & 0.153 & 0.066   & \textbf{0.0}$\bm{^*}$   & 0.847 & 0.265  & 0.066  & \textbf{0.0}$\bm{^*}$ & 0.228 & 0.247 & 0.063 & \textbf{0.017}$\bm{^*}$ & 0.316 \\
-                Iran (IROO)                                         & Ovis orientalis     & 0.153 & 0.066   & \textbf{0.0}$\bm{^*}$   & 0.848 & 0.280  & 0.076  & \textbf{0.0}$\bm{^*}$ & 0.233 & 0.249 & 0.073 & \textbf{0.0}$\bm{^*}$ & 0.304 \\
-                Iran (IROV)                                         & Ovis vignei         & 0.156 & 0.084   & \textbf{0.0}$\bm{^*}$   & 0.697 & 0.304  & 0.110  & \textbf{0.0}$\bm{^*}$ & 0.222 & 0.299 & 0.107 & \textbf{0.0}$\bm{^*}$ & 0.332 \\
-                Various (ISGC)                                      & Ovis aries          & 0.144 & 0.068   & \textbf{0.0}$\bm{^*}$   & 0.742 & 0.243  & 0.073  & \textbf{0.0}$\bm{^*}$ & 0.195 & 0.261 & 0.072 & \textbf{0.0}$\bm{^*}$ & 0.326 \\
-                Morocco (MOOA)                                      & Ovis aries          & 0.159 & 0.066   & \textbf{0.0}$\bm{^*}$   & 0.905 & 0.256  & 0.067  & \textbf{0.0}$\bm{^*}$ & 0.216 & 0.257 & 0.064 & \textbf{0.0}$\bm{^*}$ & 0.333 \\
-                \rowcolor{LIGHTGREY} Barbados                       & Chlorocebus sabaeus & 0.074 & 0.006   & \textbf{0.0}$\bm{^*}$   & 0.665 & 0.303  & -0.038 & \textbf{0.0}$\bm{^*}$ & 0.390 & 0.207 & -0.041 & \textbf{0.0}$\bm{^*}$ & 0.430 \\
-                \rowcolor{LIGHTGREY} Central African Republic (CAR) & Chlorocebus sabaeus & 0.064 & 0.030   & \textbf{0.0}$\bm{^*}$   & 0.334 & 0.212  & -0.017 & \textbf{0.0}$\bm{^*}$ & 0.262 & 0.177 & -0.019 & \textbf{0.0}$\bm{^*}$ & 0.338 \\
-                \rowcolor{LIGHTGREY} Ethiopia                       & Chlorocebus sabaeus & 0.041 & -0.002  & \textbf{0.0}$\bm{^*}$   & 0.425 & 0.189  & -0.041 & \textbf{0.0}$\bm{^*}$ & 0.264 & 0.220 & -0.044 & \textbf{0.0}$\bm{^*}$ & 0.457 \\
-                \rowcolor{LIGHTGREY} Gambia                         & Chlorocebus sabaeus & 0.057 & 0.016   & \textbf{0.0}$\bm{^*}$   & 0.403 & 0.194 & -0.042 & \textbf{0.0}$\bm{^*}$ & 0.270 & 0.174 & -0.043 & \textbf{0.0}$\bm{^*}$ & 0.375 \\
-                \rowcolor{LIGHTGREY} Kenya                          & Chlorocebus sabaeus & 0.078 & 0.017   & \textbf{0.0}$\bm{^*}$   & 0.598 & 0.183 & 0.002 & \textbf{0.0}$\bm{^*}$ & 0.207 & 0.152 & 0.00035 & 0.150~~ & 0.264 \\
-                \rowcolor{LIGHTGREY} Nevis                          & Chlorocebus sabaeus & 0.040 & 0.011   & \textbf{0.020}$\bm{^*}$ & 0.279 & 0.281 & -0.052 & \textbf{0.0}$\bm{^*}$ & 0.380 & 0.180 & -0.057 & \textbf{0.017}$\bm{^*}$ & 0.410 \\
-                \rowcolor{LIGHTGREY} South Africa (SA)              & Chlorocebus sabaeus & 0.072 & 0.007   & \textbf{0.0}$\bm{^*}$ & 0.633 & 0.177 & -0.022 & \textbf{0.0}$\bm{^*}$ & 0.228 & 0.120 & -0.022 & 0.108~~ & 0.246 \\
-                \rowcolor{LIGHTGREY} Saint Kitts (SK)               & Chlorocebus sabaeus & 0.046 & 0.006   & \textbf{0.0}$\bm{^*}$   & 0.388 & 0.270 & -0.054 & \textbf{0.0}$\bm{^*}$ & 0.371 & 0.193 & -0.061 & \textbf{0.0}$\bm{^*}$ & 0.439 \\
-                \rowcolor{LIGHTGREY} Zambia                         & Chlorocebus sabaeus & 0.073 & 0.007   & \textbf{0.0}$\bm{^*}$   & 0.642 & 0.110 & -0.022 & \textbf{0.0}$\bm{^*}$      & 0.151 & 0.108 & -0.023  & 0.150~~        & 0.227 \\
-                African (AFR)                                       & Homo sapiens        & 0.019 & -0.039  & \textbf{0.012}$\bm{^*}$ & 0.568 & -0.028 & -0.017 & 1.000~~      & -0.012 & 0.066 & -0.024  & 1.000~~        & 0.155 \\
-                Ad Mixed American (AMR)                             & Homo sapiens        & 0.018 & -0.049  & \textbf{0.006}$\bm{^*}$ & 0.647 & -0.062 & -0.032 & 1.000~~      & -0.034 & -0.175 & -0.034  & 1.000~~        & -0.244 \\
-                East Asian (EAS)                                    & Homo sapiens        & 0.012 & -0.051  & \textbf{0.006}$\bm{^*}$ & 0.610 & -0.137 & -0.041 & 1.000~~      & -0.111 & -0.348 & -0.052  & 1.000~~        & -0.513 \\
-                European (EUR)                                      & Homo sapiens        & 0.009 & -0.051  & \textbf{0.015}$\bm{^*}$ & 0.590 & -0.105 & -0.027 & 1.000~~      & -0.089 & -0.325 & -0.036  & 1.000~~        & -0.500 \\
-                South Asian (SAS)                                   & Homo sapiens        & 0.038 & -0.052  & \textbf{0.0}$\bm{^*}$   & 0.866 & -0.135 & -0.021 & 1.000~~      & -0.130 & -0.148 & -0.036  & 1.000~~        & -0.193 \\
+                Diverse (Equus)                                     & Equus caballus      & $ 0.094$ & $\bm{0.0{^*}}$    & $ 0.928$ & $ 0.399$ & $\bm{0.0{^*}}$ & $ 0.459$ & $ 0.258$ & $\bm{0.0{^*}}$ & $ 0.446$ \\
+                \rowcolor{LIGHTGREY} Diverse (Canis)                & Canis familiaris    & $ 0.058$ & $\bm{0.0{^*}}$    & $ 0.557$                                                                     & $ 0.406$                      & $\bm{0.0{^*}}$ & $ 0.463$ & $ 0.227$ & $\bm{0.0{^*}}$ & $ 0.392$ \\
+                Iran (IRBT)                                         & Bos taurus          & $ 0.028$ & $\bm{ 0.020{^*}}$ & $ 0.278$ & $ 0.237$ & $\bm{0.0{^*}}$ & $ 0.272$ & $ 0.134$ & $ 0.150~~$ & $ 0.231$ \\
+                Uganda (UGBT)                                       & Bos taurus          & $ 0.036$ & $\bm{0.0{^*}}$    & $ 0.355$ & $ 0.222$ & $\bm{0.0{^*}}$ & $ 0.254$ & $ 0.156$ & $\bm{ 0.017{^*}}$ & $ 0.270$ \\
+                \rowcolor{LIGHTGREY} Australia (AUCH)               & Capra hircus        & $ 0.052$ & $\bm{0.0{^*}}$    & $ 0.506$                                                                     & $ 0.202$                      & $\bm{0.0{^*}}$ & $ 0.230$ & $ 0.168$ & $ 0.143~~$ & $ 0.290$ \\
+                \rowcolor{LIGHTGREY} France (FRCH)                  & Capra hircus        & $ 0.073$ & $\bm{0.0{^*}}$    & $ 0.709$                                                                     & $ 0.220$                      & $\bm{0.0{^*}}$ & $ 0.250$ & $ 0.236$ & $\bm{ 0.039{^*}}$ & $ 0.407$ \\
+                \rowcolor{LIGHTGREY} Iran (IRCA)                    & Capra aegagrus      & $ 0.049$ & $\bm{0.0{^*}}$    & $ 0.482$                                                                     & $ 0.242$                      & $\bm{0.0{^*}}$ & $ 0.275$ & $ 0.108$ & $ 0.396~~$ & $ 0.186$ \\
+                \rowcolor{LIGHTGREY} Iran (IRCH)                    & Capra hircus        & $ 0.062$ & $\bm{0.0{^*}}$    & $ 0.610$ & $ 0.210$                      & $\bm{0.0{^*}}$ & $ 0.239$ & $ 0.217$ & $\bm{ 0.017{^*}}$ & $ 0.375$ \\
+                \rowcolor{LIGHTGREY} Italy (ITCH)                   & Capra hircus        & $ 0.052$ & $\bm{0.0{^*}}$    & $ 0.511$ & $ 0.174$                      & $\bm{0.0{^*}}$ & $ 0.199$ & $ 0.134$ & $ 0.308~~$ & $ 0.232$ \\
+                \rowcolor{LIGHTGREY} Morocco (MOCH)                 & Capra hircus        & $ 0.064$ & $\bm{0.0{^*}}$    & $ 0.626$                                                                     & $ 0.256$                      & $\bm{0.0{^*}}$ & $ 0.292$ & $ 0.201$ & $\bm{0.0{^*}}$ & $ 0.347$ \\
+                Iran (IROA)                                         & Ovis aries          & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.847$ & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.183$ & $\bm{ 0.017{^*}}$ & $ 0.316$ \\
+                Iran (IROO)                                         & Ovis orientalis     & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.848$ & $ 0.204$ & $\bm{0.0{^*}}$ & $ 0.233$ & $ 0.176$ & $\bm{0.0{^*}}$ & $ 0.304$ \\
+                Iran (IROV)                                         & Ovis vignei         & $ 0.072$ & $\bm{0.0{^*}}$    & $ 0.697$ & $ 0.194$ & $\bm{0.0{^*}}$ & $ 0.222$ & $ 0.192$ & $\bm{0.0{^*}}$ & $ 0.332$ \\
+                Various (ISGC)                                      & Ovis aries          & $ 0.076$ & $\bm{0.0{^*}}$    & $ 0.742$ & $ 0.171$ & $\bm{0.0{^*}}$ & $ 0.195$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.326$ \\
+                Morocco (MOOA)                                      & Ovis aries          & $ 0.093$ & $\bm{0.0{^*}}$    & $ 0.905$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.216$ & $ 0.193$ & $\bm{0.0{^*}}$ & $ 0.333$ \\
+                \rowcolor{LIGHTGREY} Barbados                       & Chlorocebus sabaeus & $ 0.068$ & $\bm{0.0{^*}}$    & $ 0.665$                                                                     & $ 0.341$                      & $\bm{0.0{^*}}$ & $ 0.390$ & $ 0.248$ & $\bm{0.0{^*}}$ & $ 0.430$ \\
+                \rowcolor{LIGHTGREY} Central African Republic (CAR) & Chlorocebus sabaeus & $ 0.034$                      & $\bm{0.0{^*}}$                  & $ 0.334$ & $ 0.229$ & $\bm{0.0{^*}}$ & $ 0.262$ & $ 0.195$ & $\bm{0.0{^*}}$ & $ 0.338$ \\
+                \rowcolor{LIGHTGREY} Ethiopia                       & Chlorocebus sabaeus & $ 0.044$ & $\bm{0.0{^*}}$    & $ 0.425$                                                                     & $ 0.231$                      & $\bm{0.0{^*}}$ & $ 0.264$ & $ 0.264$ & $\bm{0.0{^*}}$ & $ 0.457$ \\
+                \rowcolor{LIGHTGREY} Gambia                         & Chlorocebus sabaeus & $ 0.041$ & $\bm{0.0{^*}}$    & $ 0.403$                                                                     & $ 0.236$                      & $\bm{0.0{^*}}$ & $ 0.270$ & $ 0.217$ & $\bm{0.0{^*}}$ & $ 0.375$ \\
+                \rowcolor{LIGHTGREY} Kenya                          & Chlorocebus sabaeus & $ 0.061$ & $\bm{0.0{^*}}$    & $ 0.598$ & $ 0.181$                      & $\bm{0.0{^*}}$ & $ 0.207$ & $ 0.152$ & $ 0.150~~$ & $ 0.264$ \\
+                \rowcolor{LIGHTGREY} Nevis                          & Chlorocebus sabaeus & $ 0.029$ & $\bm{ 0.020{^*}}$ & $ 0.279$                                                                     & $ 0.332$                      & $\bm{0.0{^*}}$ & $ 0.380$ & $ 0.237$ & $\bm{ 0.017{^*}}$ & $ 0.410$ \\
+                \rowcolor{LIGHTGREY} South Africa (SA)              & Chlorocebus sabaeus & $ 0.065$ & $\bm{0.0{^*}}$                  & $ 0.633$                                                                     & $ 0.199$                      & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.142$ & $ 0.108~~$ & $ 0.246$ \\
+                \rowcolor{LIGHTGREY} Saint Kitts (SK)               & Chlorocebus sabaeus & $ 0.040$ & $\bm{0.0{^*}}$                  & $ 0.388$                                                                     & $ 0.324$                      & $\bm{0.0{^*}}$ & $ 0.371$ & $ 0.253$ & $\bm{0.0{^*}}$ & $ 0.439$ \\
+                \rowcolor{LIGHTGREY} Zambia                         & Chlorocebus sabaeus & $ 0.066$ & $\bm{0.0{^*}}$    & $ 0.642$                                                                     & $ 0.132$                      & $\bm{0.0{^*}}$ & $ 0.151$ & $ 0.131$ & $ 0.150~~$ & $ 0.227$ \\
+                African (AFR)                                       & Homo sapiens        & $ 0.059$ & $\bm{ 0.012{^*}}$ & $ 0.568$ & $-0.010$ & $ 1.000~~$ & $-0.012$ & $ 0.089$ & $ 1.000~~$ & $ 0.155$ \\
+                Ad Mixed American (AMR)                             & Homo sapiens        & $ 0.067$ & $\bm{ 0.006{^*}}$ & $ 0.647$ & $-0.029$ & $ 1.000~~$ & $-0.034$ & $-0.141$ & $ 1.000~~$ & $-0.244$ \\
+                East Asian (EAS)                                    & Homo sapiens        & $ 0.063$ & $\bm{ 0.006{^*}}$ & $ 0.610$ & $-0.096$ & $ 1.000~~$ & $-0.111$ & $-0.296$ & $ 1.000~~$ & $-0.513$ \\
+                European (EUR)                                      & Homo sapiens        & $ 0.061$ & $\bm{ 0.015{^*}}$ & $ 0.590$ & $-0.078$ & $ 1.000~~$ & $-0.089$ & $-0.289$ & $ 1.000~~$ & $-0.500$ \\
+                South Asian (SAS)                                   & Homo sapiens        & $ 0.089$ & $\bm{0.0{^*}}$    & $ 0.866$ & $-0.113$ & $ 1.000~~$ & $-0.130$ & $-0.111$ & $ 1.000~~$ & $-0.193$ \\
                 \bottomrule
             \end{tabular}
         \end{adjustbox}
         \caption{
-            Table of quantitative value of $\omega_{\mathrm{A}}$ across $29$ population shown in figure~\ref{fig:unfolded-MK} and the $p_{\mathrm{v}}$ associated to the comparison between the genes and sites classified as adaptive and nearly-neutral.
-            $\left< \right>$ refers to the mean over the $1000$ replicates (subsampling).
+            Across $29$ populations (rows), table of quantitative value of $\Delta \omega_{\mathrm{A}}$ between the set classified as adaptive and nearly-neutral shown in figure~\ref{fig:unfolded-MK}.
+            $p_{\mathrm{v}}^{\mathrm{adj}}$ associated to the test are corrected for multiple comparison (Holm–Bonferroni correction, $^*$ for $p_{\mathrm{v}}^{\mathrm{adj}} < 0.05$).
+            $\frac{\Delta\omega_{\mathrm{A}}}{\Delta\omega_{\mathrm{A}}^{\mathrm{phy}}}$ is the ratio of $\Delta \omega_{\mathrm{A}}$ at the population-genetic level and the phylogenetic level.
             $\pi_{\textrm{S}}$ is the observed genetic diversity (number of SNPs per site) counted over synonymous sites.
-            $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
-            $^*$ for $p_{\mathrm{v}}^{\mathrm{adj}} < 0.05$.
         }
         \label{table:unfolded-MK}
     \end{table*}

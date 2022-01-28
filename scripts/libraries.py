@@ -218,24 +218,27 @@ def build_dict_trID(xml_folder, specie):
     return dico_trid
 
 
-def tex_f(x):
+def tex_f(x, highlight=False, pad=""):
     if x == 0:
-        return "0.0"
+        s = "0.0"
     elif 0.001 < abs(x) < 10:
-        return "{:6.3f}".format(x)
+        s = f"{x:6.3f}"
     elif 10 <= abs(x) < 10000:
-        return "{:6.1f}".format(x)
+        s = f"{x:6.1f}"
     else:
-        s = "{:6.2g}".format(x)
+        s = f"{x:6.2g}"
         if "e" in s:
             mantissa, exp = s.split('e')
-            s = mantissa + '$\\times 10^{' + str(int(exp)) + '}$'
-        return s
+            s = mantissa + '\\times 10^{' + str(int(exp)) + '}'
+    if highlight:
+        return "$\\bm{" + s + "{^*}}$"
+    else:
+        return f"${s}{pad}$"
 
 
 def format_pval(d, prefix="", alpha=0.05):
     col = prefix + "pval_adj"
-    d[col] = d.apply(lambda r: tex_f(r[col]) + ("$\\bm{^*}$" if r[col] < alpha else "~~"), axis=1)
+    d[col] = d.apply(lambda r: tex_f(r[col], r[col] < alpha, "~~"), axis=1)
     return d
 
 

@@ -1,30 +1,30 @@
-species	pop	sfs	model	ωA	Δω
-Equus caballus	Diverse (Equus)	unfolded	MK	-0.031840640501000265	-1.89e-06
-Canis familiaris	Diverse (Canis)	unfolded	MK	-0.037948048552254886	-1.85e-06
-Bos taurus	Iran (IRBT)	unfolded	MK	0.07026046897335493	-1.91e-06
-Bos taurus	Uganda (UGBT)	unfolded	MK	0.058994706308121585	-1.91e-06
-Capra hircus	Australia (AUCH)	unfolded	MK	0.00581097241257586	-1.93e-06
-Capra hircus	France (FRCH)	unfolded	MK	0.009896378939541622	-1.93e-06
-Capra aegagrus	Iran (IRCA)	unfolded	MK	0.01729660943307132	-1.93e-06
-Capra hircus	Iran (IRCH)	unfolded	MK	0.010928263406064537	-1.93e-06
-Capra hircus	Italy (ITCH)	unfolded	MK	0.009759809551279752	-1.93e-06
-Capra hircus	Morocco (MOCH)	unfolded	MK	0.008754615737573274	-1.93e-06
-Ovis aries	Iran (IROA)	unfolded	MK	0.04453822018048007	-2.06e-06
-Ovis orientalis	Iran (IROO)	unfolded	MK	0.05288400389757003	-2.06e-06
-Ovis vignei	Iran (IROV)	unfolded	MK	0.06588888961188387	-2.06e-06
-Ovis aries	Various (ISGC)	unfolded	MK	0.050233934234827936	-2.06e-06
-Ovis aries	Morocco (MOOA)	unfolded	MK	0.04659267088391245	-2.06e-06
-Chlorocebus sabaeus	Barbados	unfolded	MK	-0.013603677116368841	-1.94e-06
-Chlorocebus sabaeus	Central African Republic (CAR)	unfolded	MK	0.006865076438936774	-1.94e-06
-Chlorocebus sabaeus	Ethiopia	unfolded	MK	-0.016771340553148578	-1.94e-06
-Chlorocebus sabaeus	Gambia	unfolded	MK	-0.00870256839376343	-1.94e-06
-Chlorocebus sabaeus	Kenya	unfolded	MK	0.009734399441365421	-1.94e-06
-Chlorocebus sabaeus	Nevis	unfolded	MK	-0.016566982747848874	-1.94e-06
-Chlorocebus sabaeus	South Africa (SA)	unfolded	MK	-0.0007694200421044238	-1.94e-06
-Chlorocebus sabaeus	Saint Kitts (SK)	unfolded	MK	-0.016318068679478687	-1.94e-06
-Chlorocebus sabaeus	Zambia	unfolded	MK	0.00227214093518166	-1.94e-06
-Homo sapiens	African (AFR)	unfolded	MK	-0.025932820649122782	-1.81e-06
-Homo sapiens	Ad Mixed American (AMR)	unfolded	MK	-0.03126277500362179	-1.81e-06
-Homo sapiens	East Asian (EAS)	unfolded	MK	-0.03846044368079882	-1.81e-06
-Homo sapiens	European (EUR)	unfolded	MK	-0.03411428817973078	-1.81e-06
-Homo sapiens	South Asian (SAS)	unfolded	MK	-0.03298067257534732	-1.81e-06
+species	pop	ωA	Δω
+Equus caballus	Diverse (Equus)	-0.031840640501000265	-1.89e-06
+Canis familiaris	Diverse (Canis)	-0.037948048552254886	-1.85e-06
+Bos taurus	Iran (IRBT)	0.07026046897335493	-1.91e-06
+Bos taurus	Uganda (UGBT)	0.058994706308121585	-1.91e-06
+Capra hircus	Australia (AUCH)	0.00581097241257586	-1.93e-06
+Capra hircus	France (FRCH)	0.009896378939541622	-1.93e-06
+Capra aegagrus	Iran (IRCA)	0.01729660943307132	-1.93e-06
+Capra hircus	Iran (IRCH)	0.010928263406064537	-1.93e-06
+Capra hircus	Italy (ITCH)	0.009759809551279752	-1.93e-06
+Capra hircus	Morocco (MOCH)	0.008754615737573274	-1.93e-06
+Ovis aries	Iran (IROA)	0.04453822018048007	-2.06e-06
+Ovis orientalis	Iran (IROO)	0.05288400389757003	-2.06e-06
+Ovis vignei	Iran (IROV)	0.06588888961188387	-2.06e-06
+Ovis aries	Various (ISGC)	0.050233934234827936	-2.06e-06
+Ovis aries	Morocco (MOOA)	0.04659267088391245	-2.06e-06
+Chlorocebus sabaeus	Barbados	-0.013603677116368841	-1.94e-06
+Chlorocebus sabaeus	Central African Republic (CAR)	0.006865076438936774	-1.94e-06
+Chlorocebus sabaeus	Ethiopia	-0.016771340553148578	-1.94e-06
+Chlorocebus sabaeus	Gambia	-0.00870256839376343	-1.94e-06
+Chlorocebus sabaeus	Kenya	0.009734399441365421	-1.94e-06
+Chlorocebus sabaeus	Nevis	-0.016566982747848874	-1.94e-06
+Chlorocebus sabaeus	South Africa (SA)	-0.0007694200421044238	-1.94e-06
+Chlorocebus sabaeus	Saint Kitts (SK)	-0.016318068679478687	-1.94e-06
+Chlorocebus sabaeus	Zambia	0.00227214093518166	-1.94e-06
+Homo sapiens	African (AFR)	-0.025932820649122782	-1.81e-06
+Homo sapiens	Ad Mixed American (AMR)	-0.03126277500362179	-1.81e-06
+Homo sapiens	East Asian (EAS)	-0.03846044368079882	-1.81e-06
+Homo sapiens	European (EUR)	-0.03411428817973078	-1.81e-06
+Homo sapiens	South Asian (SAS)	-0.03298067257534732	-1.81e-06
