@@ -1,17 +1,8 @@
 import argparse
 import seaborn as sns
-import pandas as pd
-import numpy as np
 from collections import defaultdict
-from libraries import format_pop, RED, GREEN, sp_sorted
-import matplotlib as mpl
+from libraries_plot import *
 
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-
-fontsize = 16
-fontsize_legend = 14
-my_dpi = 256
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, nargs="+", dest="tsv", help="Input tsv files")

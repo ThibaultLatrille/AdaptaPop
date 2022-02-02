@@ -1,5 +1,6 @@
 import argparse
-from libraries import *
+import os
+from libraries import build_divergence_dico, split_outliers, build_dict_trID
 import pandas as pd
 
 if __name__ == '__main__':

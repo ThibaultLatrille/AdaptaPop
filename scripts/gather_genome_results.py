@@ -2,7 +2,7 @@ import argparse
 import pandas as pd
 import numpy as np
 from collections import defaultdict
-from libraries import sort_df, tex_f
+from libraries_plot import sort_df, tex_f
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)

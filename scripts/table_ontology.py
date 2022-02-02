@@ -1,6 +1,7 @@
 import pandas as pd
 import scipy.stats as st
-from libraries import build_divergence_dico, split_outliers, tex_f, adjusted_holm_pval, format_pval
+from libraries import build_divergence_dico, split_outliers
+from libraries_plot import tex_f, adjusted_holm_pval, format_pval_df
 import os
 from lxml import etree
 import numpy as np
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     text_core = f"{len(df['pval'])} tests performed with {len(cds_focal_set)} genes detected with {args.method.lower()}, and {len(cds_control_set)} as control."
 
     text_core += "\\scriptsize\n"
-    df_head = format_pval(df[df["pval_adj"] < 1.0]).head(500)
+    df_head = format_pval_df(df[df["pval_adj"] < 1.0]).head(500)
     text_core += df_head.to_latex(index=False, escape=False, longtable=True, float_format=tex_f, header=header,
                                   column_format="|l|r|r|r|r|r|")
 

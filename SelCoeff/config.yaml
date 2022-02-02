@@ -1,5 +1,6 @@
 SAMPLE_LIST: "sample_all.tsv"
-METHOD_LIST: [ "MutSel", "Omega", "SW", "WS", "SIFT" ]
+METHOD_LIST: [ "MutSel" ]
+# METHOD_LIST: [ "MutSel", "Omega", "SW", "WS", "SIFT" ]
 SIFT:
   Bos_taurus: "Bos_taurus.UMD3.1.SIFT.vcf.gz"
   Ovis_aries: "Ovis_aries.Oar_v3.1.SIFT.vcf.gz"

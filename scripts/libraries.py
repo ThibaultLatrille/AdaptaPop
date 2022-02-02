@@ -31,11 +31,6 @@ codontable.update({
 
 grapes_cmd = "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_data 1> {2}.out 2> {2}.err"
 polyDFE_cmd = "{0} -d {1}.sfs -w -m C -e 1> {2}.out 2> {2}.err"
-GREEN = "#8FB03E"
-RED = "#EB6231"
-YELLOW = "#E29D26"
-BLUE = "#5D80B4"
-LIGHTGREEN = "#6ABD9B"
 confidence_interval = namedtuple('confidence_interval', ['low', 'mean', 'up'])
 
 
@@ -216,44 +211,6 @@ def build_dict_trID(xml_folder, specie):
             dico_trid[trid] = file.replace(".xml", "")
     print('TR_ID to ENSG conversion done.')
     return dico_trid
-
-
-def tex_f(x, highlight=False, pad=""):
-    if x == 0:
-        s = "0.0"
-    elif 0.001 < abs(x) < 10:
-        s = f"{x:6.3f}"
-    elif 10 <= abs(x) < 10000:
-        s = f"{x:6.1f}"
-    else:
-        s = f"{x:6.2g}"
-        if "e" in s:
-            mantissa, exp = s.split('e')
-            s = mantissa + '\\times 10^{' + str(int(exp)) + '}'
-    if highlight:
-        return "$\\bm{" + s + "{^*}}$"
-    else:
-        return f"${s}{pad}$"
-
-
-def format_pval(d, prefix="", alpha=0.05):
-    col = prefix + "pval_adj"
-    d[col] = d.apply(lambda r: tex_f(r[col], r[col] < alpha, "~~"), axis=1)
-    return d
-
-
-def adjusted_holm_pval(d, prefix="", alpha=0.05, format_p=True):
-    n = len(d[prefix + "pval"])
-    sorted_pval = sorted(zip(d[prefix + "pval"], d.index))
-    sorted_adjpval = [[min(1, pval * (n - i)), p] for i, (pval, p) in enumerate(sorted_pval)]
-    for i in range(1, len(sorted_adjpval)):
-        if sorted_adjpval[i][0] <= sorted_adjpval[i - 1][0]:
-            sorted_adjpval[i][0] = sorted_adjpval[i - 1][0]
-    holm = {p: pval for pval, p in sorted_adjpval}
-    d[prefix + "pval_adj"] = [holm[p] for p in d.index]
-    if format_p:
-        d = format_pval(d, prefix=prefix, alpha=alpha)
-    return d
 
 
 def build_divergence_dico(folder, ensg_list, gene_level=True, pp=""):
@@ -622,55 +579,3 @@ def subsample_sites(cds_dico, nbr_sites, weights, replace=False):
 
 def subsample_genes(cds_dico, nbr_genes, weights, replace=False):
     return {k: None for k in np.random.choice(list(cds_dico), nbr_genes, replace=replace, p=weights)}
-
-
-def format_pop(t):
-    if "up" == t:
-        return "Equus"
-    elif "dogs" == t:
-        return "Canis"
-    elif " " in t:
-        return "".join([s[0] for s in t.split(" ")])
-    else:
-        return t
-
-
-def sp_sorted(pop, sp):
-    out = sp + "_" + pop
-    if "Homo" in out:
-        return "Z" + out
-    elif "Chloro" in out:
-        return "Y" + out
-    elif "Ovis" in out:
-        return "X" + out
-    elif "Capra" in out:
-        return "W" + out
-    elif "Bos" in out:
-        return "V" + out
-    elif "Canis" in out:
-        return "U" + out
-    elif "Equus" in out:
-        return "T" + out
-    else:
-        return out
-
-
-def extend_pop(p, sample):
-    fp = format_pop(p)
-    if sample[p] == fp:
-        return p
-    else:
-        return f"{sample[p]} ({fp})"
-
-
-def sort_df(df, sample_list_path):
-    df = df.iloc[df.apply(lambda r: sp_sorted(format_pop(r["pop"]), r["species"]), axis=1).argsort()]
-    df["species"] = df.apply(lambda r: "Ovis orientalis" if r["pop"] == "IROO" else r["species"], axis=1)
-    df["species"] = df.apply(lambda r: "Ovis vignei" if r["pop"] == "IROV" else r["species"], axis=1)
-    df["species"] = df.apply(lambda r: "Capra aegagrus" if r["pop"] == "IRCA" else r["species"], axis=1)
-
-    sample_iterrows = list(pd.read_csv(sample_list_path, sep='\t').iterrows())
-    dico_sample = {r["SampleName"].replace("_", " "): r["Location"] for _, r in sample_iterrows}
-
-    df["pop"] = df.apply(lambda r: extend_pop(r["pop"], dico_sample), axis=1)
-    return df

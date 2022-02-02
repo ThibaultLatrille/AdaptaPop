@@ -1,10 +1,7 @@
 import argparse
 import os
 from libraries import build_divergence_dico, split_outliers
-import matplotlib as mpl
-
-mpl.use('Agg')
-import matplotlib.pyplot as plt
+from libraries_plot import plt
 from upsetplot import UpSet, from_contents
 from venn import venn
 

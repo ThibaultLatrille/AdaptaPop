@@ -6,29 +6,30 @@ configfile: 'config.yaml'
 
 ROOT = os.path.abspath('..')
 FOLDER = os.path.abspath('.')
-ANALYSIS_FOLDER = FOLDER + "/analysis_" + config["SAMPLE_LIST"].replace(".tsv", "")
 SFS_LIST = []
 POPU_TO_TSV = {}
 
-for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
-    for popu_path in glob(ROOT + '/Polymorphism/{0}/CDS.ANNOT.*.{1}.tsv.gz'.format(row["Species"],row["SampleName"])):
-        POPU_TO_TSV[row["SampleName"]] = popu_path
-        for method in config["METHOD_LIST"]:
-            if method == "SIFT" and row['Species'] not in config["SIFT"]:
+for id, row in list(pd.read_csv(config['SAMPLE_LIST'],sep='\t').iterrows()):
+    for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
+        POPU_TO_TSV[row['SampleName']] = popu_path
+        for method in config['METHOD_LIST']:
+            if method == 'SIFT' and row['Species'] not in config['SIFT']:
                 continue
             SFS_LIST.append(FOLDER + f"/SFS/{row['Species']}.{row['SampleName']}.{method}.pdf")
 
+
 rule all:
-    input: FOLDER + "/sfs-list-doc.pdf"
+    input:
+        f'{FOLDER}/main.pdf'
 
 rule annotate_vcf:
     input:
-        vcf=lambda wildcards: POPU_TO_TSV[wildcards.popu].replace(".tsv.gz", ".vcf.gz"),
+        vcf=lambda wildcards: POPU_TO_TSV[wildcards.popu].replace('.tsv.gz','.vcf.gz'),
         tsv=lambda wildcards: POPU_TO_TSV[wildcards.popu],
-        script=ROOT + '/scripts/vcf_annotate_selcoeffs.py',
-        exp_folder=ROOT + '/OrthoMam/Experiments/'
+        script=f'{ROOT}/scripts/vcf_annotate_selcoeffs.py',
+        exp_folder=f'{ROOT}/OrthoMam/Experiments/'
     output:
-        vcf=FOLDER + "/VCF/{species}.{popu}.vcf.gz"
+        vcf=FOLDER + '/VCF/{species}.{popu}.vcf.gz'
     shell:
         'python3 {input.script} --vcf {input.vcf} --tsv {input.tsv} --folder {input.exp_folder} --output {output.vcf}'
 
@@ -37,25 +38,37 @@ rule SIFT_intersect:
         vcf=rules.annotate_vcf.output.vcf,
         vcf_sift=lambda wildcards: ROOT + f"/Polymorphism/{wildcards.species}/dl.{config['SIFT'][wildcards.species]}"
     output:
-        vcf=FOLDER + "/VCF/{species}.{popu}.SIFT.vcf.gz"
+        vcf=FOLDER + '/VCF/{species}.{popu}.SIFT.vcf.gz'
     shell:
         'bedtools intersect -a {input.vcf_sift} -b {input.vcf} -wb -wa -header | gzip > {output.vcf}'
 
 rule sfs:
     input:
-        vcf=lambda wildcards: rules.SIFT_intersect.output.vcf if wildcards.method == "SIFT" else rules.annotate_vcf.output.vcf,
-        script=ROOT + '/scripts/plot_sfs.py',
+        vcf=lambda wildcards: rules.SIFT_intersect.output.vcf if wildcards.method == 'SIFT' else rules.annotate_vcf.output.vcf,
+        script=f'{ROOT}/scripts/plot_sfs.py',
     output:
-        pdf=FOLDER + "/SFS/{species}.{popu}.{method}.pdf"
+        pdf=FOLDER + '/SFS/{species}.{popu}.{method}.pdf',
+        tsv=FOLDER + '/SFS/{species}.{popu}.{method}.tsv'
     shell:
         'python3 {input.script} --vcf {input.vcf} --method {wildcards.method} --output {output.pdf}'
+
+rule gather_sfs_theta:
+    input:
+        sfs=SFS_LIST,
+        sample_list=f"{FOLDER}/{config['SAMPLE_LIST']}",
+        script=f'{ROOT}/scripts/gather_sfs_theta.py'
+    output:
+        tsv=f'{FOLDER}/results.tsv'
+    shell:
+        'python3 {input.script} --sfs {input.sfs} --sample_list {input.sample_list} --output {output.tsv}'
 
 rule latex:
     input:
         sfs=SFS_LIST,
-        tex=FOLDER + "/sfs-list-doc.tex",
-        script=ROOT + '/scripts/tex_sfs.py'
+        tex=f'{FOLDER}/main.tex',
+        tsv=f'{FOLDER}/results.tsv',
+        script=f'{ROOT}/scripts/tex_sfs.py'
     output:
-        tex=FOLDER + "/sfs-list-include.tex",
-        pdf=FOLDER + "/sfs-list-doc.pdf"
+        tex=FOLDER + '/include-figures.tex',
+        pdf=FOLDER + '/main.pdf'
     shell: 'python3 {input.script} --sfs {input.sfs} --tex_doc {input.tex} --tex_include {output.tex}'

@@ -1,16 +1,9 @@
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgb, Normalize
+import os
 from scipy.ndimage.filters import gaussian_filter
 import argparse
-from libraries import *
+from libraries import build_divergence_dico, split_outliers, filtered_table_omega
+from libraries_plot import plt, np, RED_RGB, GREEN_RGB, GREY_RGB, BLUE_RGB, Normalize
 
-RED = to_rgb("#EB6231")
-BLUE = to_rgb("#5D80B4")
-GREEN = to_rgb("#8FB03E")
-GREY = to_rgb("grey")
-BLACK = to_rgb("black")
 
 error_kwargs = {"lw": .5, "zorder": -1}
 my_dpi = 256
@@ -72,21 +65,21 @@ if __name__ == '__main__':
         plt.errorbar(ada_omega_0[:, 1], ada_omega[:, 1],
                      xerr=[ada_omega_0[:, 1] - ada_omega_0[:, 0], ada_omega_0[:, 2] - ada_omega_0[:, 1]],
                      yerr=[ada_omega[:, 1] - ada_omega[:, 0], ada_omega[:, 2] - ada_omega[:, 1]],
-                     alpha=0.4, label=r"${0}$ adaptive genes".format(len(ada_dico)), c=RED,
-                     fmt='o', marker=None, mew=0, ecolor=RED, zorder=10, lw=.5, markersize=3.0)
+                     alpha=0.4, label=r"${0}$ adaptive genes".format(len(ada_dico)), c=RED_RGB,
+                     fmt='o', marker=None, mew=0, ecolor=RED_RGB, zorder=10, lw=.5, markersize=3.0)
 
         plt.errorbar(nn_omega_0[:, 1], nn_omega[:, 1],
                      xerr=[nn_omega_0[:, 1] - nn_omega_0[:, 0], nn_omega_0[:, 2] - nn_omega_0[:, 1]],
                      yerr=[nn_omega[:, 1] - nn_omega[:, 0], nn_omega[:, 2] - nn_omega[:, 1]],
-                     alpha=0.4, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN,
-                     fmt='o', marker=None, mew=0, ecolor=GREEN, zorder=5, lw=.5, markersize=3.0)
+                     alpha=0.4, label=r"${0}$ nearly-neutral genes".format(len(nn_dico)), c=GREEN_RGB,
+                     fmt='o', marker=None, mew=0, ecolor=GREEN_RGB, zorder=5, lw=.5, markersize=3.0)
 
         plt.errorbar(unclass_omega_0[:, 1], unclass_omega[:, 1],
                      xerr=[unclass_omega_0[:, 1] - unclass_omega_0[:, 0],
                            unclass_omega_0[:, 2] - unclass_omega_0[:, 1]],
                      yerr=[unclass_omega[:, 1] - unclass_omega[:, 0], unclass_omega[:, 2] - unclass_omega[:, 1]],
-                     alpha=0.4, label=r"${0}$ unclassified genes".format(len(unclass_dico)), c=GREY,
-                     fmt='o', marker=None, mew=0, ecolor=GREY, zorder=0, lw=.5, markersize=3.0)
+                     alpha=0.4, label=r"${0}$ unclassified genes".format(len(unclass_dico)), c=GREY_RGB,
+                     fmt='o', marker=None, mew=0, ecolor=GREY_RGB, zorder=0, lw=.5, markersize=3.0)
 
     else:
         xmin, xmax = 0.05, 2.0
@@ -94,9 +87,9 @@ if __name__ == '__main__':
         xbins, ybins = 100, 100
         colors = np.zeros((ybins, xbins, 4))
         list_plot = list()
-        list_plot.append((GREY, unclass_omega_0, unclass_omega))
-        list_plot.append((RED, ada_omega_0, ada_omega))
-        list_plot.append((GREEN, nn_omega_0, nn_omega))
+        list_plot.append((GREY_RGB, unclass_omega_0, unclass_omega))
+        list_plot.append((RED_RGB, ada_omega_0, ada_omega))
+        list_plot.append((GREEN_RGB, nn_omega_0, nn_omega))
 
         heatmaps = list()
         for COLOR, omega_0, omega in list_plot:
@@ -108,7 +101,7 @@ if __name__ == '__main__':
 
         max_heatmap = max([np.max(h) for c, e, h in heatmaps])
         for COLOR, extent, heatmap in heatmaps:
-            if COLOR == GREY:
+            if COLOR == GREY_RGB:
                 continue
             colors[..., 0:3] = COLOR[0:3]
             colors[..., -1] = Normalize(0.0, 1.5 * np.log(max_heatmap), clip=True)(np.log(heatmap.T))
@@ -118,16 +111,16 @@ if __name__ == '__main__':
             plt.imshow(colors, extent=extent, origin="lower", aspect="auto", interpolation='nearest')
             data = gaussian_filter(heatmap.T, 1.25)
             set_levels = list(np.logspace(np.log10(25 if np.max(data) >= 25 else 5), np.log10(np.max(data)) - 0.15,
-                                          3 if COLOR == BLUE else 5))
+                                          3 if COLOR == BLUE_RGB else 5))
             cs = plt.contour(data, extent=extent, levels=set_levels, colors=[COLOR] * len(set_levels), linestyles='-')
             plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=10)
 
         plt.scatter(0, 0, label=r'{0} adaptive sites'.format(sum([len(v) for v in ada_dico.values()])),
-                    color=RED)
+                    color=RED_RGB)
         plt.scatter(0, 0, label=r'{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])),
-                    color=GREEN)
+                    color=GREEN_RGB)
         plt.scatter(0, 0, label=r'{0} unclassifed sites'.format(sum([len(v) for v in unclass_dico.values()])),
-                    color=GREY)
+                    color=GREY_RGB)
         print(r'{0} unclassified sites'.format(sum([len(v) for v in unclass_dico.values()])))
         t = sum([sum([len(v) for v in d.values()]) for d in [ada_dico, nn_dico, unclass_dico]])
         print(r'{0} total sites.'.format(t))
