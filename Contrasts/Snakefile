@@ -27,13 +27,15 @@ DFE_MODELS = [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
 
 BATCHES = range(1,NBR_BATCHES + 1)
 
-TSV_LIST, TSV_GENOME_LIST = [], []
-SPECIES_SISTER_K, SUBSAMPlE_SFS = {}, {}
+VCF_LIST, TSV_LIST, TSV_GENOME_LIST = [], [], []
+SPECIES_SISTER_K, SUBSAMPlE_SFS, POPU_TO_TSV = {}, {}, {}
 
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     SPECIES_SISTER_K[row['Species']] = row["SisterSpecies"]
     SUBSAMPlE_SFS[row['SampleName']] = row["k"]
+    VCF_LIST.append(ROOT + f"/VCF/{row['Species']}.{row['SampleName']}.vcf.gz")
     for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
+        POPU_TO_TSV[row['SampleName']] = popu_path
         for model, sfs in product(config['DFE_MODELS'],config['SFS']):
             if ((model == "polyDFE" or "MK" in model) and sfs == "folded") or (NBR_BATCHES == 0):
                 continue
@@ -53,7 +55,8 @@ rule all:
         f"{ANALYSIS_FOLDER}/genome_results.tsv",
         f"venn_diagram-{'-'.join(GRANULARITY)}.pdf",
         expand("scatterplot-{granularity}.pdf",granularity=GRANULARITY),
-        expand("ontology/{granularity}-table.pdf",granularity=GRANULARITY)
+        expand("ontology/{granularity}-table.pdf",granularity=GRANULARITY),
+        VCF_LIST
 
 rule pickle:
     input:
@@ -187,3 +190,14 @@ rule table_ontology:
         pdf="ontology/{level}-{method}-{pp}-table.pdf"
     shell:
         'python3 {input.script} --folder {input.folder} --xml {input.xml} --level {wildcards.level} --method {wildcards.method} --pp {wildcards.pp} --output {output.tex}'
+
+rule annotate_vcf:
+    input:
+        vcf=lambda wildcards: POPU_TO_TSV[wildcards.popu].replace('.tsv.gz','.vcf.gz'),
+        tsv=lambda wildcards: POPU_TO_TSV[wildcards.popu],
+        script=f'{ROOT}/scripts/vcf_annotate_selcoeffs.py',
+        exp_folder=f'{ROOT}/OrthoMam/Experiments/'
+    output:
+        vcf=ROOT + '/VCF/{species}.{popu}.vcf.gz'
+    shell:
+        'python3 {input.script} --vcf {input.vcf} --tsv {input.tsv} --folder {input.exp_folder} --output {output.vcf}'

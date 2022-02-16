@@ -8,4 +8,3 @@ SPECIES: "Equus_caballus"
 DOWNLOAD:
   Equus_caballus.EquCab2.gtf.gz: "ftp.ensembl.org/pub/release-91/gtf/equus_caballus/Equus_caballus.EquCab2.91.gtf.gz"
   Equus_caballus.EquCab2.fa.gz: "ftp.ensembl.org/pub/release-91/fasta/equus_caballus/cds/Equus_caballus.EquCab2.cds.all.fa.gz"
-  Equus_caballus.EquCab2.SIFT.vcf.gz: "ftp.ensembl.org/pub/release-91/variation/vcf/equus_caballus/equus_caballus_incl_consequences.vcf.gz"
