@@ -43,6 +43,10 @@ if __name__ == '__main__':
     print("Data loaded")
     adaptive_dico, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene, filter_set=filter_set,
                                                method=args.method)
+    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, polarize_snps)
+    adaptive_dico = {k: v for k, v in adaptive_dico.items() if k in df_snp.groups}
+    nn_dico = {k: v for k, v in nn_dico.items() if k in df_snp.groups}
+
     print("Data classified")
     if gene:
         if args.nbr_genes == -1 or args.nbr_genes > len(adaptive_dico):
@@ -56,7 +60,6 @@ if __name__ == '__main__':
         print('{0} adaptive sites'.format(adapta_sites))
         print('{0} nearly-neutral sites'.format(sum([len(v) for v in nn_dico.values()])))
 
-    df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, polarize_snps)
     np.random.seed(args.seed)
 
     weigths_nearly_neutral = None

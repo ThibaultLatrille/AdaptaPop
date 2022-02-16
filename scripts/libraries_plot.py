@@ -1,3 +1,4 @@
+from collections import namedtuple
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -5,7 +6,7 @@ import matplotlib
 matplotlib.rcParams["font.family"] = ["Latin Modern Sans"]
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.colors import to_rgb, Normalize
+from matplotlib.colors import to_rgb
 
 fontsize = 16
 fontsize_legend = 14

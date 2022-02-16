@@ -28,6 +28,7 @@ if __name__ == '__main__':
     print("Data loaded")
 
     df_snp, fix_poly, sample_size = snp_data_frame(args.vcf, polarize_snps)
+    filter_set = set(df_snp.groups) & filter_set
     np.random.seed(args.seed)
 
     gene_len_array = np.array([len(dico_alignments[ensg][args.focal_species]) for ensg in filter_set])

@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from functools import reduce
 from libraries_plot import *
+from matplotlib import cm
 
 header = {"pop": "Population", "species": "Species",
           "wA_Test": "\\specialcell{$\\omega_{\\mathrm{A}}$ \\\\ Adaptive}",
@@ -56,7 +57,7 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
 
-    YlGn = matplotlib.cm.YlGn
+    YlGn = cm.YlGn
     im, cbar = heatmap(pval_matrix.T, models, species, ax=ax, cmap=YlGn, cbarlabel=header["w_pval"])
     texts = annotate_heatmap(im, valfmt=lambda p: "0" if abs(p) < 1e-1 else "{0:.1g}".format(p), fontsize=6)
     plt.tight_layout()
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     plt.clf()
 
     fig, ax = plt.subplots(figsize=(1920 / my_dpi, 880 / my_dpi), dpi=my_dpi)
-    RdBu = matplotlib.cm.get_cmap('RdBu_r')
+    RdBu = cm.get_cmap('RdBu_r')
     start = np.nanmin(delta_wa_matrix)
     midpoint = - start / (np.nanmax(delta_wa_matrix) - start)
     shifted_RdBu = shiftedColorMap(RdBu, midpoint=midpoint, name='shifted')
@@ -88,7 +89,8 @@ if __name__ == '__main__':
     for (pp, sfs, level, method, model), ddf in df.groupby(["pp", "sfs", "level", "method", "model"]):
         assert len(ddf["species"]) != 0
 
-        o.write("\\subsection{" + f"{method} at {level} level (pp={pp}) - {sfs[0]}SFS - {model}" + "} \n")
+        o.write(
+            "\\subsection{" + f"{method} at {level} level (pp={pp}) - {sfs[0]}SFS - {model.replace('_', ' ')}" + "} \n")
         o.write("\\begin{center}\n")
 
         for prefix in ["wA", "w"]:
@@ -118,10 +120,13 @@ if __name__ == '__main__':
         columns, df_columns = ["pop", "species"], ["wA_Delta", "wA_pval_adj", "r"]
         sub_header = [header[i] for i in columns]
 
+        columns.append("P_S_x")
+        sub_header.append(header["P_S"])
+
         for key in ["_x", "_y", ""][:len(list_df)]:
             columns += [f"{i}{key}" for i in df_columns]
             sub_header += [header[i] for i in df_columns]
-        o.write("\\subsection{" + f"{sfs[0]}SFS - {model} (pp={pp})" + "} \n")
+        o.write("\\subsection{" + f"{sfs[0]}SFS - {model.replace('_', ' ')} (pp={pp})" + "} \n")
         o.write("\\begin{center}\n")
         o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
         o.write(merge.to_latex(index=False, escape=False, float_format=tex_f, column_format=column_format(merge),

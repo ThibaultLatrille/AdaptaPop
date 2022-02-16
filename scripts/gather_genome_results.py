@@ -12,7 +12,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dico_output = defaultdict(list)
-    dico_ps = defaultdict(list)
 
     for filepath in args.tsv:
         df = pd.read_csv(filepath, sep="\t")
@@ -27,11 +26,17 @@ if __name__ == '__main__':
         dico_output["pop"].append(pop)
         dico_output["sfs"].append(sfs)
         dico_output["model"].append(model)
+        for cat in ["Ldn", "dn", "Lds", "ds"]:
+            if cat in df:
+                dico_output[cat].append(np.mean(df[cat]))
+            else:
+                dico_output[cat].append(np.nan)
         dico_output["ωA"].append(np.mean(df["OMEGA_A"]))
         dico_output["Δω"].append(np.mean(df_phylo["OMEGA_A"]))
 
     data = pd.DataFrame(dico_output)
-    data = sort_df(data, args.sample_list)
     data.to_csv(args.output, sep="\t", index=False)
+
+    data = sort_df(data, args.sample_list)
     data.to_latex(args.output.replace(".tsv", ".tex"), index=False, escape=False, float_format=tex_f,
                   column_format="|l|l|r|r|r|r|")

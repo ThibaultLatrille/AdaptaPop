@@ -29,9 +29,14 @@ codontable.update({
     'TAC': 'Y', 'TAT': 'Y', 'TAA': 'X', 'TAG': 'X',
     'TGC': 'C', 'TGT': 'C', 'TGA': 'X', 'TGG': 'W', '---': '-'})
 
-grapes_cmd = "{0} -in {1}.dofe -out {2}.csv -model GammaExpo -no_div_data 1> {2}.out 2> {2}.err"
-polyDFE_cmd = "{0} -d {1}.sfs -w -m C -e 1> {2}.out 2> {2}.err"
 confidence_interval = namedtuple('confidence_interval', ['low', 'mean', 'up'])
+sfs_weight = {"watterson": lambda i, n: 1.0 / i, "tajima": lambda i, n: n - i, "fay_wu": lambda i, n: i}
+
+
+def theta(sfs_epsilon, daf_n, weight_method):
+    sfs_theta = sfs_epsilon * np.array(range(1, daf_n))
+    weights = np.array([sfs_weight[weight_method](i, daf_n) for i in range(1, daf_n)])
+    return sum(sfs_theta * weights) / sum(weights)
 
 
 def translate(codon_seq, gap=False):
@@ -281,49 +286,6 @@ def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False, 
     return adaptive_dico, nearly_neutral_dico, unclassify_dico
 
 
-def split_outliers_legacy(dico_omega_0, dico_omega, gene_level=True, filter_set=False):
-    strongly_adaptive_dico, adaptive_dico, epistasis_dico, nearly_neutral_dico, unclassify_dico = {}, {}, {}, {}, {}
-    for ensg in dico_omega:
-        if filter_set and (ensg not in filter_set):
-            continue
-
-        omega = confidence_interval(*dico_omega[ensg])
-        omega_0 = confidence_interval(*dico_omega_0[ensg])
-        if gene_level:
-            if (omega.up - omega.low > 0.3) or (omega_0.up - omega_0.low > 0.3):
-                unclassify_dico[ensg] = None
-            elif 1.0 < omega.mean:
-                strongly_adaptive_dico[ensg] = None
-            elif omega_0.up < omega.low and omega.mean <= 1.0:
-                adaptive_dico[ensg] = None
-            elif 0.05 < omega.low and omega.up < omega_0.low:
-                epistasis_dico[ensg] = None
-            elif 0.05 <= omega.low <= 1.0 and (
-                    (omega_0.mean <= omega.mean <= omega_0.up and omega.low <= omega_0.mean <= omega.mean) or
-                    (omega.mean <= omega_0.mean <= omega.up and omega_0.low <= omega.mean <= omega_0.mean)):
-                nearly_neutral_dico[ensg] = None
-            else:
-                unclassify_dico[ensg] = None
-        else:
-            strongly_adaptive_dico[ensg] = [i for i, w in enumerate(omega) if 1.0 < w.mean < 5.0]
-            adaptive_dico[ensg] = [i for i, w in enumerate(omega) if omega_0[i].up < w.low and w.mean <= 1.0]
-            epistasis_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 < w.low and w.up < omega_0[i].low]
-            nearly_neutral_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w.low and w.mean <= 1.0 and (
-                    (omega_0[i].mean <= w.mean <= omega_0[i].up and w.low <= omega_0[i].mean <= w.mean) or
-                    (w.mean <= omega_0[i].mean <= w.up and omega_0[i].low <= w.mean <= omega_0[i].mean))]
-
-            assert (len(set(nearly_neutral_dico[ensg]) & set(epistasis_dico[ensg])) == 0)
-            assert (len(set(nearly_neutral_dico[ensg]) & set(adaptive_dico[ensg])) == 0)
-            assert (len(set(nearly_neutral_dico[ensg]) & set(strongly_adaptive_dico[ensg])) == 0)
-            assert (len(set(adaptive_dico[ensg]) & set(strongly_adaptive_dico[ensg])) == 0)
-            assert (len(set(adaptive_dico[ensg]) & set(epistasis_dico[ensg])) == 0)
-
-            classified = set(strongly_adaptive_dico[ensg]).union(set(adaptive_dico[ensg])).union(
-                set(epistasis_dico[ensg])).union(set(nearly_neutral_dico[ensg]))
-            unclassify_dico[ensg] = [i for i, w in enumerate(omega) if 0.05 <= w.low and i not in classified]
-    return strongly_adaptive_dico, adaptive_dico, epistasis_dico, nearly_neutral_dico, unclassify_dico
-
-
 def filtered_table_omega(dico_omega, dico_subset, gene_level=True):
     output = []
     for ensg in dico_subset:
@@ -448,64 +410,109 @@ def run_yn00(seq1, seq2, tmp_path, filepath):
         return 0, 0, 0, 0
 
 
-def dfe_alpha(filepath, df, n_tot, n, ensg_dico_pos, gene_level, sp_focal, sp_sister, ali_dico, fixed_poly, tmp_path,
+def write_dofe(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filepath, sp_focal, sp_sister, is_unfolded,
+               L):
+    sfs_list = [k]
+    for sfs, nbr_site in [(sfs_non_syn, l_non_syn), (sfs_syn, l_syn)]:
+        if is_unfolded:
+            sfs_list += [nbr_site] + [sfs[i] for i in range(1, k)]
+        else:
+            range_sfs = range(1, int(floor(k // 2)) + 1)
+            assert len(range_sfs) * 2 == k
+            sfs_list += [nbr_site] + [(sfs[i] + sfs[k - i]) if k - i != i else sfs[i] for i in range_sfs]
+    sfs_list += [l_non_syn, d_non_syn, l_syn, d_syn]
+
+    dofe_file = open(filepath + ".dofe", 'w')
+    dofe_file.write(f"{sp_focal}+{sp_sister} ({int(L)} sites)\n")
+    if is_unfolded:
+        dofe_file.write("#unfolded\n")
+    dofe_file.write("Summed\t" + "\t".join(map(lambda i: str(int(i)), sfs_list)) + "\n")
+    dofe_file.close()
+
+
+def grapes_cmd(dfe_path, filepath, out):
+    return f"{dfe_path} -in {filepath}.dofe -out {out}.csv -model GammaExpo -no_div_data 1> {out}.out 2> {out}.err"
+
+
+def write_sfs(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filepath, sp_focal, sp_sister, div=True):
+    sfs_syn_str = " ".join([str(int(sfs_syn[i])) for i in range(1, k)]) + f"\t{int(l_syn)}"
+    sfs_non_syn_str = " ".join([str(int(sfs_non_syn[i])) for i in range(1, k)]) + f"\t{int(l_non_syn)}"
+    if div:
+        sfs_syn_str += f"\t{int(d_syn)}\t{int(l_syn)}\n"
+        sfs_non_syn_str += f"\t{int(d_non_syn)}\t{int(l_non_syn)}\n"
+    sfs_file = open(filepath + ".sfs", 'w')
+    sfs_file.write(f"#{sp_focal}+{sp_sister}\n")
+    sfs_file.write("1 1 {0}".format(k) + "\n")
+    sfs_file.write(sfs_syn_str + "\n")
+    sfs_file.write(sfs_non_syn_str + "\n")
+    sfs_file.close()
+
+
+def polyDFE_cmd(dfe_path, filepath, out):
+    init_f = f"{os.path.dirname(dfe_path)}/polyDFE_D_init.txt"
+    range_f = f"{os.path.dirname(dfe_path)}/polyDFE_D_range.txt"
+    return f"{dfe_path} -d {filepath}.sfs -i {init_f} 1 -r {range_f} 1 -w -m D 5 -e 1> {out}.out 2> {out}.err"
+
+
+def dfe_alpha(filepath, df, k_tot, k, ensg_dico_pos, gene_level, sp_focal, sp_sister, ali_dico, fixed_poly, tmp_path,
               dfe_models, is_unfolded, error_f):
     if dfe_models is None:
         dfe_models = []
 
-    sites_n, sites_s, dn, ds, pn, ps = 0, 0, 0, 0, 0, 0
-    sfs_n, sfs_s = np.zeros(n, dtype=int), np.zeros(n, dtype=int)
+    p_non_syn, p_syn = 0, 0
+    sfs_non_syn, sfs_syn = np.zeros(k, dtype=int), np.zeros(k, dtype=int)
     s1, s2 = [], []
 
     for ensg in ensg_dico_pos:
+        assert ensg in df.groups
         ensg_fixedpoly = dict(fixed_poly[ensg])
 
-        if ensg in df.groups:
-            dff = df.get_group(ensg)
-            if not gene_level:
-                filt = dff["CODON_POS"].isin(ensg_dico_pos[ensg])
-                dff = dff[filt]
-                assert id(dff) != id(df.get_group(ensg))
+        dff = df.get_group(ensg)
+        if not gene_level:
+            filt = dff["CODON_POS"].isin(ensg_dico_pos[ensg])
+            dff = dff[filt]
+            assert id(dff) != id(df.get_group(ensg))
 
-            for row in dff.itertuples(index=False):
-                if row.TYPE == "Stop":
-                    continue
+        for row in dff.itertuples(index=False):
+            if row.TYPE == "Stop":
+                continue
 
-                if n_tot > n:
-                    daf = np.random.hypergeometric(row.COUNT, n_tot - row.COUNT, n)
-                    if is_unfolded and ((daf == 0) or (daf == n)):
-                        if row.REF == row.ANC:
-                            anc, der = row.REF, row.ALT
-                        else:
-                            anc, der = row.ALT, row.REF
-                        if daf == 0:
-                            ensg_fixedpoly[row.CODON_POS] = row.NUC_POS % 3, row.REF, anc
-                            continue
-                        elif daf == n:
-                            ensg_fixedpoly[row.CODON_POS] = row.NUC_POS % 3, row.REF, der
-                            continue
-                    elif (daf == 0) or (daf == n):
+            if k_tot > k:
+                daf = np.random.hypergeometric(row.COUNT, k_tot - row.COUNT, k)
+                if is_unfolded and ((daf == 0) or (daf == k)):
+                    if row.REF == row.ANC:
+                        anc, der = row.REF, row.ALT
+                    else:
+                        anc, der = row.ALT, row.REF
+                    if daf == 0:
+                        ensg_fixedpoly[row.CODON_POS] = row.NUC_POS % 3, row.REF, anc
                         continue
-                else:
-                    daf = row.COUNT
+                    elif daf == k:
+                        ensg_fixedpoly[row.CODON_POS] = row.NUC_POS % 3, row.REF, der
+                        continue
+                elif (daf == 0) or (daf == k):
+                    continue
+            else:
+                daf = row.COUNT
 
-                if row.TYPE == "Syn":
-                    ps += 1
-                    sfs_s[daf] += 1
-                else:
-                    assert row.TYPE == "NonSyn"
-                    pn += 1
-                    sfs_n[daf] += 1
+            if row.TYPE == "Syn":
+                p_syn += 1
+                sfs_syn[daf] += 1
+            else:
+                assert row.TYPE == "NonSyn"
+                p_non_syn += 1
+                sfs_non_syn[daf] += 1
 
         seq_dico = filter_positions(ali_dico[ensg], sp_focal, ensg_fixedpoly, gene_level, ensg_dico_pos[ensg])
         s1.append(seq_dico[sp_focal])
         s2.append(seq_dico[sp_sister])
 
-    assert sfs_n[0] == 0
-    assert sfs_s[0] == 0
+    assert sfs_non_syn[0] == 0
+    assert sfs_syn[0] == 0
 
-    if np.sum(sfs_n) < 10 or np.sum(sfs_s) < 10:
-        error_f.write("ER0: not enough polymorphism. SFS are:\n" + " ".join(sfs_s) + "\n" + " ".join(sfs_n) + "\n")
+    if np.sum(sfs_non_syn) < 10 or np.sum(sfs_syn) < 10:
+        error_f.write(
+            "ER0: not enough polymorphism. SFS are:\n" + " ".join(sfs_syn) + "\n" + " ".join(sfs_non_syn) + "\n")
         return False
 
     seq1 = SeqIO.SeqRecord(id=sp_focal, name="", description="", seq=Seq.Seq("".join(s1)))
@@ -514,45 +521,23 @@ def dfe_alpha(filepath, df, n_tot, n, ensg_dico_pos, gene_level, sp_focal, sp_si
         error_f.write("ER1: identical sequences. Sequences are:\n" + "".join(s1) + "\n" + "".join(s2) + "\n")
         return False
 
-    sites_n, dn, sites_s, ds = run_yn00(seq1, seq2, tmp_path, filepath)
+    l_non_syn, d_non_syn, l_syn, d_syn = run_yn00(seq1, seq2, tmp_path, filepath)
 
-    if sites_n == dn == sites_s == ds == 0:
+    if l_non_syn == d_non_syn == l_syn == d_syn == 0:
         print('error in Yn00')
         error_f.write("ER2: Yn00 failed. Sequences are:\n" + "".join(s1) + "\n" + "".join(s2) + "\n")
         return False
 
-    sfs_list = ["Summed", n]
-    for sfs, nbr_site in [(sfs_n, sites_n), (sfs_s, sites_s)]:
-        if is_unfolded:
-            sfs_list += [nbr_site] + [sfs[i] for i in range(1, n)]
-        else:
-            range_sfs = range(1, int(floor(n // 2)) + 1)
-            assert len(range_sfs) * 2 == n
-            sfs_list += [nbr_site] + [(sfs[i] + sfs[n - i]) if n - i != i else sfs[i] for i in range_sfs]
-    sfs_list += [sites_n, dn, sites_s, ds]
-
-    dofe_file = open(filepath + ".dofe", 'w')
-    dofe_file.write(f"{sp_focal}+{sp_sister} ({len(seq1.seq)} sites)\n")
-    if is_unfolded:
-        dofe_file.write("#unfolded\n")
-    dofe_file.write("\t".join(map(str, sfs_list)) + "\n")
-    dofe_file.close()
-
-    sfs_s_str = " ".join([str(sfs_s[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_s, ds)
-    sfs_n_str = " ".join([str(sfs_n[i]) for i in range(1, n)]) + "\t{0}\t{1}\t{0}\n".format(sites_n, dn)
-    sfs_file = open(filepath + ".sfs", 'w')
-    sfs_file.write(f"#{sp_focal}+{sp_sister}\n")
-    sfs_file.write("1 1 {0}".format(n) + "\n")
-    sfs_file.write(sfs_s_str)
-    sfs_file.write(sfs_n_str)
-    sfs_file.close()
+    write_dofe(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k,
+               filepath, sp_focal, sp_sister, is_unfolded, len(seq1.seq))
+    write_sfs(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filepath, sp_focal, sp_sister)
 
     for dfe_path in dfe_models:
         out = filepath + "_" + dfe_path.split("/")[-2]
         if "grapes" in dfe_path:
-            os.system(grapes_cmd.format(dfe_path, filepath, out))
+            os.system(grapes_cmd(dfe_path, filepath, out))
         elif "polyDFE" in dfe_path and is_unfolded:
-            os.system(polyDFE_cmd.format(dfe_path, filepath, out))
+            os.system(polyDFE_cmd(dfe_path, filepath, out))
     os.system("gzip --force {0}.fasta".format(filepath))
     return True
 

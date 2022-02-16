@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from Bio.Phylo.PAML import yn00
 from collections import defaultdict
-from scipy.optimize import curve_fit
+from libraries import theta
 
 
 def exp_curve(x, a, b, c):
@@ -27,10 +27,6 @@ def read_yn(path):
     return yn00.read(path)
 
 
-omega_dict = defaultdict(list)
-phylo_dict = defaultdict(list)
-
-
 def parse_line(line):
     return float(line.split(",")[0].split("=")[-1])
 
@@ -41,7 +37,8 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model', required=False, type=str, dest="model", help="Model name")
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output path")
     args = parser.parse_args()
-
+    omega_dict = defaultdict(list)
+    phylo_dict = defaultdict(list)
     for filepath in glob(args.folder + "/*.txt"):
         f = open(filepath, 'r')
         while True:
@@ -75,7 +72,7 @@ if __name__ == '__main__':
             omega_dict["ALPHA"].append(omega_a / dnds)
             omega_dict["OMEGA_NA"].append(dnds - omega_a)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
-    elif args.model in ["MK", "aMK"]:
+    elif args.model in ["MK", "MK_tajima", "MK_fay_wu"]:
         for filepath in glob(args.folder + "/*.dofe"):
             dofe = open(filepath, 'r')
             dofe.readline()
@@ -83,41 +80,39 @@ if __name__ == '__main__':
             if "#unfolded" in dofeline:
                 dofeline = dofe.readline()
             split_line = dofeline.strip().split("\t")
-            Ldn, dn, Lds, ds = split_line[-4:]
-            dnds = (int(dn) / float(Ldn)) / (int(ds) / float(Lds))
+            Ldn, dn, Lds, ds = [float(i) for i in split_line[-4:]]
+            dnds = (dn / Ldn) / (ds / Lds)
             nbr_cat = (len(split_line) - 8) // 2
-            Lpn, Lps = split_line[2], split_line[nbr_cat + 3]
+            Lpn, Lps = float(split_line[2]), float(split_line[nbr_cat + 3])
             assert (Lpn == Ldn)
             assert (Lps == Lds)
             shift = 1
             sfs_n = [int(i) for i in split_line[shift + 3:nbr_cat + 3]]
             sfs_s = [int(i) for i in split_line[nbr_cat + shift + 4:nbr_cat * 2 + 4]]
             if args.model == "MK":
-                pnps = (sum(sfs_n) / float(Lpn)) / (sum(sfs_s) / float(Lps))
-                omega_dict["P_S"].append(sum(sfs_s) / float(Lps))
-                omega_dict["OMEGA_A"].append(dnds - pnps)
-                omega_dict["ALPHA"].append((dnds - pnps) / dnds)
-                omega_dict["OMEGA_NA"].append(pnps)
-                omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
+                ps = sum(sfs_s) / Lps
+                pn = sum(sfs_n) / Lpn
+                pnps = pn / ps
+                ps = theta(sfs_s, nbr_cat, "watterson") / Lps
+                pn = theta(sfs_n, nbr_cat, "watterson") / Lpn
+                assert abs(pn / ps - pnps) < 1e-6
+            elif args.model == "MK_tajima":
+                ps = theta(sfs_s, nbr_cat, "tajima") / Lps
+                pn = theta(sfs_n, nbr_cat, "tajima") / Lpn
             else:
-                assert args.model == "aMK"
-                alpha_array = np.array(
-                    [((dnds - (pn_x / float(Lpn)) / (ps_x / float(Lps))) / dnds) if ps_x != 0 else np.nan for
-                     pn_x, ps_x in zip(sfs_n, sfs_s)])
-                mask = np.isfinite(alpha_array)
-                delta = 1.0 / len(alpha_array)
-                freq_array = np.linspace(delta, 1.0 - delta, len(alpha_array))
-                if len(alpha_array[mask]) < 4:
-                    continue
-                popt, pcov = curve_fit(exp_curve, xdata=freq_array[mask], ydata=alpha_array[mask], check_finite=False,
-                                       maxfev=32000, bounds=(0, np.inf))
-                aMK = exp_curve(1.0, *popt)
-                if aMK < 0.0:
-                    continue
-                omega_dict["OMEGA_A"].append(aMK * dnds)
-                omega_dict["ALPHA"].append(aMK)
-                omega_dict["OMEGA_NA"].append((1.0 - aMK) * dnds)
-                omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
+                assert args.model == "MK_fay_wu"
+                ps = theta(sfs_s, nbr_cat, "fay_wu") / Lps
+                pn = theta(sfs_n, nbr_cat, "fay_wu") / Lpn
+            pnps = pn / ps
+            omega_dict["Ldn"].append(Ldn)
+            omega_dict["dn"].append(dn)
+            omega_dict["Lds"].append(Lds)
+            omega_dict["ds"].append(ds)
+            omega_dict["P_S"].append(ps)
+            omega_dict["OMEGA_A"].append(dnds - pnps)
+            omega_dict["ALPHA"].append((dnds - pnps) / dnds)
+            omega_dict["OMEGA_NA"].append(pnps)
+            omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
         '''
         from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage

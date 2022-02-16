@@ -7,4 +7,4 @@ NBR_REPLICATES_PER_BATCH: 20
 SUBSAMPLING_WEIGHTED: false
 SAMPLE_LIST: "sample_all.tsv"
 SFS: ["unfolded"]
-DFE_MODELS: ["MK"]
+DFE_MODELS: ["MK", "MK_tajima", "MK_fay_wu"]

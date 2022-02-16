@@ -35,7 +35,7 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     SUBSAMPlE_SFS[row['SampleName']] = row["k"]
     for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
         for model, sfs in product(config['DFE_MODELS'],config['SFS']):
-            if ((model == "polyDFE" or model == "MK" or model == "aMK") and sfs == "folded") or (NBR_BATCHES == 0):
+            if ((model == "polyDFE" or "MK" in model) and sfs == "folded") or (NBR_BATCHES == 0):
                 continue
             TSV_GENOME_LIST.append(f"{EXP_FOLDER}/genome/{row['Species']}-{row['SampleName']}-{model}-{sfs}.tsv")
 

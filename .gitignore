@@ -56,7 +56,6 @@ rub
 *.gtf_to_bed_errors.txt
 *.out
 *.bbl
-*.bcf
 *.blg
 *.indd
 *.svg

@@ -1,3 +1,4 @@
 Species	SisterSpecies	SampleName	Location	SampleSize	k
 Homo_sapiens	Pan_troglodytes	AMR	Ad Mixed American	347	16
 Homo_sapiens	Pan_troglodytes	EAS	East Asian	504	16
+Chlorocebus_sabaeus	Macaca_mulatta	South_Africa	South Africa	49	16

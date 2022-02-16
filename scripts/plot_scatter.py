@@ -2,8 +2,8 @@ import os
 from scipy.ndimage.filters import gaussian_filter
 import argparse
 from libraries import build_divergence_dico, split_outliers, filtered_table_omega
-from libraries_plot import plt, np, RED_RGB, GREEN_RGB, GREY_RGB, BLUE_RGB, Normalize
-
+from libraries_plot import plt, np, RED_RGB, GREEN_RGB, GREY_RGB, BLUE_RGB
+from matplotlib.colors import Normalize
 
 error_kwargs = {"lw": .5, "zorder": -1}
 my_dpi = 256
