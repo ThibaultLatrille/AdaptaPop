@@ -67,6 +67,8 @@
     \section{Gene ontology enrichment at gene and site level}
     \label{sec:gene-ontology-enrichment}
 
+    The genes selected based on the the first criterion ($\omega>1$ for at least one site) are enriched with ontologies related to immune processes, while genes detected based on the second criterion ($\omega > \omega_{0}$ for at least 1 site) are also enriched with ontologies related to the external membrane and cellular adhesion.
+
     Using site-specific codon model, we considered that a gene is under adaptation if at least one site is under adaptation at the site level.
     We considered a more stringent $99.5$\% confidence interval ($\alpha=0.005$) for each site than the $95$\% interval ($\alpha=0.05$) for each gene considered previously.
 
@@ -90,7 +92,10 @@
     925 Fisher's exact test are performed with 426 genes detected with site-specific $\omega$-based codon models, and with 5499 genes as control for which ontologies are available.
     The genes are enriched primarily with ontologies related to immune processes.
 
-    \input{site-Classical-0.0025-table.core.tex}
+    \begin{center}
+        \small
+        \input{site-Classical-0.0025-table.core.tex}
+    \end{center}
 
     \subsection{Site-specific mutation-selection model}
     \label{subsec:mutation-selection-codon-method}
@@ -98,7 +103,10 @@
     2617 Fisher's exact test are performed with 1793 genes detected with site-specific mutation-selection codon models, and with 4132 genes as control for which ontologies are available.
     The genes are enriched with ontologies related to immune processes, but also with ontologies related to the external membrane, for which the signal of adaptation is not strong enough to be detected by site-specific $\omega$-based model.
 
-    \input{site-MutSel-0.0025-table.core.tex}
+    \begin{center}
+        \small
+        \input{site-MutSel-0.0025-table.core.tex}
+    \end{center}
 
     \subsection{Exclusive to site-specific mutation-selection model}
     \label{subsec:exclusive-to-mutation-selection-codon-method}
@@ -106,7 +114,10 @@
     817 tests performed with 263 genes detected exclusively by site-specific mutation-selection codon models, and with 5662 genes as control for which ontologies are available.
     The genes are enriched with ontologies related to the external membrane, for which the signal of adaptation is not strong enough to be detected by site-specific $\omega$-based model.
 
-    \input{site-MutSelExclu-0.0025-table.core.tex}
+    \begin{center}
+        \small
+        \input{site-MutSelExclu-0.0025-table.core.tex}
+    \end{center}
 
     \pagebreak
 
@@ -138,7 +149,6 @@
     \input{control/results.tex}
 
     \pagebreak
-
 
     \section{Rate of adaptation enrichment with $\bm{\alpha=0.005}$}
     \label{sec:threshold}
@@ -173,9 +183,15 @@
 
     \input{no_control/results.tex}
 
+    \section{Rate of adaptation enrichment with polyDFE}
+    \label{sec:polyDFE}
+
+    polyDFE\cite{tataru_polydfe_2020} relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation $\omega_{\mathrm{A}}^{\mathrm{polyDFE}}$.
+
+    \input{polyDFE/results.tex}
 
     \section{Exome level}
-    $\omega_{\mathrm{A}}$ and $\omega_{\mathrm{A}}^{\mathrm{phy}}$ are computed on the whole dataset on protein-coding sequences.
+    $\omega_{\mathrm{A}}$ and $\omega_{\mathrm{A}}^{\mathrm{phy}}$ are computed on the whole dataset of protein-coding sequences.
     \begin{table*}[!ht]
         \centering
         \begin{adjustbox}{width = 1\textwidth}

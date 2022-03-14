@@ -1,0 +1,127 @@
+\documentclass{article}
+
+
+
+\usepackage{lmodern}
+
+\usepackage[export]{adjustbox}
+
+\usepackage{tabu}
+
+\tabulinesep=0.6mm
+
+\newcommand\cellwidth{\TX@col@width}
+
+\usepackage{hhline}
+
+\setlength{\arrayrulewidth}{1.2pt}
+
+\usepackage{multicol,multirow,array}
+
+\usepackage{etoolbox}
+
+\usepackage{bm}
+
+\AtBeginEnvironment{tabu}{\footnotesize}
+
+\usepackage{booktabs}
+
+\usepackage[margin=40pt]{geometry}
+
+\usepackage{longtable}
+
+
+\begin{document}
+496 tests performed.\scriptsize
+\begin{longtable}{|l|r|r|r|r|r|}
+\toprule
+                            Gene ontology &     Mann-Whitney U &     $p_{\mathrm{v}}$ &      $p_{\mathrm{v-adjusted}}$ \\
+\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{{Continued on next page}} \\
+\midrule
+\endfoot
+
+\bottomrule
+\endlastfoot
+                      extracellular space & $1.6\times 10^{6}$ & $8.4\times 10^{-22}$ &  $\bm{4.1\times 10^{-19}{^*}}$ \\
+                     extracellular region & $2.2\times 10^{6}$ & $2.8\times 10^{-21}$ &  $\bm{1.4\times 10^{-18}{^*}}$ \\
+                  lipid metabolic process & $7.7\times 10^{5}$ & $3.4\times 10^{-21}$ &  $\bm{1.7\times 10^{-18}{^*}}$ \\
+              oxidation-reduction process & $8.8\times 10^{5}$ & $1.6\times 10^{-19}$ &   $\bm{ 8\times 10^{-17}{^*}}$ \\
+           integral component of membrane & $4.1\times 10^{6}$ & $1.8\times 10^{-18}$ &  $\bm{8.6\times 10^{-16}{^*}}$ \\
+                  oxidoreductase activity & $7.8\times 10^{5}$ & $3.2\times 10^{-17}$ &  $\bm{1.6\times 10^{-14}{^*}}$ \\
+                    extracellular exosome & $2.5\times 10^{6}$ & $1.6\times 10^{-15}$ &  $\bm{7.8\times 10^{-13}{^*}}$ \\
+                    immune system process & $5.9\times 10^{5}$ & $9.1\times 10^{-14}$ &  $\bm{4.5\times 10^{-11}{^*}}$ \\
+                          immune response & $4.1\times 10^{5}$ & $2.1\times 10^{-13}$ &   $\bm{ 1\times 10^{-10}{^*}}$ \\
+    integral component of plasma membrane & $1.5\times 10^{6}$ & $5.4\times 10^{-13}$ &  $\bm{2.6\times 10^{-10}{^*}}$ \\
+                    inflammatory response & $4.6\times 10^{5}$ & $3.3\times 10^{-12}$ &   $\bm{1.6\times 10^{-9}{^*}}$ \\
+             fatty acid metabolic process & $2.7\times 10^{5}$ & $1.3\times 10^{-11}$ &   $\bm{6.2\times 10^{-9}{^*}}$ \\
+                   innate immune response & $5.2\times 10^{5}$ & $1.1\times 10^{-10}$ &   $\bm{5.3\times 10^{-8}{^*}}$ \\
+                            mitochondrion & $1.6\times 10^{6}$ & $1.6\times 10^{-10}$ &   $\bm{7.5\times 10^{-8}{^*}}$ \\
+       serine-type endopeptidase activity & $2.5\times 10^{5}$ & $1.6\times 10^{-10}$ &   $\bm{7.8\times 10^{-8}{^*}}$ \\
+                        metabolic process & $5.9\times 10^{5}$ & $1.7\times 10^{-10}$ &   $\bm{8.1\times 10^{-8}{^*}}$ \\
+             mitochondrial inner membrane &  $ 5\times 10^{5}$ & $4.8\times 10^{-10}$ &   $\bm{2.3\times 10^{-7}{^*}}$ \\
+                      blood microparticle & $1.8\times 10^{5}$ &  $ 5\times 10^{-10}$ &   $\bm{2.4\times 10^{-7}{^*}}$ \\
+         external side of plasma membrane & $2.9\times 10^{5}$ &  $4.3\times 10^{-9}$ &   $\bm{2.1\times 10^{-6}{^*}}$ \\
+            defense response to bacterium & $1.8\times 10^{5}$ &  $3.9\times 10^{-8}$ &   $\bm{1.8\times 10^{-5}{^*}}$ \\
+                       catalytic activity & $6.5\times 10^{5}$ &  $7.5\times 10^{-8}$ &   $\bm{3.6\times 10^{-5}{^*}}$ \\
+                       symporter activity & $1.8\times 10^{5}$ &  $1.1\times 10^{-7}$ &   $\bm{5.4\times 10^{-5}{^*}}$ \\
+                                 membrane & $4.7\times 10^{6}$ &  $1.2\times 10^{-7}$ &   $\bm{5.5\times 10^{-5}{^*}}$ \\
+                               peroxisome & $1.9\times 10^{5}$ &  $1.2\times 10^{-7}$ &   $\bm{5.6\times 10^{-5}{^*}}$ \\
+                             cell surface & $6.5\times 10^{5}$ &  $1.2\times 10^{-7}$ &   $\bm{5.7\times 10^{-5}{^*}}$ \\
+                   apical plasma membrane & $4.4\times 10^{5}$ &  $1.4\times 10^{-7}$ &   $\bm{6.6\times 10^{-5}{^*}}$ \\
+           serine-type peptidase activity & $1.9\times 10^{5}$ &  $4.4\times 10^{-7}$ &             $\bm{0.00021{^*}}$ \\
+                       hydrolase activity & $1.7\times 10^{6}$ &  $5.7\times 10^{-7}$ &             $\bm{0.00027{^*}}$ \\
+                steroid metabolic process & $1.7\times 10^{5}$ &  $6.6\times 10^{-7}$ &             $\bm{0.00031{^*}}$ \\
+                 neutrophil degranulation & $5.5\times 10^{5}$ &  $7.7\times 10^{-7}$ &             $\bm{0.00036{^*}}$ \\
+      flavin adenine dinucleotide binding & $1.4\times 10^{5}$ &   $ 1\times 10^{-6}$ &             $\bm{0.00047{^*}}$ \\
+                              proteolysis & $7.6\times 10^{5}$ &  $2.1\times 10^{-6}$ &             $\bm{0.00096{^*}}$ \\
+                  lipid catabolic process & $1.7\times 10^{5}$ &  $2.2\times 10^{-6}$ &              $\bm{ 0.001{^*}}$ \\
+                          plasma membrane & $3.6\times 10^{6}$ &  $3.7\times 10^{-6}$ &              $\bm{ 0.002{^*}}$ \\
+       cellular protein metabolic process & $2.5\times 10^{5}$ &   $ 5\times 10^{-6}$ &              $\bm{ 0.002{^*}}$ \\
+                           lyase activity & $2.2\times 10^{5}$ &  $5.6\times 10^{-6}$ &              $\bm{ 0.003{^*}}$ \\
+                          lysosomal lumen & $1.7\times 10^{5}$ &  $6.5\times 10^{-6}$ &              $\bm{ 0.003{^*}}$ \\
+         extracellular matrix disassembly & $1.3\times 10^{5}$ &  $1.2\times 10^{-5}$ &              $\bm{ 0.005{^*}}$ \\
+                       organelle membrane & $1.4\times 10^{5}$ &  $1.3\times 10^{-5}$ &              $\bm{ 0.006{^*}}$ \\
+                       peptidase activity & $6.4\times 10^{5}$ &  $1.4\times 10^{-5}$ &              $\bm{ 0.006{^*}}$ \\
+              endoplasmic reticulum lumen & $4.1\times 10^{5}$ &   $ 2\times 10^{-5}$ &              $\bm{ 0.009{^*}}$ \\
+                     mitochondrial matrix & $4.1\times 10^{5}$ &  $2.2\times 10^{-5}$ &              $\bm{ 0.010{^*}}$ \\
+                         iron ion binding & $1.9\times 10^{5}$ &  $2.3\times 10^{-5}$ &              $\bm{ 0.011{^*}}$ \\
+                     sodium ion transport &  $ 2\times 10^{5}$ &  $2.9\times 10^{-5}$ &              $\bm{ 0.013{^*}}$ \\
+           response to lipopolysaccharide & $2.3\times 10^{5}$ &  $3.4\times 10^{-5}$ &              $\bm{ 0.015{^*}}$ \\
+                        cytokine activity & $2.5\times 10^{5}$ &  $5.7\times 10^{-5}$ &              $\bm{ 0.026{^*}}$ \\
+                      calcium ion binding & $7.5\times 10^{5}$ &  $7.3\times 10^{-5}$ &              $\bm{ 0.033{^*}}$ \\
+               viral entry into host cell & $1.3\times 10^{5}$ &  $7.7\times 10^{-5}$ &              $\bm{ 0.035{^*}}$ \\
+            receptor-mediated endocytosis &  $ 2\times 10^{5}$ &            $0.00011$ &              $\bm{ 0.049{^*}}$ \\
+               collagen catabolic process & $1.3\times 10^{5}$ &            $0.00013$ &                     $ 0.060~~$ \\
+                     carbohydrate binding &  $ 2\times 10^{5}$ &            $0.00015$ &                     $ 0.067~~$ \\
+            cholesterol metabolic process & $1.5\times 10^{5}$ &            $0.00016$ &                     $ 0.070~~$ \\
+                   platelet degranulation & $1.8\times 10^{5}$ &            $0.00017$ &                     $ 0.075~~$ \\
+                defense response to virus & $1.7\times 10^{5}$ &            $0.00017$ &                     $ 0.075~~$ \\
+                specific granule membrane & $1.5\times 10^{5}$ &            $0.00017$ &                     $ 0.076~~$ \\
+              basolateral plasma membrane & $2.5\times 10^{5}$ &            $0.00019$ &                     $ 0.085~~$ \\
+                            cell adhesion & $6.4\times 10^{5}$ &            $0.00022$ &                     $ 0.097~~$ \\
+                        acrosomal vesicle & $1.3\times 10^{5}$ &            $0.00023$ &                     $ 0.101~~$ \\
+                     cell-matrix adhesion & $1.6\times 10^{5}$ &            $0.00024$ &                     $ 0.104~~$ \\
+                      leukocyte migration &  $ 2\times 10^{5}$ &            $0.00025$ &                     $ 0.108~~$ \\
+  cell surface receptor signaling pathway & $3.4\times 10^{5}$ &            $0.00025$ &                     $ 0.109~~$ \\
+                         collagen binding & $1.3\times 10^{5}$ &            $0.00034$ &                     $ 0.150~~$ \\
+                             heme binding & $1.4\times 10^{5}$ &            $0.00035$ &                     $ 0.150~~$ \\
+                    endoplasmic reticulum & $1.5\times 10^{6}$ &            $0.00035$ &                     $ 0.151~~$ \\
+                               chemotaxis & $1.7\times 10^{5}$ &            $0.00036$ &                     $ 0.154~~$ \\
+       transmembrane transporter activity & $1.6\times 10^{5}$ &            $0.00037$ &                     $ 0.159~~$ \\
+           carbohydrate metabolic process & $2.7\times 10^{5}$ &            $0.00037$ &                     $ 0.159~~$ \\
+                  transmembrane transport & $6.6\times 10^{5}$ &            $0.00038$ &                     $ 0.161~~$ \\
+        extracellular matrix organization &  $ 3\times 10^{5}$ &             $0.0006$ &                     $ 0.256~~$ \\
+                                centriole & $1.6\times 10^{5}$ &             $ 0.001$ &                     $ 0.440~~$ \\
+                 adaptive immune response & $1.7\times 10^{5}$ &             $ 0.001$ &                     $ 0.462~~$ \\
+                                   cilium & $3.4\times 10^{5}$ &             $ 0.001$ &                     $ 0.493~~$ \\
+                        receptor activity & $2.9\times 10^{5}$ &             $ 0.001$ &                     $ 0.542~~$ \\
+                          collagen trimer & $1.4\times 10^{5}$ &             $ 0.001$ &                     $ 0.612~~$ \\
+                     extracellular matrix & $3.6\times 10^{5}$ &             $ 0.002$ &                     $ 0.637~~$ \\
+                         protease binding & $1.4\times 10^{5}$ &             $ 0.002$ &                     $ 0.637~~$ \\
+ intracellular membrane-bounded organelle & $8.4\times 10^{5}$ &             $ 0.002$ &                     $ 0.762~~$ \\
+                          lipid transport & $1.4\times 10^{5}$ &             $ 0.002$ &                     $ 0.799~~$ \\
+\end{longtable}
+\end{document}

@@ -1,0 +1,123 @@
+\documentclass{article}
+
+
+
+\usepackage{lmodern}
+
+\usepackage[export]{adjustbox}
+
+\usepackage{tabu}
+
+\tabulinesep=0.6mm
+
+\newcommand\cellwidth{\TX@col@width}
+
+\usepackage{hhline}
+
+\setlength{\arrayrulewidth}{1.2pt}
+
+\usepackage{multicol,multirow,array}
+
+\usepackage{etoolbox}
+
+\usepackage{bm}
+
+\AtBeginEnvironment{tabu}{\footnotesize}
+
+\usepackage{booktabs}
+
+\usepackage[margin=40pt]{geometry}
+
+\usepackage{longtable}
+
+
+\begin{document}
+775 tests performed, with 347 genes detected with mutsel, and 5578 as control.\scriptsize
+\begin{longtable}{|l|r|r|r|r|r|}
+\toprule
+                                     Gene ontology & $n_{\mathrm{Observed}}$ & $n_{\mathrm{Expected}}$ & Odds ratio &     $p_{\mathrm{v}}$ &      $p_{\mathrm{v-adjusted}}$ \\
+\midrule
+\endhead
+\midrule
+\multicolumn{6}{r}{{Continued on next page}} \\
+\midrule
+\endfoot
+
+\bottomrule
+\endlastfoot
+                             immune system process &                      48 &                $ 5.625$ &   $ 8.533$ & $9.8\times 10^{-24}$ &  $\bm{7.6\times 10^{-21}{^*}}$ \\
+                               extracellular space &                      82 &                $  19.8$ &   $ 4.151$ & $6.2\times 10^{-21}$ &  $\bm{4.8\times 10^{-18}{^*}}$ \\
+                            innate immune response &                      41 &                $ 5.245$ &   $ 7.817$ & $1.6\times 10^{-19}$ &  $\bm{1.2\times 10^{-16}{^*}}$ \\
+                              extracellular region &                      99 &                $  30.5$ &   $ 3.251$ &  $ 5\times 10^{-18}$ &  $\bm{3.9\times 10^{-15}{^*}}$ \\
+               regulation of complement activation &                      14 &                $ 0.359$ &   $  39.0$ & $1.2\times 10^{-13}$ &  $\bm{9.4\times 10^{-11}{^*}}$ \\
+                             extracellular exosome &                     100 &                $  38.2$ &   $ 2.618$ & $3.6\times 10^{-13}$ &  $\bm{2.7\times 10^{-10}{^*}}$ \\
+                             complement activation &                      12 &                $ 0.180$ &   $  66.6$ & $5.3\times 10^{-13}$ &   $\bm{ 4\times 10^{-10}{^*}}$ \\
+                                   immune response &                      28 &                $ 4.054$ &   $ 6.907$ & $6.5\times 10^{-13}$ &   $\bm{ 5\times 10^{-10}{^*}}$ \\
+                               blood microparticle &                      17 &                $ 1.247$ &   $  13.6$ & $7.1\times 10^{-12}$ &   $\bm{5.5\times 10^{-9}{^*}}$ \\
+                serine-type endopeptidase activity &                      20 &                $ 2.243$ &   $ 8.917$ & $3.1\times 10^{-11}$ &   $\bm{2.4\times 10^{-8}{^*}}$ \\
+                             inflammatory response &                      27 &                $ 5.129$ &   $ 5.264$ & $2.5\times 10^{-10}$ &   $\bm{1.9\times 10^{-7}{^*}}$ \\
+                    integral component of membrane &                     149 &                $  78.4$ &   $ 1.901$ &  $1.4\times 10^{-8}$ &   $\bm{1.1\times 10^{-5}{^*}}$ \\
+                         defense response to virus &                      15 &                $ 1.795$ &   $ 8.355$ &  $1.7\times 10^{-8}$ &   $\bm{1.3\times 10^{-5}{^*}}$ \\
+                             complement activation &                       8 &                $ 0.182$ &   $  43.9$ &  $1.8\times 10^{-8}$ &   $\bm{1.4\times 10^{-5}{^*}}$ \\
+             integral component of plasma membrane &                      58 &                $  23.0$ &   $ 2.516$ &   $ 2\times 10^{-8}$ &   $\bm{1.5\times 10^{-5}{^*}}$ \\
+                               leukocyte migration &                      16 &                $ 2.210$ &   $ 7.239$ &  $2.8\times 10^{-8}$ &   $\bm{2.1\times 10^{-5}{^*}}$ \\
+                          neutrophil degranulation &                      28 &                $ 7.432$ &   $ 3.767$ &   $ 6\times 10^{-8}$ &   $\bm{4.5\times 10^{-5}{^*}}$ \\
+                  external side of plasma membrane &                      18 &                $ 3.156$ &   $ 5.703$ &  $7.6\times 10^{-8}$ &   $\bm{5.7\times 10^{-5}{^*}}$ \\
+                                   plasma membrane &                     131 &                $  70.7$ &   $ 1.852$ &  $1.2\times 10^{-7}$ &   $\bm{9.1\times 10^{-5}{^*}}$ \\
+                           lipid metabolic process &                      31 &                $ 9.452$ &   $ 3.280$ &  $1.9\times 10^{-7}$ &             $\bm{0.00014{^*}}$ \\
+                                       proteolysis &                      34 &                $  11.2$ &   $ 3.047$ &  $2.4\times 10^{-7}$ &             $\bm{0.00018{^*}}$ \\
+                            platelet degranulation &                      14 &                $ 1.982$ &   $ 7.064$ &  $2.5\times 10^{-7}$ &             $\bm{0.00019{^*}}$ \\
+                                      cell surface &                      29 &                $ 9.210$ &   $ 3.149$ &  $9.1\times 10^{-7}$ &             $\bm{0.00069{^*}}$ \\
+                             extracellular vesicle &                      10 &                $ 0.969$ &   $  10.3$ &  $9.5\times 10^{-7}$ &             $\bm{0.00072{^*}}$ \\
+                    serine-type peptidase activity &                      13 &                $ 1.927$ &   $ 6.746$ &   $ 1\times 10^{-6}$ &             $\bm{0.00076{^*}}$ \\
+              toll-like receptor signaling pathway &                       9 &                $ 0.729$ &   $  12.4$ &  $1.1\times 10^{-6}$ &             $\bm{0.00086{^*}}$ \\
+                                        chemotaxis &                      13 &                $ 1.988$ &   $ 6.540$ &  $1.3\times 10^{-6}$ &              $\bm{ 0.001{^*}}$ \\
+                     defense response to bacterium &                      12 &                $ 1.690$ &   $ 7.100$ &  $1.7\times 10^{-6}$ &              $\bm{ 0.001{^*}}$ \\
+                          adaptive immune response &                      13 &                $ 2.048$ &   $ 6.347$ &  $1.7\times 10^{-6}$ &              $\bm{ 0.001{^*}}$ \\
+                                   cilium movement &                       7 &                $ 0.366$ &   $  19.1$ &  $2.8\times 10^{-6}$ &              $\bm{ 0.002{^*}}$ \\
+                            apical plasma membrane &                      21 &                $ 5.830$ &   $ 3.602$ &  $4.2\times 10^{-6}$ &              $\bm{ 0.003{^*}}$ \\
+              chemokine-mediated signaling pathway &                       7 &                $ 0.488$ &   $  14.3$ &  $9.5\times 10^{-6}$ &              $\bm{ 0.007{^*}}$ \\
+           cell surface receptor signaling pathway &                      18 &                $ 4.787$ &   $ 3.760$ &  $1.2\times 10^{-5}$ &              $\bm{ 0.009{^*}}$ \\
+                                         cytolysis &                       5 &                $ 0.123$ &   $  40.8$ &  $1.3\times 10^{-5}$ &              $\bm{ 0.009{^*}}$ \\
+                    antimicrobial humoral response &                       5 &                $ 0.123$ &   $  40.8$ &  $1.3\times 10^{-5}$ &              $\bm{ 0.009{^*}}$ \\
+ positive regulation of heterotypic cell-cell a... &                       5 &                $ 0.123$ &   $  40.8$ &  $1.3\times 10^{-5}$ &              $\bm{ 0.009{^*}}$ \\
+                                        hemostasis &                       9 &                $ 1.094$ &   $ 8.225$ &  $1.3\times 10^{-5}$ &              $\bm{ 0.010{^*}}$ \\
+                cellular protein metabolic process &                      14 &                $ 3.134$ &   $ 4.468$ &   $ 2\times 10^{-5}$ &              $\bm{ 0.015{^*}}$ \\
+      positive regulation of ERK1 and ERK2 cascade &                      14 &                $ 3.194$ &   $ 4.383$ &  $2.5\times 10^{-5}$ &              $\bm{ 0.018{^*}}$ \\
+                            platelet alpha granule &                       5 &                $ 0.184$ &   $  27.2$ &  $3.2\times 10^{-5}$ &              $\bm{ 0.024{^*}}$ \\
+                        dynein light chain binding &                       5 &                $ 0.184$ &   $  27.2$ &  $3.2\times 10^{-5}$ &              $\bm{ 0.024{^*}}$ \\
+                                          lysosome &                      21 &                $ 7.167$ &   $ 2.930$ &  $6.1\times 10^{-5}$ &              $\bm{ 0.045{^*}}$ \\
+   negative regulation of viral genome replication &                       5 &                $ 0.245$ &   $  20.4$ &  $6.9\times 10^{-5}$ &                     $ 0.051~~$ \\
+                     regulation of immune response &                       8 &                $ 1.097$ &   $ 7.289$ &  $7.9\times 10^{-5}$ &                     $ 0.057~~$ \\
+                                 receptor activity &                      15 &                $ 4.158$ &   $ 3.607$ &  $8.8\times 10^{-5}$ &                     $ 0.064~~$ \\
+                                peptidase activity &                      25 &                $ 9.815$ &   $ 2.547$ &             $0.0001$ &                     $ 0.074~~$ \\
+                                  receptor binding &                      21 &                $ 7.473$ &   $ 2.810$ &             $0.0001$ &                     $ 0.075~~$ \\
+                                          membrane &                     185 &                $ 122.7$ &   $ 1.508$ &            $0.00013$ &                     $ 0.095~~$ \\
+                                      fibrinolysis &                       5 &                $ 0.307$ &   $  16.3$ &            $0.00013$ &                     $ 0.096~~$ \\
+          negative regulation of blood coagulation &                       4 &                $ 0.123$ &   $  32.5$ &            $0.00016$ &                     $ 0.115~~$ \\
+                             neutrophil chemotaxis &                       6 &                $ 0.612$ &   $ 9.797$ &            $0.00019$ &                     $ 0.136~~$ \\
+       defense response to Gram-negative bacterium &                       6 &                $ 0.612$ &   $ 9.797$ &            $0.00019$ &                     $ 0.136~~$ \\
+                     receptor-mediated endocytosis &                      11 &                $ 2.549$ &   $ 4.315$ &             $0.0002$ &                     $ 0.141~~$ \\
+                                hydrolase activity &                      54 &                $  29.9$ &   $ 1.804$ &            $0.00021$ &                     $ 0.151~~$ \\
+                                acrosomal membrane &                       5 &                $ 0.368$ &   $  13.6$ &            $0.00023$ &                     $ 0.166~~$ \\
+                                 response to virus &                       8 &                $ 1.342$ &   $ 5.960$ &            $0.00024$ &                     $ 0.172~~$ \\
+                              antioxidant activity &                       4 &                $ 0.185$ &   $  21.7$ &            $0.00035$ &                     $ 0.253~~$ \\
+                    natural killer cell activation &                       4 &                $ 0.185$ &   $  21.7$ &            $0.00035$ &                     $ 0.253~~$ \\
+                            plasminogen activation &                       4 &                $ 0.185$ &   $  21.7$ &            $0.00035$ &                     $ 0.253~~$ \\
+               positive regulation of angiogenesis &                      10 &                $ 2.312$ &   $ 4.326$ &            $0.00037$ &                     $ 0.264~~$ \\
+               positive regulation of phagocytosis &                       5 &                $ 0.430$ &   $  11.6$ &            $0.00038$ &                     $ 0.269~~$ \\
+     negative regulation of endopeptidase activity &                       8 &                $ 1.465$ &   $ 5.461$ &            $0.00039$ &                     $ 0.277~~$ \\
+                                 blood coagulation &                      12 &                $ 3.336$ &   $ 3.597$ &            $0.00043$ &                     $ 0.308~~$ \\
+                                organelle membrane &                       8 &                $ 1.526$ &   $ 5.242$ &            $0.00049$ &                     $ 0.346~~$ \\
+                cellular response to interleukin-1 &                       6 &                $ 0.797$ &   $ 7.532$ &            $0.00055$ &                     $ 0.388~~$ \\
+                      fatty acid metabolic process &                      11 &                $ 3.039$ &   $ 3.620$ &             $0.0007$ &                     $ 0.499~~$ \\
+                      platelet alpha granule lumen &                       7 &                $ 1.223$ &   $ 5.721$ &            $0.00071$ &                     $ 0.505~~$ \\
+                                  defense response &                       6 &                $ 0.858$ &   $ 6.993$ &            $0.00074$ &                     $ 0.526~~$ \\
+                         specific granule membrane &                       8 &                $ 1.772$ &   $ 4.516$ &             $ 0.001$ &                     $ 0.778~~$ \\
+                    bile acid biosynthetic process &                       4 &                $ 0.308$ &   $  13.0$ &             $ 0.001$ &                     $ 0.813~~$ \\
+                         phospholipase A2 activity &                       4 &                $ 0.308$ &   $  13.0$ &             $ 0.001$ &                     $ 0.813~~$ \\
+                                cholesterol efflux &                       4 &                $ 0.308$ &   $  13.0$ &             $ 0.001$ &                     $ 0.813~~$ \\
+                          apoptotic cell clearance &                       4 &                $ 0.308$ &   $  13.0$ &             $ 0.001$ &                     $ 0.813~~$ \\
+                        arachidonic acid secretion &                       4 &                $ 0.308$ &   $  13.0$ &             $ 0.001$ &                     $ 0.813~~$ \\
+\end{longtable}
+\end{document}

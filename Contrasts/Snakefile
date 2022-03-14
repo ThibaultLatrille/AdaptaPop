@@ -10,7 +10,6 @@ ROOT = os.path.abspath('..')
 FOLDER = os.path.abspath('.')
 EXP_FOLDER = f"{FOLDER}/{config['EXPERIMENT']}"
 ANALYSIS_FOLDER = f"{EXP_FOLDER}/analysis"
-os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot",exist_ok=True)
 
 GRANULARITY = config['GRANULARITY']
 SUBSAMPLING_SITES = config['SUBSAMPLING_SITES']
@@ -20,20 +19,24 @@ NBR_BATCHES = config['NBR_BATCHES']
 NBR_REPLICATES_PER_BATCH = config['NBR_REPLICATES_PER_BATCH']
 SUBSAMPLING_WEIGHTED = config['SUBSAMPLING_WEIGHTED']
 
-DFE_DICT = {"dfem": f'{ROOT}/utils/dfem/dfem',
-            "grapes": f'{ROOT}/utils/grapes/grapes/grapes',
-            "polyDFE": f'{ROOT}/utils/polyDFE/polyDFE-2.0-linux-64-bit'}
-DFE_MODELS = [DFE_DICT[m] for m in config['DFE_MODELS'] if m in DFE_DICT]
+DFE_DICT = {}
+if "GRAPES" in config:
+    DFE_DICT["grapes"] = f"grapes:{ROOT}/{config['GRAPES']['PATH']} {config['GRAPES']['PARAMS']}"
+if "POLYDFE" in config:
+    p = config['POLYDFE']
+    DFE_DICT["polyDFE"] = f"polyDFE:{ROOT}/{p['PATH']} -i {FOLDER}/config/{p['INIT']} 1 -r {FOLDER}/config/{p['RANGE']} 1 {p['PARAMS']}"
+
+DFE_MODELS = [f"'{DFE_DICT[m]}'" for m in config['DFE_MODELS'] if m in DFE_DICT]
 
 BATCHES = range(1,NBR_BATCHES + 1)
 
-VCF_LIST, TSV_LIST, TSV_GENOME_LIST = [], [], []
+OUTPUT_LIST, TSV_LIST, TSV_GENOME_LIST = [], [], []
 SPECIES_SISTER_K, SUBSAMPlE_SFS, POPU_TO_TSV = {}, {}, {}
 
 for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     SPECIES_SISTER_K[row['Species']] = row["SisterSpecies"]
     SUBSAMPlE_SFS[row['SampleName']] = row["k"]
-    VCF_LIST.append(ROOT + f"/VCF/{row['Species']}.{row['SampleName']}.vcf.gz")
+    OUTPUT_LIST.append(ROOT + f"/VCF/{row['Species']}.{row['SampleName']}.vcf.gz")
     for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
         POPU_TO_TSV[row['SampleName']] = popu_path
         for model, sfs in product(config['DFE_MODELS'],config['SFS']):
@@ -46,17 +49,20 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
                     continue
                 TSV_LIST.append(f"{EXP_FOLDER}/{row['Species']}-{row['SampleName']}-{granularity}/results-{model}-{sfs}.tsv")
 
+if len(TSV_LIST) > 0:
+    os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot",exist_ok=True)
+    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/results.tex")
+    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/violin_plot")
+    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/genome_results.tsv")
+
 localrules: all,pickle,parse_results,gather_parsed_results,plot_heatmap,plot_violin,parse_genome_results,gather_genome_results,plot_scatter,table_ontology,plot_venn
 
 rule all:
     input:
-        f"{ANALYSIS_FOLDER}/results.tex",
-        f"{ANALYSIS_FOLDER}/violin_plot",
-        f"{ANALYSIS_FOLDER}/genome_results.tsv",
-        f"venn_diagram-{'-'.join(GRANULARITY)}.pdf",
-        expand("scatterplot-{granularity}.pdf",granularity=GRANULARITY),
-        expand("ontology/{granularity}-table.pdf",granularity=GRANULARITY),
-        VCF_LIST
+        # f"venn_diagram-{'-'.join(GRANULARITY)}.pdf",
+        # expand("scatterplot-{granularity}.pdf",granularity=GRANULARITY),
+        # expand("ontology/{granularity}-table.pdf",granularity=GRANULARITY),
+        OUTPUT_LIST
 
 rule pickle:
     input:
@@ -64,7 +70,7 @@ rule pickle:
         div_folder=f'{ROOT}/OrthoMam/Experiments',
         xml=f'{ROOT}/OrthoMam/Datasets/omm_markers'
     output:
-        tsv=EXP_FOLDER + "/pickle-{species}-{level}-{pp}.pk1.bz2"
+        tsv=FOLDER + "/pickle/{species}-{level}-{pp}.pk1.bz2"
     params:
         script=f'{ROOT}/scripts/pickle_annotations.py',
         species=lambda wildcards: f"--focal_species {wildcards.species} --sister_species {SPECIES_SISTER_K[wildcards.species]}"
@@ -74,7 +80,7 @@ rule pickle:
 rule generate_DoFE:
     input:
         tsv=lambda wildcards: glob(f'{ROOT}/Polymorphism/{wildcards.species}/CDS.ANNOT.*.{wildcards.popu}.tsv.gz'),
-        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle-{wildcards.species}-{wildcards.level}-{wildcards.pp}.pk1.bz2"
+        pickle=rules.pickle.output.tsv
     params:
         dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
         script=f'{ROOT}/scripts/generate_DoFE.py',
@@ -128,7 +134,7 @@ rule plot_heatmap:
 rule generate_DoFE_genome:
     input:
         tsv=lambda wildcards: glob(f'{ROOT}/Polymorphism/{wildcards.species}/CDS.ANNOT.*.{wildcards.popu}.tsv.gz'),
-        pickle=lambda wildcards: f"{EXP_FOLDER}/pickle-{wildcards.species}-gene-0.025.pk1.bz2"
+        pickle=lambda wildcards: f"{FOLDER}/pickle/{wildcards.species}-gene-0.025.pk1.bz2"
     params:
         dfe=f"--dfe_path {' '.join(DFE_MODELS)}" if len(DFE_MODELS) > 0 else "",
         script=f'{ROOT}/scripts/generate_DoFE_genome.py',
@@ -167,7 +173,7 @@ rule plot_scatter:
         folder=f'{ROOT}/OrthoMam/Experiments',
         script=f'{ROOT}/scripts/plot_scatter.py'
     output:
-        plot="scatterplot-{level}-{method}-{pp}.pdf"
+        plot="scatterplot/scatterplot-{level}-{method}-{pp}.pdf"
     shell:
         'python3 {input.script} --folder {input.folder} --level {wildcards.level} --method {wildcards.method} --pp {wildcards.pp} --output {output.plot}'
 

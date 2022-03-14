@@ -307,7 +307,7 @@ def table_omega(dico_omega, gene_level=True):
     return np.array(output, dtype=np.float)
 
 
-def snp_data_frame(vcf_path, polarize_snps):
+def snp_data_frame(vcf_path, polarize_snps, remove_fixed=True):
     dtype = {"CHR": 'string', "REF": 'string', "ALT": 'string', "ANC": 'string', "COUNT": int,
              "SAMPLE_SIZE": int, "ENSG": 'string', "CODON_POS": int, "NUC_POS": int, "TYPE": 'string'}
     df_snps = pd.read_csv(vcf_path, compression="gzip", dtype=dtype)
@@ -334,11 +334,13 @@ def snp_data_frame(vcf_path, polarize_snps):
             if row["COUNT"] == 0:
                 tot["ABS"] += 1
                 fixed_poly[row["ENSG"]][row["CODON_POS"]] = row["NUC_POS"] % 3, row["REF"], anc
-                continue
+                if remove_fixed:
+                    continue
             elif row["COUNT"] == row["SAMPLE_SIZE"]:
                 fixed_poly[row["ENSG"]][row["CODON_POS"]] = row["NUC_POS"] % 3, row["REF"], der
                 tot["FIXED"] += 1
-                continue
+                if remove_fixed:
+                    continue
 
             snp_table.append(row)
             sample_size_set.add(row["SAMPLE_SIZE"])
@@ -431,15 +433,15 @@ def write_dofe(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, file
 
 
 def grapes_cmd(dfe_path, filepath, out):
-    return f"{dfe_path} -in {filepath}.dofe -out {out}.csv -model GammaExpo -no_div_data 1> {out}.out 2> {out}.err"
+    return f"{dfe_path} -in {filepath}.dofe -out {out}.csv 1> {out}.out 2> {out}.err"
 
 
 def write_sfs(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filepath, sp_focal, sp_sister, div=True):
     sfs_syn_str = " ".join([str(int(sfs_syn[i])) for i in range(1, k)]) + f"\t{int(l_syn)}"
     sfs_non_syn_str = " ".join([str(int(sfs_non_syn[i])) for i in range(1, k)]) + f"\t{int(l_non_syn)}"
     if div:
-        sfs_syn_str += f"\t{int(d_syn)}\t{int(l_syn)}\n"
-        sfs_non_syn_str += f"\t{int(d_non_syn)}\t{int(l_non_syn)}\n"
+        sfs_syn_str += f"\t{int(d_syn)}\t{int(l_syn)}"
+        sfs_non_syn_str += f"\t{int(d_non_syn)}\t{int(l_non_syn)}"
     sfs_file = open(filepath + ".sfs", 'w')
     sfs_file.write(f"#{sp_focal}+{sp_sister}\n")
     sfs_file.write("1 1 {0}".format(k) + "\n")
@@ -449,9 +451,7 @@ def write_sfs(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filep
 
 
 def polyDFE_cmd(dfe_path, filepath, out):
-    init_f = f"{os.path.dirname(dfe_path)}/polyDFE_D_init.txt"
-    range_f = f"{os.path.dirname(dfe_path)}/polyDFE_D_range.txt"
-    return f"{dfe_path} -d {filepath}.sfs -i {init_f} 1 -r {range_f} 1 -w -m D 5 -e 1> {out}.out 2> {out}.err"
+    return f"{dfe_path} -d {filepath}.sfs 1> {out}.out 2> {out}.err"
 
 
 def dfe_alpha(filepath, df, k_tot, k, ensg_dico_pos, gene_level, sp_focal, sp_sister, ali_dico, fixed_poly, tmp_path,
@@ -533,11 +533,16 @@ def dfe_alpha(filepath, df, k_tot, k, ensg_dico_pos, gene_level, sp_focal, sp_si
     write_sfs(sfs_syn, sfs_non_syn, l_non_syn, d_non_syn, l_syn, d_syn, k, filepath, sp_focal, sp_sister)
 
     for dfe_path in dfe_models:
-        out = filepath + "_" + dfe_path.split("/")[-2]
-        if "grapes" in dfe_path:
-            os.system(grapes_cmd(dfe_path, filepath, out))
-        elif "polyDFE" in dfe_path and is_unfolded:
-            os.system(polyDFE_cmd(dfe_path, filepath, out))
+        model = dfe_path[:dfe_path.find(':')]
+        dfe_cmd = dfe_path[dfe_path.find(':') + 1:]
+        out = f"{filepath}_{model}"
+        if "grapes" == model:
+            cmd = grapes_cmd(dfe_cmd, filepath, out)
+        else:
+            assert "polyDFE" == model and is_unfolded
+            cmd = polyDFE_cmd(dfe_cmd, filepath, out)
+        print(cmd)
+        os.system(cmd)
     os.system("gzip --force {0}.fasta".format(filepath))
     return True
 

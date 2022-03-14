@@ -48,12 +48,12 @@ if __name__ == '__main__':
     SNP_row = namedtuple('SNP_row', ['anc', 'der', 'polarized', 'count', 'sample_size'])
 
     dico_snps = defaultdict(dict)
-    df_snp, _, _ = snp_data_frame(args.tsv, polarize_snps=True)
+    df_snp, _, _ = snp_data_frame(args.tsv, polarize_snps=True, remove_fixed=False)
     for ensg, ddf in df_snp:
         for _, row in ddf.iterrows():
             polarized = row["ANC"] == row["REF"]
             der = row["ALT"] if polarized else row["REF"]
-            dico_snps[ensg][row["CODON_POS"]] = SNP_row(row["ANC"], der, polarized, row["COUNT"], row["SAMPLE_SIZE"])
+            dico_snps[ensg][row["NUC_POS"]] = SNP_row(row["ANC"], der, polarized, row["COUNT"], row["SAMPLE_SIZE"])
 
     header, profiles_dict = {}, {}
     dico_omega_0, dico_omega = build_divergence_dico(args.folder, list(df_snp.groups), gene_level=False)
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         nuc_pos = int(line_list[header["ENSG_POS"]])
         codon_pos = int(nuc_pos / 3)
 
-        if codon_pos not in dico_snps[ensg]:
+        if nuc_pos not in dico_snps[ensg]:
             continue
 
         if ensg not in profiles_dict:
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         if aa_alt == "X" or aa_ref == "X":
             continue
 
-        if dico_snps[ensg][codon_pos].polarized:
+        if dico_snps[ensg][nuc_pos].polarized:
             aa_anc, aa_der = aa_ref, aa_alt
             codon_anc, codon_der = codon_ref, codon_alt
         else:
@@ -111,14 +111,19 @@ if __name__ == '__main__':
         infos = ["{0}={1}".format(k, line_list[header[k]]) for k, i in header.items() if i > header["CHR"]]
         last_pos = line_list[header["POS"]]
 
-        line_list[header["INFO"]] += f";NUC_ANC={dico_snps[ensg][codon_pos].anc}"
-        line_list[header["INFO"]] += f";NUC_DER={dico_snps[ensg][codon_pos].der}"
+        if dico_snps[ensg][nuc_pos].polarized:
+            dicosnp_ensg = dico_snps[ensg]
+            dico_snp_pos = dicosnp_ensg[nuc_pos]
+            assert dico_snps[ensg][nuc_pos].anc == line_list[header["ENSG_REF"]]
+
+        line_list[header["INFO"]] += f";NUC_ANC={dico_snps[ensg][nuc_pos].anc}"
+        line_list[header["INFO"]] += f";NUC_DER={dico_snps[ensg][nuc_pos].der}"
         line_list[header["INFO"]] += f";CODON_ANC={codon_anc};CODON_DER={codon_der}"
         line_list[header["INFO"]] += f";AA_REF={aa_ref};AA_ALT={aa_alt}"
         line_list[header["INFO"]] += f";AA_ANC={aa_anc};AA_DER={aa_der};SEL_COEFF={selcoeff:.3f}"
-        line_list[header["INFO"]] += f";POLARIZED={dico_snps[ensg][codon_pos].polarized}"
-        line_list[header["INFO"]] += f";COUNT_POLARIZED={dico_snps[ensg][codon_pos].count}"
-        line_list[header["INFO"]] += f";SAMPLE_SIZE={dico_snps[ensg][codon_pos].sample_size}"
+        line_list[header["INFO"]] += f";POLARIZED={dico_snps[ensg][nuc_pos].polarized}"
+        line_list[header["INFO"]] += f";COUNT_POLARIZED={dico_snps[ensg][nuc_pos].count}"
+        line_list[header["INFO"]] += f";SAMPLE_SIZE={dico_snps[ensg][nuc_pos].sample_size}"
         line_list[header["INFO"]] += ";" + ";".join(infos)
 
         site_omega = dico_omega[ensg][codon_pos][1]
