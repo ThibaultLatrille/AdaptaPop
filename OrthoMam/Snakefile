@@ -2,7 +2,6 @@ import os
 from ete3 import Tree
 import pandas as pd
 from Bio import SeqIO
-from snakemake.io import expand, touch
 
 configfile: 'config.yaml'
 
@@ -69,7 +68,8 @@ rule read_bayescode:
         bayescode = bayescode_folder + "/readmutselomega"
     params:
         time="0-10:00", mem=1000, threads=1, queue="normal", name=lambda wildcards: wildcards.CDS,
-        ss=lambda wildcards, input: "{0} -b {1} --ss {2} ".format(input.bayescode, BURN_IN, input.run),
-        read=lambda wildcards, input: " && ".join(["{0} -b {1} {2} -c {3} {4}".format(input.bayescode, BURN_IN,"--omega_0" if wildcards.model == "sitemutsel" else "", ci, input.run) for ci in [0.0, 0.25, 0.05, 0.025, 0.005, 0.0025]])
+        nuc=lambda wildcards, input: f"{input.bayescode} --every 1 --until {POINTS} --burnin {BURN_IN} --nuc {input.run}",
+        ss=lambda wildcards, input: f"{input.bayescode} --every 1 --until {POINTS} --burnin {BURN_IN} --ss {input.run}",
+        read=lambda wildcards, input: " && ".join([f'{input.bayescode} --every 1 --until {POINTS} --burnin {BURN_IN} {"--omega_0" if wildcards.model == "sitemutsel" else "" } -c {ci} {input.run}' for ci in [0.0, 0.25, 0.05, 0.025, 0.005, 0.0025]])
     output: touch(experiment_folder + "/{CDS}/{model}_{chain}.read")
     shell: "gunzip {input.run}.chain.gz && {params.read} && {params.ss} && gzip -f {input.run}.chain"
