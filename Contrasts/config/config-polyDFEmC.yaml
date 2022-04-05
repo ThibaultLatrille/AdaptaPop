@@ -1,0 +1,18 @@
+EXPERIMENT: "polyDFE_modelC_no_control"
+GRANULARITY: ["gene-MutSel-0.025", "site-MutSel-0.025"]
+SUBSAMPLING_SITES: -1
+SUBSAMPLING_GENES: -1
+NBR_BATCHES: 50
+NBR_REPLICATES_PER_BATCH: 20
+SUBSAMPLING_WEIGHTED: false
+SAMPLE_LIST: "sample_all.tsv"
+SFS: ["unfolded"]
+DFE_MODELS: ["MK", "polyDFE"]
+POLYDFE:
+  PATH: "utils/polyDFE/polyDFE-2.0-linux-64-bit"
+  INIT: "polyDFE_C_init.txt"
+  RANGE: "polyDFE_C_range.txt"
+  PARAMS: "-w -m C -e"
+GRAPES:
+  PATH: "utils/grapes/grapes/grapes"
+  PARAMS: "-model GammaExpo -no_div_data"

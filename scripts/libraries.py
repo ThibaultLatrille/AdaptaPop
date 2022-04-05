@@ -220,10 +220,7 @@ def build_dict_trID(xml_folder, specie):
 
 def build_divergence_dico(folder, ensg_list, gene_level=True, pp=""):
     print('Loading divergence results.')
-    if pp == "":
-        pp = "0.0025" if gene_level else "0.05"
-
-    assert pp in ["0", "0.05", "0.005", "0.25", "0.025", "0.0025"]
+    assert pp in ["0.025", "0.0025"]
     dico_omega_0, dico_omega = {}, {}
     for engs in sorted(ensg_list):
         sitemutsel_path = "{0}/{1}_NT/sitemutsel_1.run.ci{2}.tsv".format(folder, engs, pp)

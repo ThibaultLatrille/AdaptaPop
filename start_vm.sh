@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #### Local
 REMOTE=ubuntu@X.X.X.X
-REMOTE_FOLDER=~/data/mydatalocal
+REMOTE_FOLDER=/scratch/tlatrill/
 LOCAL_FOLDER=~/Documents
 ssh -X ${REMOTE}
 

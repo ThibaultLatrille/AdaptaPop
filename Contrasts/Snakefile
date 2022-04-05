@@ -2,7 +2,6 @@ import os
 from itertools import product
 import pandas as pd
 from glob import glob
-from snakemake.io import expand, touch
 
 configfile: 'config.yaml'
 
