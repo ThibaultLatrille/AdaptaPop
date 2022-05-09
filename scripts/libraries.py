@@ -218,7 +218,7 @@ def build_dict_trID(xml_folder, specie):
     return dico_trid
 
 
-def build_divergence_dico(folder, ensg_list, gene_level=True, pp=""):
+def build_divergence_dico(folder, ensg_list, gene_level=True, pp="0.025"):
     print('Loading divergence results.')
     assert pp in ["0.025", "0.0025"]
     dico_omega_0, dico_omega = {}, {}
@@ -305,7 +305,7 @@ def table_omega(dico_omega, gene_level=True):
 
 
 def snp_data_frame(vcf_path, polarize_snps, remove_fixed=True):
-    dtype = {"CHR": 'string', "REF": 'string', "ALT": 'string', "ANC": 'string', "COUNT": int,
+    dtype = {"CHR": 'string', "REF": 'string', "ALT": 'string', "ANC": 'string', "ANC_PROBA": float, "COUNT": int,
              "SAMPLE_SIZE": int, "ENSG": 'string', "CODON_POS": int, "NUC_POS": int, "TYPE": 'string'}
     df_snps = pd.read_csv(vcf_path, compression="gzip", dtype=dtype)
     fixed_poly = defaultdict(dict)
@@ -318,9 +318,10 @@ def snp_data_frame(vcf_path, polarize_snps, remove_fixed=True):
             if is_polarized:
                 tot["REF=ANC"] += 1
                 anc, der = row["REF"], row["ALT"]
+                count_polarized = row["COUNT"]
             elif row["ANC"] == row["ALT"]:
                 # Flip the count and the alt is fixed
-                row["COUNT"] = row["SAMPLE_SIZE"] - row["COUNT"]
+                count_polarized = row["SAMPLE_SIZE"] - row["COUNT"]
                 anc, der = row["ALT"], row["REF"]
                 fixed_poly[row["ENSG"]][row["CODON_POS"]] = row["NUC_POS"] % 3, row["REF"], anc
                 tot["ALT=ANC"] += 1
@@ -328,17 +329,18 @@ def snp_data_frame(vcf_path, polarize_snps, remove_fixed=True):
                 tot["ANC_UNDEFINED"] += 1
                 continue
 
-            if row["COUNT"] == 0:
+            if count_polarized == 0:
                 tot["ABS"] += 1
                 fixed_poly[row["ENSG"]][row["CODON_POS"]] = row["NUC_POS"] % 3, row["REF"], anc
                 if remove_fixed:
                     continue
-            elif row["COUNT"] == row["SAMPLE_SIZE"]:
+            elif count_polarized == row["SAMPLE_SIZE"]:
                 fixed_poly[row["ENSG"]][row["CODON_POS"]] = row["NUC_POS"] % 3, row["REF"], der
                 tot["FIXED"] += 1
                 if remove_fixed:
                     continue
 
+            row["DER"], row["POLARIZED"], row["COUNT_POLARIZED"] = der, is_polarized, count_polarized
             snp_table.append(row)
             sample_size_set.add(row["SAMPLE_SIZE"])
 

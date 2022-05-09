@@ -84,7 +84,8 @@ if __name__ == '__main__':
     sfs_outfile = open(est_sfs_path + ".pvalues.txt", 'r')
     for sfs_line in sfs_outfile:
         line_split = sfs_line.strip().split(" ")
-        if line_split[0] == "0": continue
+        if line_split[0] == "0":
+            continue
         anc = ""
         max_p = 0.0
         for nuc, p_str in zip(nucleotides, line_split[3:]):
@@ -93,4 +94,5 @@ if __name__ == '__main__':
                 anc = nuc
                 max_p = p
         snp_table["ANC"].append(anc)
+        snp_table["ANC_PROBA"].append(max_p)
     pd.DataFrame(snp_table).to_csv(args.output, index=False, compression="gzip")

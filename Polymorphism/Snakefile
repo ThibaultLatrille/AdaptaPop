@@ -112,9 +112,9 @@ rule est_sfs:
     input:
         vcf=rules.chr_to_pop.output.vcf_pop if POPULATIONS else rules.annotate_vcf.output.vfc_gz,
         script=ROOT + '/scripts/vcf_polarize_est_usfs.py',
-        est_exec=ROOT + '/utils/est-sfs-release-2.03/est-sfs',
-        est_config=ROOT + '/utils/est-sfs-release-2.03/config-rate6.txt',
-        est_seed=ROOT + '/utils/est-sfs-release-2.03/seedfile.txt'
+        est_exec=ROOT + '/utils/est-sfs-release-2.04/est-sfs',
+        est_config=ROOT + '/utils/est-sfs-release-2.04/config-rate6.txt',
+        est_seed=ROOT + '/utils/est-sfs-release-2.04/seedfile.txt'
     params:
         vcf=lambda wildcards: 'CDS.ANNOT.' + NAME + f'.{wildcards.subset}.vcf.gz'
     output:

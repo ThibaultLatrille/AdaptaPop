@@ -125,6 +125,7 @@ class Outgroup(object):
         for gr in [1, 2, 3]:
             if leaf is not None and len(leaf.get_sisters()) > 0:
                 self.names[gr] = leaf.get_sisters()[0].get_leaf_names()
+                assert specie not in self.names[gr]
             if leaf is not None:
                 leaf = leaf.up
 
