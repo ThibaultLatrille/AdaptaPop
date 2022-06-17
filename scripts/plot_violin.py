@@ -12,8 +12,8 @@ if __name__ == '__main__':
     pop2sp = {}
     groups = defaultdict(list)
     for filepath in args.tsv:
-        _, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")
-        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")
+        _, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")[:3]
+        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")[:5]
         pop2sp[format_pop(pop)] = sp
         groups[(model, sfs, level, method, pp)].append(filepath)
 

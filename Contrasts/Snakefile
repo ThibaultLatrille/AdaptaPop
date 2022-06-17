@@ -19,12 +19,13 @@ NBR_REPLICATES_PER_BATCH = config['NBR_REPLICATES_PER_BATCH']
 SUBSAMPLING_WEIGHTED = config['SUBSAMPLING_WEIGHTED']
 
 DFE_DICT = {}
+BOUNDS = "div"
 if "GRAPES" in config:
     DFE_DICT["grapes"] = f"grapes:{ROOT}/{config['GRAPES']['PATH']} {config['GRAPES']['PARAMS']}"
 if "POLYDFE" in config:
     p = config['POLYDFE']
     DFE_DICT["polyDFE"] = f"polyDFE:{ROOT}/{p['PATH']} -i {FOLDER}/config/{p['INIT']} 1 -r {FOLDER}/config/{p['RANGE']} 1 {p['PARAMS']}"
-
+    BOUNDS = str(p["BOUNDS"])
 DFE_MODELS = [f"'{DFE_DICT[m]}'" for m in config['DFE_MODELS'] if m in DFE_DICT]
 
 BATCHES = range(1,NBR_BATCHES + 1)
@@ -46,13 +47,13 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
             for granularity in GRANULARITY:
                 if ("MutSelExclu" not in granularity) and SUBSAMPLING_WEIGHTED:
                     continue
-                TSV_LIST.append(f"{EXP_FOLDER}/{row['Species']}-{row['SampleName']}-{granularity}/results-{model}-{sfs}.tsv")
+                TSV_LIST.append(f"{EXP_FOLDER}/{row['Species']}-{row['SampleName']}-{granularity}/results-{model}-{sfs}-{BOUNDS}.tsv")
 
 if len(TSV_LIST) > 0:
-    os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot",exist_ok=True)
-    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/results.tex")
-    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/violin_plot")
-    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/genome_results.tsv")
+    os.makedirs(f"{ANALYSIS_FOLDER}/ViolinPlot-{BOUNDS}",exist_ok=True)
+    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/results-{BOUNDS}.tex")
+    OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/violin_plot-{BOUNDS}")
+    # OUTPUT_LIST.append(f"{ANALYSIS_FOLDER}/genome_results.tsv")
 
 localrules: all,pickle,parse_results,gather_parsed_results,plot_heatmap,plot_violin,parse_genome_results,gather_genome_results,plot_scatter,table_ontology,plot_venn
 
@@ -95,20 +96,21 @@ rule generate_DoFE:
 rule parse_results:
     input:
         dfe_res=expand(EXP_FOLDER + "/{{species}}-{{popu}}-{{level}}-{{method}}-{{pp}}/{{sfs}}/{batch}.txt",batch=BATCHES),
-        script=f'{ROOT}/scripts/parse_results.py'
+        script=f'{ROOT}/scripts/parse_results.py',
+        postprocessing=f'{ROOT}/scripts/postprocessing.R'
     params:
         folder=lambda wildcards: f"--folder {EXP_FOLDER}/{wildcards.species}-{wildcards.popu}-{wildcards.level}-{wildcards.method}-{wildcards.pp}/{wildcards.sfs}"
     output:
-        plot=EXP_FOLDER + "/{species}-{popu}-{level}-{method}-{pp}/results-{model}-{sfs}.tsv"
+        plot=EXP_FOLDER + "/{species}-{popu}-{level}-{method}-{pp}/results-{model}-{sfs}" + f"-{BOUNDS}.tsv"
     shell:
-        'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot}'
+        'python3 {input.script} {params.folder} --model {wildcards.model} --output {output.plot} --bounds {BOUNDS} --postprocessing {input.postprocessing}'
 
 rule gather_parsed_results:
     input:
         tsv=TSV_LIST,
         script=f'{ROOT}/scripts/gather_parsed_results.py'
     output:
-        tsv=f"{ANALYSIS_FOLDER}/results.tsv"
+        tsv=f"{ANALYSIS_FOLDER}/results-{BOUNDS}.tsv"
     shell:
         'python3 {input.script} --tsv {input.tsv} --output {output.tsv}'
 
@@ -117,18 +119,18 @@ rule plot_violin:
         tsv=TSV_LIST,
         script=f'{ROOT}/scripts/plot_violin.py'
     output:
-        tsv=touch(f"{ANALYSIS_FOLDER}/violin_plot")
+        tsv=touch(f"{ANALYSIS_FOLDER}/violin_plot-{BOUNDS}")
     shell:
-        'mkdir -p {ANALYSIS_FOLDER}/ViolinPlot && python3 {input.script} --tsv {input.tsv} --output {ANALYSIS_FOLDER}/ViolinPlot'
+        'mkdir -p {ANALYSIS_FOLDER}/ViolinPlot-{BOUNDS} && python3 {input.script} --tsv {input.tsv} --output {ANALYSIS_FOLDER}/ViolinPlot-{BOUNDS}'
 
 rule plot_heatmap:
     input:
         sample_list=f"{FOLDER}/{config['SAMPLE_LIST']}",
-        violin=f"{ANALYSIS_FOLDER}/violin_plot",
-        tsv=f"{ANALYSIS_FOLDER}/results.tsv",
+        violin=f"{ANALYSIS_FOLDER}/violin_plot-{BOUNDS}",
+        tsv=f"{ANALYSIS_FOLDER}/results-{BOUNDS}.tsv",
         script=f'{ROOT}/scripts/tex_violin_heatmap.py'
-    output: f"{ANALYSIS_FOLDER}/results.tex"
-    shell: 'cp -f main-table.tex {ANALYSIS_FOLDER}/ && python3 {input.script} --tsv {input.tsv} --sample_list {input.sample_list} --output {output}'
+    output: f"{ANALYSIS_FOLDER}/results-{BOUNDS}.tex"
+    shell: 'cp -f main-table.tex {ANALYSIS_FOLDER}/ && python3 {input.script} --tsv {input.tsv} --bounds {BOUNDS} --sample_list {input.sample_list} --output {output}'
 
 rule generate_DoFE_genome:
     input:

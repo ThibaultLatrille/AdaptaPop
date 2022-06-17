@@ -33,9 +33,13 @@ def parse_line(line):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-f', '--folder', required=False, type=str, dest="folder", help="Folder path")
-    parser.add_argument('-m', '--model', required=False, type=str, dest="model", help="Model name")
-    parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output path")
+    parser.add_argument('-f', '--folder', required=True, type=str, dest="folder", help="Folder path")
+    parser.add_argument('-m', '--model', required=True, type=str, dest="model", help="Model name")
+    parser.add_argument('-o', '--output', required=True, type=str, dest="output", help="Output path")
+    parser.add_argument('-p', '--postprocessing', required=False, type=str, dest="postprocessing",
+                        help="PolyDFE postprocessing R script")
+    parser.add_argument('-b', '--bounds', required=False, type=str, dest="bounds", default="div",
+                        help="Integral inferior bound for the calculation of alpha by polyDFE")
     args = parser.parse_args()
     omega_dict = defaultdict(list)
     phylo_dict = defaultdict(list)
@@ -114,12 +118,13 @@ if __name__ == '__main__':
             omega_dict["OMEGA_NA"].append(pnps)
             omega_dict["ADAPTIVE"].append("ADAPTIVE" in filepath)
     else:
-        '''
-        from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
+        postprocessing = None
+        if args.bounds not in ["div", "dfe"]:
+            from rpy2.robjects.packages import SignatureTranslatedAnonymousPackage
 
-        string = ''.join(open("postprocessing.R", "r").readlines())
-        postprocessing = SignatureTranslatedAnonymousPackage(string, "postprocessing")
-        '''
+            string = ''.join(open(args.postprocessing, "r").readlines())
+            postprocessing = SignatureTranslatedAnonymousPackage(string, "postprocessing")
+
         for filepath in glob(args.folder + "/*polyDFE.out"):
             polydfe_dico = read_polyDFE(filepath)
             if len(polydfe_dico) == 0: continue
@@ -129,12 +134,15 @@ if __name__ == '__main__':
                 yn00_results = read_yn(filepath.replace("_polyDFE.out", "_yn00.out"))
                 res = list(list(yn00_results.values())[0].values())[0]['YN00']
                 dnds = res["omega"]
-            '''
-            estimates = postprocessing.parseOutput(filepath)[0]
-            alpha = postprocessing.estimateAlpha(estimates, supLimit=5)[0]
-            alpha_dfe = polydfe_dico["alpha_dfe"]
-            '''
-            alpha = polydfe_dico["alpha_div"]
+
+            if args.bounds == "div":
+                alpha = polydfe_dico["alpha_div"]
+            if args.bounds == "dfe":
+                alpha = polydfe_dico["alpha_dfe"]
+            else:
+                estimates = postprocessing.parseOutput(filepath)[0]
+                alpha = postprocessing.estimateAlpha(estimates, supLimit=float(args.bounds))[0]
+
             omega_dict["OMEGA_NA"].append(dnds * (1 - alpha))
             omega_dict["OMEGA_A"].append(dnds * alpha)
             omega_dict["ALPHA"].append(alpha)

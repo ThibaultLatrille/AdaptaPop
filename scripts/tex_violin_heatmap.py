@@ -20,7 +20,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-t', '--tsv', required=False, type=str, dest="tsv", help="Input tsv file")
     parser.add_argument('-o', '--output', required=False, type=str, dest="output", help="Output tex file")
-
+    parser.add_argument('-b', '--bounds', required=False, type=str, dest="bounds", default="div",
+                        help="Integral inferior bound for the calculation of alpha by polyDFE")
     parser.add_argument('-s', '--sample_list', required=False, type=str, dest="sample_list", help="Sample list file")
     args = parser.parse_args()
 
@@ -99,8 +100,8 @@ if __name__ == '__main__':
             else:
                 columns = ["pop", "species", "w_Test", "w_Control", "w_pval", "w_pval_adj", "P_S"]
             ddf = adjusted_holm_pval(ddf, prefix=prefix + "_")
-            o.write("\\includegraphics[width=\\linewidth]{ViolinPlot/" +
-                    f"{level}-{method}-{pp}-{sfs}-{model}-{prefix}.pdf" + "} \n")
+            o.write("\\includegraphics[width=\\linewidth]{ViolinPlot-" +
+                    f"{args.bounds}/{level}-{method}-{pp}-{sfs}-{model}-{prefix}.pdf" + "} \n")
             o.write("\\begin{adjustbox}{width = 1\\textwidth}\n")
             o.write(ddf.to_latex(index=False, escape=False, float_format=tex_f, column_format=column_format(columns),
                                  header=[header[i] for i in columns], columns=columns))
@@ -136,7 +137,9 @@ if __name__ == '__main__':
         o.write("\\newpage\n")
     o.close()
 
-    tex_to_pdf = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory={0} {0}/main-table.tex".format(
-        os.path.dirname(args.output))
+    folder = os.path.dirname(args.output)
+    tex = f"{os.path.dirname(args.output)}/main-table-{args.bounds}.tex"
+    os.system(f"sed 's/results.tex/results-{args.bounds}.tex/g' {folder}/main-table.tex > {tex}")
+    tex_to_pdf = f"pdflatex -synctex=1 -interaction=nonstopmode -output-directory={folder} {tex}"
     os.system(tex_to_pdf)
     os.system(tex_to_pdf)

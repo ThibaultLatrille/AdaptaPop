@@ -19,8 +19,8 @@ if __name__ == '__main__':
         df_phylo = pd.read_csv(filepath.replace(".tsv", ".phylo.tsv"), sep="\t")
         df = df[df["OMEGA_NA"] != "None"]
 
-        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")
-        plot, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")
+        sp, pop, level, method, pp = filepath.split("/")[-2].replace("_", " ").split("-")[:5]
+        plot, model, sfs = filepath.split("/")[-1].replace(".tsv", "").split("-")[:3]
 
         wa_test = np.mean(df[df["ADAPTIVE"]]["OMEGA_A"])
         wa_pval = len([1 for x in df[~df["ADAPTIVE"]]["OMEGA_A"] if x > wa_test]) / len(df[~df["ADAPTIVE"]]["OMEGA_A"])
