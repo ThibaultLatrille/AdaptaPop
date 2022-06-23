@@ -135,7 +135,7 @@
     Present-day genetic sequences are informative of populations past evolutionary history and can carry signatures of selection at different scales.
     One main goal of molecular evolution is to disentangle and quantify the intensity of neutral, adaptive and purifying evolution acting on sequences, leveraging variations in sequences between and within species.
     Theoretically, in order to detect adaptive evolution, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model.
-    In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although there are instance where they are indeed under selection\cite{bailey_adaptive_2014}.
+    In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although there are instance where they are indeed under selection\cite{duret_expression_1999, duret_evolution_2002, galtier_codon_2018}.
     Non-synonymous mutations, on the other hand, might be under a mixture of varying degrees of adaptive and purifying selection.
     Contrasting synonymous and non-synonymous changes, two different types of methods have emerged to quantify both positive and purifying selection acting on protein-coding sequences.
     One method, stemming from phylogeny, uses a multiple sequence alignment comprised of genes from different species and codon models to quantify adaptation\cite{muse_likelihood_1994,goldman_codonbased_1994}.
@@ -291,9 +291,10 @@
     \section*{Methods}\label{sec:methods}
 
     \subsection*{Phylogenetic dataset}
-    protein-coding DNA sequences alignments in placental mammals are extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
+    Protein-coding DNA sequences alignments in placental mammals and gene trees are extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database, containing $116$ mammalian reference sequences in v10c\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
     Genes located on the X, Y and mitochondrial chromosome are discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
     Additionally, sequences from the species for which polymorphism are available, as well as their sister species have been discarded from the analysis to ensure independence between the data used in the phylogenetic and population-genetic method.
+    Altogether, $14,509$ protein-coding DNA sequences alignment have been analyzed containing at most $87$ reference sequences of placental mammals per alignment.
 
     \subsection*{Adaptation in phylogeny-based method}
     Classical codon models estimates a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates\cite{muse_likelihood_1994,goldman_codonbased_1994}.
