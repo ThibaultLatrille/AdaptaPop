@@ -1,5 +1,6 @@
 %! BibTeX Compiler = biber
 \documentclass{article}
+\usepackage{caption}
 \usepackage{xcolor}
 \definecolor{BLUELINK}{HTML}{0645AD}
 \definecolor{DARKBLUELINK}{HTML}{0B0080}
@@ -52,6 +53,8 @@
     \begin{tabular}[#1]{@{}c@{}}
         #2
     \end{tabular}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
 
 \usepackage{xfrac, nicefrac}
 \usepackage[backend=biber,style=nature]{biblatex}
@@ -60,7 +63,6 @@
 
 \newcommand{\UniDimArray}[1]{\bm{#1}}
 \newcommand{\BiDimArray}[1]{\bm{#1}}
-
 \DeclareMathOperator{\E}{\mathbb{E}}
 \DeclareMathOperator{\Var}{\mathrm{Var}}
 \newcommand{\der}{\mathrm{d}}
@@ -85,18 +87,22 @@
 \newcommand{\Sphy}{S}
 \newcommand{\Spop}{\beta}
 
-\title{The rate of adaptation at the phylogenetic and population-genetic scale}
+\title{Genes and sites under adaptation at the phylogenetic scale also exhibit adaptation at the population-genetic scale}
 
 %\date{September 9, 1985}	% Here you can change the date presented in the paper title
 %\date{} \rowcolor{LIGHTGREY}% Or removing it
 
 \author{
     \large
-    T. {Latrille}, N. {Rodrigue}, N. {Lartillot}\\
-    \normalsize
-    \texttt{\href{mailto:thibault.latrille@ens-lyon.org}{thibault.latrille@ens-lyon.org}} \\
+    \textbf{T. {Latrille}$^{1,2,3}$, N. {Rodrigue}$^{4}$, N. {Lartillot}$^{1}$}\\
+    \footnotesize $^{1}$Université de Lyon, CNRS, LBBE UMR 5558, Villeurbanne, France\\
+    \footnotesize $^{2}$École Normale Supérieure de Lyon, Université de Lyon, Lyon, France\\
+    \footnotesize $^{3}$Université de Lausanne, Lausanne, Switzerland\\
+    \footnotesize $^{4}$Department of Biology, Carleton University, Ottawa, Canada \\
+    \footnotesize \texttt{\href{mailto:thibault.latrille@ens-lyon.org}{thibault.latrille@ens-lyon.org}} \\
 }
 
+\date{}
 
 \begin{document}
     \maketitle
@@ -104,13 +110,67 @@
     \tableofcontents
     \pagebreak
 
+
+    \section{Running Bayescode}
+
+    \subsection{Site-specific $\omega$-based codon models.}
+    The $61$-by-$61$ codon substitution matrix ($\UniDimArray{q^{(i)}}$) at site $i$ is defined entirely by the mutation matrix ($\UniDimArray{\mu}$), $\omega^{(i)}$ and the genetic code:
+    \begin{equation}
+        \begin{dcases}
+            q_{a \mapsto b}^{(i)} & = 0 \text{ if codons $a$ and $b$ are more than one mutation away,} \\
+            q_{a \mapsto b}^{(i)} & = \mu_{a \mapsto b} \text{ if codons $a$ and $b$ are synonymous,} \\
+            q_{a \mapsto b}^{(i)} & = \omega^{(i)} \mu_{a \mapsto b} \text{ if codons $a$ and $b$ are non-synonymous}.
+        \end{dcases}
+    \end{equation}
+    By definition of the instantaneous rate matrix, the sum of the entries in each row of the codon substitution rate matrix $\UniDimArray{q}$ is equal to $0$, giving the diagonal entries:
+    \begin{equation}
+        q_{a \mapsto b}^{(i)}= - \sum\limits_{b \neq a, b = 1}^{61} q_{a \mapsto b}^{(i)}.
+    \end{equation}
+
+    In BayesCode (\url{https://github.com/ThibaultLatrille/bayescode}), $\omega$-based site-specific codon models are obtained by running \textit{mutselomega} with the options:
+    \begin{scriptsize}
+        \begin{verbatim}
+        mutselomega --omegashift 0.0 --freeomega --omegancat 30 --flatfitness -a my_alignment.phy -t my_tree.newick -u 2000 my_genename
+        \end{verbatim}
+    \end{scriptsize}
+    The mean value of $\omega$ per site is then obtained by running \textit{readmutselomega} with the options:
+    \begin{scriptsize}
+        \begin{verbatim}
+        readmutselomega --every 1 --until 2000 --burnin 1000 -c 0.025 my_genename
+        \end{verbatim}
+    \end{scriptsize}
+
+    \subsection{Site-specific mutation-selection codon models}
+
+    In BayesCode (\url{https://github.com/ThibaultLatrille/bayescode}), mutation-selection codon models are obtained by running \textit{mutselomega} for 2000 points of MCMC with the options:
+    \begin{scriptsize}
+        \begin{verbatim}
+        mutselomega ---omegashift 0.0 --ncat 30 -a my_alignment.phy -t my_tree.newick -u 2000 my_genename
+        \end{verbatim}
+    \end{scriptsize}
+    The collection of site-specific fitness profiles ($\UniDimArray{F^{(i)}}, \forall i$) are then obtained by running \textit{readmutselomega}, reading 1000 points of MCMC (first 1000 are considered as burn-in) with the options:
+    \begin{scriptsize}
+        \begin{verbatim}
+        readmutselomega --every 1 --until 2000 --burnin 1000 --ss my_genename
+        \end{verbatim}
+    \end{scriptsize}
+    The gene-specific mutation matrix ($\UniDimArray{\mu}$) is also obtained by running \textit{readmutselomega}, reading 1000 points of MCMC (first 1000 are considered as burn-in) with the options:
+    \begin{scriptsize}
+        \begin{verbatim}
+        readmutselomega --every 1 --until 2000 --burnin 1000 --nuc my_genename
+        \end{verbatim}
+    \end{scriptsize}
+
+    \newpage
+
+
     \section{Gene ontology enrichment at gene and site level}
     \label{sec:gene-ontology-enrichment}
 
     \subsection{Gene-specific mutation-selection model}
 
-    Genes are classified under an adaptive regime if the lower bound for the confidence interval of gene-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the confidence interval of gene-specific $\omega_{0}$.
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each gene.
+    Genes are classified under an adaptive regime if the lower bound for the posterior credible interval of gene-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of gene-specific $\omega_{0}$.
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each gene.
     Genes are classified as control if they are not in the adaptive group.
     For each ontology ($775$ ontologies), a 2x2 contingency tables is built by counting the number of genes based on their evolutionary regime (adaptive regime or control group) and their ontology (whether they have this specific ontology or not).
     Fisher's exact tests are then performed for these 2x2 contingency tables.
@@ -118,19 +178,21 @@
 
     \begin{center}
         \footnotesize
+        \captionof{table}{Ontology enrichment with gene-specific mutation-selection model}
         \input{gene-MutSel-0.025-table.core.tex}
     \end{center}
     The genes detected under adaptation by mutation-selection codon models are enriched primarily with ontologies related to immune system processes (innate immune response, immune response, inflammatory response, defense response to virus, etc) and ontologies related to the external membrane (extracellular region, extracellular exosome, etc).
 
     \subsection{Site-specific $\bm{\omega}$-based model}
     \label{subsec:w-based-codon-method}
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the confidence interval of site-specific $\omega$ ($\alpha=0.05$) is above 1.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above 1.
     Because this is a unilateral test ($\omega > 1$) the risk is $\alpha/2=0.05/2=0.025$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
 
     \begin{center}
         \footnotesize
+        \captionof{table}{Ontology enrichment with site-specific $\bm{\omega}$-based model}
         \input{site-Classical-0.025-table.core.tex}
     \end{center}
     The sites detected under adaptation by site-specific $\omega$-based codon models are enriched primarily with ontologies related to immune system processes (innate immune response, immune response, inflammatory response, defense response to virus, etc) and ontologies related to the external membrane (extracellular region, extracellular exosome, etc).
@@ -138,13 +200,14 @@
     \subsection{Site-specific mutation-selection model}
     \label{subsec:mutation-selection-codon-method}
 
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the confidence interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the confidence interval of site-specific $\omega_{0}$ ($\alpha=0.05$).
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of site-specific $\omega_{0}$ ($\alpha=0.05$).
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
 
     \begin{center}
         \footnotesize
+        \captionof{table}{Ontology enrichment with site-specific mutation-selection model}
         \input{site-MutSel-0.025-table.core.tex}
     \end{center}
     The sites detected under adaptation by mutation-selection codon models are enriched primarily with ontologies related to immune system processes (innate immune response, immune response, inflammatory response, defense response to virus, etc) and ontologies related to the external membrane (extracellular region, extracellular exosome, etc).
@@ -154,14 +217,15 @@
     \subsection{Exclusive to site-specific mutation-selection model}
     \label{subsec:exclusive-to-mutation-selection-codon-method}
 
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the confidence interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the confidence interval of site-specific $\omega_{0}$ ($\alpha=0.05$), while the mean site-specific $\omega$ is below $1$.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of site-specific $\omega_{0}$ ($\alpha=0.05$), while the mean site-specific $\omega$ is below $1$.
     Thus, these sites cannot be detected by site-specific mutation-selection model.
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two confidence interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
 
     \begin{center}
         \footnotesize
+        \captionof{table}{Ontology enrichment with sites exclusive to mutation-selection model}
         \input{site-MutSelExclu-0.025-table.core.tex}
     \end{center}
 
@@ -174,6 +238,7 @@
     \label{subsec:method-summary}
 
     \begin{center}
+        \captionof{figure}{~}
         \includegraphics[width=\linewidth]{pipeline}
     \end{center}
 
@@ -186,6 +251,7 @@
     $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes, such as to alleviate the fact that genes classified as adaptive have a higher $\omega$ than genes classified as nearly-neutral, which could bias our comparison since $\rateApop$ could simply be higher for genes with higher $\omega$.
 
     \begin{center}
+        \captionof{figure}{~}
         \includegraphics[width=\linewidth]{polymorphism-method-control}
     \end{center}
 
@@ -193,7 +259,7 @@
     First, a normal distribution is fitted to $\omega$ in both sets, and the probability density is called $f$ for the adaptive set and $g$ for the nearly-neutral set.
     Secondly, for each gene/site classified as nearly-neutral the weight is computed as the ratio $f(\omega)/g(\omega)$ for this specific gene/site.
     Sampling with this procedure produce a set of genes/sites classified as nearly-neutral with the same $\omega$ on average than the set of adaptive genes/sites.
-
+    \newpage
     \input{control/results_genes.tex}
 
     In \textit{Bos}, \textit{Capras} and \textit{Ovis}, $\dnds$ computed for the set of genes under adaptation at the phylogenetic scale (red, $1 > \omega > \omega_{0}$) is not higher than for the set of genes under a nearly-neutral regime (green, $1 > \omega \simeq \omega_{0}$), showing that the sampling procedure controlling for $\omega$ at the phylogenetic scale is valid.
@@ -210,17 +276,19 @@
 
     \pagebreak
 
+
     \section{Rate of adaptation enrichment with $\bm{\alpha=0.005}$}
     \label{sec:threshold}
     For each protein-coding DNA alignment, the Monte-Carlo Markov-Chain (MCMC) is run during $2000$ points using the \href{https://github.com/bayesiancook/bayescode}{BayesCode} software, after a burn-in of $1000$ points.
-    The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $99.5$\% confidence interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
-    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the confidence interval of $\omega$ is above the upper bound of the confidence interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
-    Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the confidence interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the confidence interval of  $\omega$, meaning $\omega = \omega_{0}$.
+    The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $99.5$\% posterior credible interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
+    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the posterior credible interval of $\omega$ is above the upper bound of the posterior credible interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+    Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the posterior credible interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the posterior credible interval of  $\omega$, meaning $\omega = \omega_{0}$.
     Genes and sites that do not fall in any of these categories are considered unclassified.
 
     \subsection{Scatterplot with $\bm{\alpha=0.005}$}
 
     \begin{center}
+        \captionof{figure}{~}
         \begin{minipage}{0.32\linewidth}
             \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025}
         \end{minipage}
@@ -236,11 +304,12 @@
     \end{center}
 
     $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
-    Scatter plot of $14,509$ genes in panel A, with $99.5$\% confidence interval ($\alpha=0.005$).
+    Scatter plot of $14,509$ genes in panel A, with $99.5$\% posterior credible interval ($\alpha=0.005$).
     Density plot of sites in panel B and C.
     Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
     In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
 
+    \newpage
     \input{no_control/results.tex}
 
     With a threshold of $\alpha=0.005$ more stringent than as shown in the main manuscript ($\alpha=0.05$), the rate of false positive is mechanically lower both at the site and gene level.
@@ -252,7 +321,6 @@
     Hence in the manuscript we settled with a rate of $\simeq 1 \%$ FDR at the gene level and $\simeq 5 \%$ FDR at the site level.
 
     \pagebreak
-
     \section{Rate of adaptation enrichment with polyDFE}
     \label{sec:polyDFE}
 
@@ -269,43 +337,43 @@
     \subsubsection*{polyDFE Model C}
     In model C, the DFE ($\phi$) is given by a mixture of a $\Gamma$ and Exponential distributions, parameterized by $\Spop_d$ , $b$, $p_b$
     and $\Spop_b$ as:
-    \begin{equation*}
+    \begin{equation}
         \phi (\Spop) =
         \begin{dcases}
             \left( 1 - p_b \right) f_{\Gamma}(-\Spop; -\Spop_d, b) & \text{ if $\Spop \leq 0$,} \\
             p_b f_{e}(\Spop; \Spop_b) & \text{ if $\Spop > 0$,} \\
         \end{dcases}
-    \end{equation*}
-    where $\Spop_d < 0 $ is the mean of the DFE for $\Spop \leq 0$,
-    $b > 0$ is the shape of the $\Gamma$ distribution,
-    $0 \leq p_b \leq 1$ is the probability that $\Spop > 0$,
-    $\Spop_b > 0$ is the mean of the DFE for $\Spop > 0$,
+    \end{equation}
+    where $\Spop_d < 0 $ is the estimated mean of the DFE for $\Spop \leq 0$,
+    $b > 0$ is the shape of the $\Gamma$ distribution fixed to $1.0$,
+    $0 \leq p_b \leq 1$ is the estimated probability that $\Spop > 0$,
+    $\Spop_b > 0$ is the mean of the DFE for $\Spop > 0$ fixed to $4.0$,
     and $f_{\Gamma}(x; m, b)$ is the density of the $\Gamma$ distribution with mean m and shape b, while $f_{e}(x; m)$ is the density of the Exponential distribution with mean $m$.
 
     \subsubsection*{polyDFE Model D}
     In model D, the DFE ($\phi$) is given as a discrete distribution, where the selection coefficients can take one of $\Spop_i$ distinct
     values, $1 \leq i \leq K$, where each value $\Spop_i$ has probability $p_i$, with
-    \begin{equation*}
+    \begin{equation}
         \sum\limits_{i=0}^{K} p_i = 1.
-    \end{equation*}
+    \end{equation}
 
     \subsection{PolyDFE model C - including divergence data}
     The rate of adaptation $\rateApop^{\mathrm{polyDFE}}$ is computed as the difference between the total rate of evolution $\omega=\dnds$ obtained from divergence data and the rate of non-adaptive evolution ($\omega_{\mathrm{NA}}(\phi)$) obtained from polymorphism data as in \textcite{tataru_inference_2017}:
-    \begin{align*}
+    \begin{align}
         \rateApop^{\mathrm{polyDFE}} &= \omega - \omega_{\mathrm{NA}}(\phi), \\
         &= \dnds - \omega_{\mathrm{NA}}(\phi).
-    \end{align*}
+    \end{align}
     Formally, $\omega_{\mathrm{NA}}(\phi)$ is computed as the average fixation probability of mutations ($\pfix (\Spop)$) over the probability distribution given by the DFE $\phi (\Spop)$, taken only for the negatively selected mutations ($\Spop < 0$) as:
-    \begin{align*}
+    \begin{align}
         \omega_{\mathrm{NA}}(\phi) &= \int_{-\infty}^{0} \pfix (\Spop) \phi (\Spop) \der \Spop, \\
         &= \int_{-\infty}^{0} \frac{\Spop}{1 - \e^{-\Spop}} \phi (\Spop) \der \Spop, \\
         &= \int_{-\infty}^{0} \frac{\Spop}{1 - \e^{-\Spop}} \left( 1 - p_b \right) f_{\Gamma}(-\Spop; -\Spop_d, b) \der \Spop. \\
-    \end{align*}
+    \end{align}
     Altogether, $\rateApop^{\mathrm{polyDFE}}$ is given as:
-    \begin{align*}
+    \begin{align}
         \rateApop^{\mathrm{polyDFE}} &= \dnds - \omega_{\mathrm{NA}}(\phi), \\
         &= \dnds - \int_{-\infty}^{0} \frac{\Spop}{1 - \e^{-\Spop}} \phi (\Spop) \der \Spop.
-    \end{align*}
+    \end{align}
     \input{polyDFE/modelC-results-div.tex}
 
     \begin{itemize}
@@ -320,11 +388,11 @@
 
     \subsection{PolyDFE model C - polymorphism data alone with $\Spop > 0$}
     As in \textcite{tataru_inference_2017}, the rate of adaptation $\rateApop^{\mathrm{polyDFE}}$ can also be estimated from the polymorphism data alone, computed as the average fixation probability $\pfix (\Spop)$ over the probability given the DFE ($\phi (\Spop)$), only for the positively selected mutations ($\Spop > 0$), as:
-    \begin{align*}
+    \begin{align}
         \rateApop^{\mathrm{polyDFE}} &= \int_{0}^{+\infty} \pfix (\Spop) \phi (\Spop) \der \Spop, \\
         &= \int_{0}^{+\infty} \frac{\Spop}{1 - \e^{-\Spop}} \phi (\Spop) \der \Spop, \\
         &= \int_{0}^{+\infty} \frac{\Spop}{1 - \e^{-\Spop}} p_b f_{e}(\Spop; \Spop_b) \der \Spop.
-    \end{align*}
+    \end{align}
     \input{polyDFE/modelC-results-0.tex}
 
     \begin{itemize}
@@ -342,9 +410,9 @@
     The definition for a positively selected mutation by the criterion $\Spop > 0$ is also open to interpretation, and the integration limit can be set to a strictly positive value (e.g. 1, 3 or 5) instead of 0\cite{galtier_adaptive_2016, tataru_inference_2017}.
     The reasoning is that mutations with a positive selection coefficient that is not very large are not necessarily advantageous mutations.
     In \textcite{galtier_adaptive_2016}, the threshold $\Spop > 5$ is used and the rate of adaptation is thus:
-    \begin{equation*}
+    \begin{equation}
         \rateApop^{\mathrm{polyDFE}} = \int_{5}^{+\infty} \frac{\Spop}{1 - \e^{-\Spop}} p_b f_{e}(\Spop; \Spop_b) \der \Spop.
-    \end{equation*}
+    \end{equation}
     \input{polyDFE/modelC-results-5.tex}
 
     \begin{itemize}
@@ -360,22 +428,23 @@
     \subsection{PolyDFE model D - including divergence}
     Again, the rate of adaptation $\rateApop^{\mathrm{polyDFE}}$ is computed as the difference between the total rate of evolution $\omega=\dnds$ obtained from divergence data and the rate of non-adaptive evolution ($\omega_{\mathrm{NA}}(\phi)$) obtained from polymorphism data.
     Also, $\omega_{\mathrm{NA}}(\phi)$ is computed as the average fixation probability of mutations ($\pfix (\Spop)$) over the probability distribution given by the DFE $\phi (\Spop)$, taken only for the negatively selected mutations ($\Spop < 0$) as:
-    \begin{align*}
+    \begin{align}
         \omega_{\mathrm{NA}}(\phi) &= \sum_{i=1}^{K} \mathbbm{1}_{]-\infty, 0]}(\Spop_i) \pfix (\Spop_i) p_i,  \\
         &= \sum_{i=1}^{K} \mathbbm{1}_{]-\infty, 0]}(\Spop_i) \frac{\Spop_i}{1 - \e^{-\Spop_i}} p_i,
-    \end{align*}
+    \end{align}
     where $\mathbbm{1}_{]-\infty, 0]}(\Spop)$ is the indicator function:
-    \begin{equation*}
+    \begin{equation}
         \mathbbm{1}_{]-\infty, 0]}(\Spop) =
         \begin{dcases}
             1 & \text{ if $\Spop \leq 0$,} \\
             0 & \text{ if $\Spop > 0$.} \\
         \end{dcases}
-    \end{equation*}
+    \end{equation}
     Altogether, $\rateApop^{\mathrm{polyDFE}}$ is given as:
-    \begin{align*}
+    \begin{align}
         \rateApop^{\mathrm{polyDFE}} &= \dnds - \sum_{i=1}^{K} \mathbbm{1}_{]-\infty, 0]}(\Spop_i) \frac{\Spop_i}{1 - \e^{-\Spop_i}} p_i.
-    \end{align*}
+    \end{align}
+    \newpage
     \input{polyDFE/modelD-results-div.tex}
 
     \begin{itemize}
