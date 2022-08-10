@@ -169,8 +169,8 @@
 
     \subsection{Gene-specific mutation-selection model}
 
-    Genes are classified under an adaptive regime if the lower bound for the posterior credible interval of gene-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of gene-specific $\omega_{0}$.
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each gene.
+    Genes are classified under an adaptive regime if the lower bound for the posterior credibility interval of gene-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credibility interval of gene-specific $\omega_{0}$.
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credibility interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each gene.
     Genes are classified as control if they are not in the adaptive group.
     For each ontology ($775$ ontologies), a 2x2 contingency tables is built by counting the number of genes based on their evolutionary regime (adaptive regime or control group) and their ontology (whether they have this specific ontology or not).
     Fisher's exact tests are then performed for these 2x2 contingency tables.
@@ -185,7 +185,7 @@
 
     \subsection{Site-specific $\bm{\omega}$-based model}
     \label{subsec:w-based-codon-method}
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above 1.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credibility interval of site-specific $\omega$ ($\alpha=0.05$) is above 1.
     Because this is a unilateral test ($\omega > 1$) the risk is $\alpha/2=0.05/2=0.025$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
@@ -200,8 +200,8 @@
     \subsection{Site-specific mutation-selection model}
     \label{subsec:mutation-selection-codon-method}
 
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of site-specific $\omega_{0}$ ($\alpha=0.05$).
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credibility interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credibility interval of site-specific $\omega_{0}$ ($\alpha=0.05$).
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credibility interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
 
@@ -217,9 +217,9 @@
     \subsection{Exclusive to site-specific mutation-selection model}
     \label{subsec:exclusive-to-mutation-selection-codon-method}
 
-    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credible interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credible interval of site-specific $\omega_{0}$ ($\alpha=0.05$), while the mean site-specific $\omega$ is below $1$.
+    For each gene, we computed the proportion of sites classified under an adaptive regime such that the lower bound for the posterior credibility interval of site-specific $\omega$ ($\alpha=0.05$) is above the upper bound of the posterior credibility interval of site-specific $\omega_{0}$ ($\alpha=0.05$), while the mean site-specific $\omega$ is below $1$.
     Thus, these sites cannot be detected by site-specific mutation-selection model.
-    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
+    Because this is a unilateral test ($\omega > \omega_{0}$) and the two posterior credibility interval are independent, the risk is $(\alpha/2)^2=0.025^2=6.25 \times 10^{-4}$ for each site.
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes with Mann-Whitney U test.
     $p_{\mathrm{v}}^{\mathrm{adj}}$ are corrected for multiple comparison (Holm–Bonferroni correction).
 
@@ -280,9 +280,9 @@
     \section{Rate of adaptation enrichment with $\bm{\alpha=0.005}$}
     \label{sec:threshold}
     For each protein-coding DNA alignment, the Monte-Carlo Markov-Chain (MCMC) is run during $2000$ points using the \href{https://github.com/bayesiancook/bayescode}{BayesCode} software, after a burn-in of $1000$ points.
-    The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $99.5$\% posterior credible interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
-    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the posterior credible interval of $\omega$ is above the upper bound of the posterior credible interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
-    Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the posterior credible interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the posterior credible interval of  $\omega$, meaning $\omega = \omega_{0}$.
+    The mean of $\omega$ and $\omega_{0}$ are computed across the MCMC (after burn-in), as well as the $99.5$\% posterior credibility interval ($\alpha=0.005$) for each gene and site, which is more stringent than the $95$\% interval ($\alpha=0.05$) as shown in the main manuscript.
+    Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that a lower bound for the posterior credibility interval of $\omega$ is above the upper bound of the posterior credibility interval of $\omega_{0}$, meaning $\omega > \omega_{0}$.
+    Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the posterior credibility interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the posterior credibility interval of  $\omega$, meaning $\omega = \omega_{0}$.
     Genes and sites that do not fall in any of these categories are considered unclassified.
 
     \subsection{Scatterplot with $\bm{\alpha=0.005}$}
@@ -304,7 +304,7 @@
     \end{center}
 
     $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
-    Scatter plot of $14,509$ genes in panel A, with $99.5$\% posterior credible interval ($\alpha=0.005$).
+    Scatter plot of $14,509$ genes in panel A, with $99.5$\% posterior credibility interval ($\alpha=0.005$).
     Density plot of sites in panel B and C.
     Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
     In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
