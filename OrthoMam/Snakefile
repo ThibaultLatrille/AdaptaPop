@@ -8,7 +8,7 @@ configfile: 'config.yaml'
 fasta_folder = "Datasets/omm_NT_fasta.v10c_116"
 tree_folder = "Datasets/omm_RooTree.v10b_116"
 experiment_folder = "Experiments"
-bayescode_folder = "bayescode/_build"
+bayescode_folder = "bayescode/bin"
 CDS_list = list(sorted([i.replace(".fasta", "") for i in os.listdir(fasta_folder)]))[config['CDS_START_LIST']:config['CDS_END_LIST']]
 MODELS = {"siteomega": "--omegashift 0.0 --freeomega --omegancat 30 --flatfitness",
           "sitemutsel": "--omegashift 0.0 --ncat 30"}
