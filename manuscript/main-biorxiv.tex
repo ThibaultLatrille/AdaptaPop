@@ -138,54 +138,52 @@
     In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although there are instance where they are indeed under selection\cite{duret_expression_1999, duret_evolution_2002, galtier_codon_2018}.
     Non-synonymous mutations, on the other hand, might be under a mixture of varying degrees of adaptive and purifying selection.
     Contrasting synonymous and non-synonymous changes, two different types of methods have emerged to quantify both positive and purifying selection acting on protein-coding sequences.
-    One method, stemming from phylogeny, uses a multiple sequence alignment comprised of genes from different species and codon models to quantify adaptation\cite{muse_likelihood_1994,goldman_codonbased_1994}.
+    One method, stemming from phylogeny, uses a multiple sequence alignment comprised of genes from different species and relies on codon models to deduce the selective regime from the patterns of non-synonymous versus synonymous substitutions\cite{muse_likelihood_1994,goldman_codonbased_1994}.
     Starting with the work of McDonald \& Kreitman\cite{mcdonald_adaptative_1991}, another method, stemming from population genetics, contrasts polymorphism within a population and divergence to a closely related species.
 
     At the population-genetic scale, one of the most widely used tests for adaptation relies on the substitutions between two closely related species and polymorphism within one population\cite{mcdonald_adaptative_1991}.
-    Deleterious mutations are quickly removed by selection, and the ratio of non-synonymous substitutions over synonymous substitutions ($\dnds$) is expected to be lower than one, since very few of the non-synonymous deleterious mutations will reach fixation.
-    The ratio of non-synonymous polymorphism over synonymous polymorphism ($\pnps$) is also expected to be lower than one, since the non-synonymous deleterious mutations will be removed quickly from the population.
-    Most importantly, in the absence of advantageous mutations, these two ratios are expected to be the same ($\dnds=\pnps$).
-    If strongly advantageous mutations occur, then they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism, leading to a strictly positive adaptive rate $\rateApop = \dnds-\pnps$\cite{smith_adaptive_2002}.
-    This method is, however, plagued by the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\cite{eyre-walker_quantifying_2002}.
-    Subsequent developments have tried to correct for this effect by relying on an explicit nearly-neutral model\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}, so as to estimate the rate of evolution expected in the absence of adaptation (called $\omega_0$) based on polymorphism, and then to compare it with the observed rate of evolution, $\omega=\dnds$, to get an estimate of the rate of adaptation as $\rateApop = \omega-\omega_0$.
+    Under a strict neutral model (i.e.~assuming non-synonymous mutations are either neutral or strongly selected), the ratios of non-synonymous polymorphisms over synonymous polymorphisms ($\pnps$) and of non-synonymous substitutions over synonymous substitutions ($\dnds$) are expected to be equal.
+    If, in addition, strongly advantageous mutations occur, they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism.
+    As a result, the positive difference between $\dnds$ and $\pnps$ gives an estimate of the adaptive rate $\rateApop = \dnds-\pnps$\cite{smith_adaptive_2002}.
+    This simple argument is not strictly valid in the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\cite{eyre-walker_quantifying_2002}.
+    Subsequent developments have tried to correct for this effect by relying on an explicit nearly-neutral model\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}, so as to estimate the rate of evolution expected in the absence of adaptation (called $\omega_0$) based on polymorphism, and then to compare it with the rate of evolution, $\omega=\dnds$, to get an estimate of the rate of adaptation as $\rateApop = \omega-\omega_0$.
 
-    In phylogeny-based methods, the ratio of non-synonymous substitutions over synonymous substitutions, called $\omega$, is estimated from a protein-coding DNA alignment\cite{muse_likelihood_1994,goldman_codonbased_1994}.
-    Assuming synonymous mutations are neutral, $\omega>1$ signals an excess in the rate of non-synonymous substitutions, indicating that the protein is under adaptive evolution.
+    In their current formulation, phylogeny-based methods rely on the ratio of non-synonymous substitutions over synonymous substitutions, called $\omega$\cite{muse_likelihood_1994,goldman_codonbased_1994}.
+    Assuming synonymous mutations are neutral, $\omega>1$ signals an excess in the rate of non-synonymous substitutions compared to the neutral expectation, indicating that the protein is under adaptive evolution.
     Conversely, a deficit in non-synonymous substitutions, leading to $\omega<1$, means the protein is under purifying selection.
     In practice, proteins are typically under a mix of adaptive and purifying selection dominated by the latter, thus typically leading to an $\omega<1$ even in the presence of positive selection.
     At a finer scale, site models can detect a specific site ($i$) of the sequence with a $\omega^{(i)}>1$\cite{yang_codonsubstitution_2000, kosiol_patterns_2008}.
     Site models have the advantage of greater sensitivity and the ability to pinpoint where positive selection acts on the protein.
-    However, even at the site level, not all amino acids are acceptable, leading to $\omega^{(i)}$ capturing a mix of adaptive and purifying selection, reducing the sensitivity of test.
+    However, even at the level of a single site under recurrent adaptation, not all amino-acids are expected to be adaptive, leading to $\omega^{(i)}$ capturing a mix of adaptive and purifying selection, reducing the sensitivity of test.
     An alternative approach to detect adaptation would be to rely on an explicit nearly-neutral model as the null against which to detect deviations, similarly to the McDonald \& Kreitman test.
-    Recent development in this direction, the so-called phylogenetic mutation-selection models, provide a null model by estimating the fitness landscape over amino acid sequences, for each site of the sequence\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
+    Recent development in this direction, the so-called phylogenetic mutation-selection models provide a null model by estimating the fitness landscape over amino acid sequences, for each site of the sequence\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
     At the mutation-selection balance, the probability for a specific codon to be fixed in the population is proportional to its fitness, and a mutation from a high fitness amino acid towards a low fitness amino acid will have a small probability of fixation, genuinely accounting for purifying selection.
     Conversely, only nearly-neutral mutations between high fitness amino acids will tend to be permitted by the model, allowing for the explicit calculation of the nearly-neutral rate of non-synonymous substitutions at mutation-selection balance, called $\omega_{0}$\cite{spielman_relationship_2015, rodrigue_detecting_2017}.
     By contrasting $\omega$ estimated by $\omega$-based codon models and $\omega_{0}$ calculated from mutation-selection models, one can hope to extract the rate of adaptation $\rateAphy = \omega - \omega_{0}$.
-    However, mutation-selection models have not yet been applied to large-scale divergence data to quantify the rate of adaptation\cite{rodrigue_detecting_2017}.
 
-    In this study, we first applied $\omega$-based and mutation-selection codon models to whole exome data from placental mammals, so as to quantify the rate $\rateAphy$ for each site and protein and detect signatures of adaptive evolution at the phylogenetic scale.
-    Moreover, the rate of adaptation is directly comparable between phylogenetic and population-genetic methods since they seek a deviation of $\omega$ from a nearly-neutral null model, estimated with mutation-selection models in phylogenetic context ($\omega_{0}$) or from standing polymorphism in a population-genetic context ($\pnps$).
-    Accordingly, the goal of this study is to assess whether the two signals of adaptation are correlated, which represents a unique opportunity to confront phylogenetic and population-genetic methods.
-    The population- and phylogeny-based methods work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny-based methods versus events of adaptation in specific lineages for population-based methods.
+    Interestingly, the rate of adaptation is directly comparable between phylogenetic and population-genetic methods since both seek a deviation of $\omega$  from a nearly-neutral null model, estimated with mutation-selection models in phylogenetic context ($\omega_{0}$) or from standing polymorphism in a population-genetic context ($\pnps$).
+    This raises the question whether the two signals of adaptation are correlated, thus representing a unique opportunity to confront phylogeny-based and population-based methods.
+    These two methods work over very different time scales, for that reason, they might be capturing different signals: long-term evolutionary Red-Queen for phylogeny-based methods versus events of adaptation in specific lineages for population-based methods.
     Nonetheless, we expect sites and proteins under long-term evolutionary Red-Queen regimes to maintain their signal of adaptation in several independent lineages for which the McDonald \& Kreitman test is applied.
-    To test this hypothesis, we leverage a pipeline integrating divergence and polymorphism data across the entire exome for 29 populations across 7 genera, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
-    The pipeline then testes if the group of sequences detected with a high rate of adaptation in the phylogeny-based method also displays a high rate of adaptation in the population-based method, leveraging polymorphism available in each population.
+
+    Accordingly, in this study, we first applied $\omega$-based and mutation-selection codon models to whole exome data from placental mammals, so as to quantify the rate $\rateAphy$ for each site and protein and detect signatures of adaptive evolution at the phylogenetic scale.
+    Then, we developed a pipeline integrating (and aligning) divergence and polymorphism data across the entire exome for 29 populations across 7 genera, namely \textit{Equus}, \textit{Canis}, \textit{Bos}, \textit{Capra}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}.
+    Finally, using this pipeline, we assessed the congruence between the phylogeny-based and population-based approaches, by testing if the group of sequences detected with a high rate of adaptation in the phylogeny-based method also displays a high rate of adaptation according to the population-based method.
 
     \section*{Results}\label{sec:results}
     \subsection*{Detecting genes and sites under adaptation}
-    We derived a two-step approach (see methods), applied to mammalian orthologs.
+    We derived a two-step approach (see methods), which we applied to a set of alignments of orthologous genes at the scale of placental mammals.
     The $\dnds$ estimated by the site model ($\omega$) is plotted against the $\dnds$ predicted by the nearly-neutral mutation-selection model ($\omega_{0}$) for genes (scatter plot in fig.~\ref{fig:scatterplot}A) and sites (density plot in fig.~\ref{fig:scatterplot}B).
     An excess of $\omega$ relative to $\omega_{0}$ is a typical signature of ongoing positive selection\cite{bloom_identification_2017, rodrigue_detecting_2017}.
     Accordingly, genes, or sites, were considered to be under an adaptive regime (in red) if the value of their $\omega$ is higher than that of their $\omega_{0}$, with non-overlapping $95\%$ posterior credibility intervals.
-    This selection procedure is not meant as a routine statistical test, but only as an enrichment procedure, for the needs of the subsequent analysis shown below.
-    In practice, this selection is likely to be conservative (see methods).
     This procedure retrieved $822$ out $14,509$ genes, which are putatively under a long-term evolutionary Red-Queen regime.
-    Due to the multiple testing, $0.000625 \times 14,509 \simeq 9$ genes are expected, suggesting a $9 / 822 \simeq 1\%$ rate of false positive at the gene level.
-
-    At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites, while $0.000625 \times 8,895,374 \simeq 5,560$ are expected due to the multiple testing, suggesting a $5,560 / 104,129 \simeq 5\%$ rate of false positive at the site level.
+    At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites.
+    Of note, this selection procedure is not meant as a routine statistical test, but only as an enrichment procedure, for the needs of the subsequent analysis shown below.
+    In practice, this selection is likely to be conservative and to have a rate of false discovery of the order of 1\% at the gene-level, and 5\% at the site-level (see methods).
 
     Of note, selection based on $\omega>\omega_{0}$ is more sensitive than based on the commonly used criterion of $\omega>1$, since $\omega_{0}$ is always lower than $1$ by definition\cite{spielman_relationship_2015}.
-    Thus, we can uncover the sites under adaptation ($\omega>\omega_{0}$) with a mean $\omega$ lower than $1$ ($29,543$ sites in fig.~\ref{fig:scatterplot}C), which could not have been detected by $\omega$-based codon models relying on the criterion that $\omega>1$.
+    Thus, we can uncover sites under adaptation ($\omega>\omega_{0}$) with a mean $\omega$ lower than $1$ ($29,543$ sites in fig.~\ref{fig:scatterplot}C).
+    These sites could not have been detected by $\omega$-based codon models relying on the criterion that $\omega>1$.
     At the gene level, only two genes have an estimated $\omega > 1$, such that this distinction is not relevant.
     \begin{figure*}[htb]
         \centering
@@ -211,7 +209,7 @@
         \label{fig:scatterplot}
     \end{figure*}
     \subsection*{Ontology enrichment tests}
-    Next, we investigated whether the genes classified as adaptive ($\omega > \omega_{0}$) showed enrichment in ontology terms.
+    Next, we investigated whether the genes classified as adaptive ($\omega > \omega_{0}$) showed enrichment in specific ontology terms.
     Thus, we performed $775$ instances of Fisher's exact test to estimate ontology enrichment by contrasting with genes in the control group, not classified as adaptive.
     $42$ ontologies are observed with a p-value ($p_{\mathrm{v}}$) corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (see table~S1).
     At a finer scale, we weighted genes by their proportion of sites considered under adaptation with a $\omega$-based site model ($\omega > 1$, see table~S2) or with a mutation-selection model ($\omega > \omega_{0}$, see table~S3).
@@ -270,14 +268,15 @@
     This ratio, hereafter called the confirmation rate, is indicated in table~\ref{table:unfolded-MK}.
 
     At the gene level, the confirmation rate is relatively high, ranging from 30\% to up to 90\%.
-    At the site level, the confirmation rate is lower, which could betray a higher rate of false discovery at the site level, or could be the result of subtle molecular evolutionary processes, such as intermittent adaptation (on some but not on all branches) or within-gene turnover (ongoing adaptation targeting different sites on different branches).
-    But still remains of the order of 30\% on average.
+    At the site level, the confirmation rate is lower (30\% on average), which could betray a higher rate of false discovery at the site level, or could be the result of subtle molecular evolutionary processes, such as intermittent adaptation (on some but not on all branches) or within-gene turnover (ongoing adaptation targeting different sites on different branches).
 
     After discarding sites with a mean $\omega > 1$, the remaining $29,543$ sites classified as being under an adaptive regime have $1 > \omega > \omega_{0}$ and are specifically discovered by the mutation-selection approach.
     Since their $\omega$ is less than 1, they could not be detected by classical codon models.
-    This raises the question of the empirical value of these mutation-selection specific findings, while mutation-selection methods are more sophisticated, and may have greater sensitivity, they may also be more prone to producing false positives.
+    This raises the question of the empirical value of these findings.
+    Indeed, while mutation-selection methods are more sophisticated and may therefore have a greater sensitivity, they may also be more prone to producing false positives.
     The phylogenetic/population-genetic confrontation developed here can be used to assess this important point.
-    As shown in (fig.~\ref{fig:unfolded-MK}C) and table~\ref{table:unfolded-MK}, out of $29$ populations, $17$ have a $p_{\mathrm{v}}^{\mathrm{adj}}$ lower than the risk $\alpha=0.05$ whenever corrected for multiple comparison (Holm–Bonferroni correction).
+    As shown in (fig.~\ref{fig:unfolded-MK}C) and table~\ref{table:unfolded-MK}, out of $29$ populations, for $17$ out of the $29$ populations that have been analysed, the confirmation rate is significantly positive ($\alpha$=0.05, Holm–Bonferroni correction), and of the order of 10\% on average.
+    This importantly suggests the presence of a background of low-intensity positive selection, which is missed by classical codon models, but partially detected by mutation-selection models.
     In other words, the approach can detect a long-term evolutionary Red-Queen even for a site with $\omega < 1$ that is still under adaptation at the population-genetic scale.
 
     Because genes and sites classified as adaptive have a higher $\omega$ than genes/sites classified as nearly-neutral, $\rateApop$ could simply be higher for genes with higher $\omega$ due to this confounding factor.
@@ -285,8 +284,8 @@
     Additionally, we performed the same experiments with a more stringent risk $\alpha=0.005$ (10 times greater) to classify genes and sites as adaptive (fig.~S7-9 and tables~S9-10).
     Our result are robust to both controlling for $\omega$ and with a different threshold to classify genes and sites as adaptive.
     Finally, we computed $\rateApop$ using the software polyDFE\cite{tataru_polydfe_2020}, which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation (fig.~S10-17 and tables~S11-18).
-    Inferring $\rateApop$ using an underlying DFE model is highly sensitive to assumptions for the shape of the DFE and the definition of $\rateApop$ .
-    Instead, the difference $\Delta \rateApop$ between the test set (adaptive genes or sites) and control set (nearly-neutral genes or sites) is a more robust statistic than the absolute value $\rateApop$ of the test set.
+    Depending on the underlying assumptions for the shape of the DFE and the definition of $\rateApop$, we observed a wide range of $\rateApop$ both for the set of adaptive and nearly-neutral genes/sites.
+    However, the statistical test for the enrichment of $\rateApop$ between the set of adaptive and nearly-neutral genes/sites gives results in the same direction whether computed by polyDFE or as \textcite{mcdonald_adaptative_1991} statistic, although the confirmation rate and the associated $p_{\mathrm{v}}$ are different.
 
     \begin{table*}[tb]
         \centering
@@ -354,41 +353,47 @@
     \section*{Discussion}\label{sec:discussion}
 
     Quantifying the rate of adaptation assumes that we can measure the rate of evolution and more importantly its deviation from a null model of evolution disallowing adaptation.
-    For phylogenetic codon models, this null model of evolution is usually assumed to be neutral evolution and the rate of evolution computed as the observed ratio of non-synonymous over synonymous substitution rates ($\omega$) is thus compared to 1.
-    In this study, we first showed that at the phylogenetic scale, $\omega$ can be compared to it's expectation under the mutation-selection model ($\omega_{0}$), a nearly-neutral model instead of a neutral of evolution, improving it's power to detect adaptation and the rate of adaptation is thus $\rateAphy = \omega - \omega_{0}$.
-    Its application on mammalian genes suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
+    For phylogenetic codon models, this null model of evolution is usually assumed to be neutral evolution and the rate of evolution computed as the ratio of non-synonymous over synonymous substitution rates ($\omega$) is thus compared to 1.
+    We first showed that, at the phylogenetic scale, $\omega$ can be compared to it's expectation under the mutation-selection model ($\omega_{0}$), a nearly-neutral model instead of a neutral model of evolution, giving a quantitative estimate of the rate of adaptation as $\rateAphy = \omega - \omega_{0}$.
+    The application of this approach exome-wide across placental mammals suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
     Enrichment of ontologies related to immune processes is expected, as found by many studies\cite{kosiol_patterns_2008, enard_viruses_2016, ebel_high_2017}.
     However, we also detect an enrichment with ontologies related to the external membrane and cell adhesion, which are the target of virus and parasites.
-    We suspect the signal for these genes is not not strong enough to be detected by site-specific codon model based solely on $\omega$.
     Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
-
+    Of note, in its current implementation, and unlike classical codon models\cite{wong_accuracy_2004, yang_paml_2007}, the mutation-selection approach does not yet provide a proper and well-calibrated statistical test for calling genes or sites under adaptation with a well-controlled frequentist risk.
+    This was not a problem in the enrichment analysis conducted in this article, which relies on downstream controls based on random permutations.
+    Nevertheless, the encouraging results obtained here give a motivation for developing such a test, which should then have an increased power to detect adaptation, compared to classical codon models relying on the $\omega > 1$ criterion.
+    
     At the population-genetic scale, the availability of approaches to detect adaptation\cite{mcdonald_adaptative_1991, messer_frequent_2013} raises the question whether the rate of adaptation calculated at the phylogenetic scale as $\rateAphy$ is congruent with the rate calculated at the population genetics scale by McDonald \& Kreitman (MK)\cite{mcdonald_adaptative_1991} as $\rateApop = \dnds - \pnps$.
     In this light, the set of genes and sites detected to be under adaptation at the phylogenetic scale showed a significant increase in $\rateApop$ such as inferred by population-based method (29 populations across 7 genera).
+    Quantitatively, about 30\% to 90\% of the signal detected by the phylogeny-based approach is confirmed by the population-based approach.
     This result is in stark contrast with studies comparing $\omega$-based codon models at the gene level with MK methods, which found that the set of genes detected at different scales does not seem to overlap beyond random expectations\cite{chen_two_2021}.
+    The reasons for this discrepancy are not totally clear.
+    The use of different codon modeling strategies could play a role here.
+    More fundamentally however, our study relies on a large and densely sampled phylogeny with $\simeq 100$ taxa across placental mammals, versus 5 \textit{Drosophila} and 5 \textit{Brassicaceae} in \textcite{chen_two_2021}.
+    As a result, the phylogenetic aspect of our analysis benefits from an increased power, while being also inherently more focussed on genes characterized by recurrent adaptation over a very large evolutionary scale (i.e.~long-term evolutionary Red Queens), for which population-genetic signals of adaptation may be more easily recovered.
     We thus showed empirically that the mutation-selection codon model provides a null (nearly-neutral) model from which we can disentangle purifying and adaptive evolution.
     However, our procedure still has some limitations.
 
-    % On the one hand, the mutation-selection codon models are computationally intensive; it requires well-resolved trees; it is crucially dependent on the quality of alignments; and can be mis-led by paralogs erroneously identified as orthologs.
-    % Additionally, all differences observed in the alignment are assumed to be substitutions, while some might in fact be polymorphisms segregating in the population\cite{mugal_why_2014}.
     Mutation-selection codon models assume a constant effective population size while it has been established that its fluctuations has a major effect on selection dynamics\cite{lanfear_population_2014, platt_protein_2018}.
-    Estimating changes in effective population size in a mutation-selection framework is possible\cite{latrille_inferring_2021}, although too computational intensive to be performed genome-wide.
+    Estimating changes in effective population size in a mutation-selection framework is possible\cite{latrille_inferring_2021}, although too computational intensive in its current implementation to be performed genome-wide.
     Second, epistasis is not modeled while it can have a large effect on the response of the rate of evolution with change in population size\cite{latrille_quantifying_2021}.
     More generally, pervasive epistasis generates an entrenchment of the amino acids\cite{goldstein_evolutionary_2004, goldstein_nonadaptive_2015, goldstein_sequence_2017}, resulting in a slowing down of the rate evolution\cite{rodrigue_detecting_2017, patel_epistasis_2022} or a standstill\cite{youssef_evolution_2022}.
     Consequently, our estimation of the predicted rate of evolution computed at mutation-selection balance ($\omega_0$) is over-estimated given that epistasis is not taken into account, such that $\rateAphy = \omega - \omega_{0}$ is thus under-estimated.
-    Altogether, we argue that our estimate of $\rateAphy$ is conservative and could be increased by explicitly modeling epistasis within the mutation-selection framework\cite{goldstein_sequence_2017}.
+    Altogether, we argue that our estimate of $\rateAphy$ is conservative and could be increased by modeling epistasis (altough indirectly) within the mutation-selection framework\cite{goldstein_sequence_2017}.
 
     On the other hand, at the population-genetic scale, the greatest limitation to detecting adaptation is the lack of power determined by the genetic diversity since polymorphisms are rare and estimation of $\pnps$ requires to pool many sites for which SNPs are available.
-    Furthermore, since the purifying process is stronger on longer time scales, $\rateApop$ as computed by MK can be biased by moderately deleterious mutations\cite{eyre-walker_quantifying_2002, ho_time_2005} and by the change in population size through time\cite{eyre-walker_changing_2002}.
-    To overcome this bias, models which relies on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE) modeled as a continuous distribution are also used such as polyDFE\cite{tataru_polydfe_2020}.
-    However, the high range of $\rateApop$ estimated on sets of genes/sites classified as nearly-neutral shows these models are lacking power, even more than the MK statistic, because of the sparsity of the SFS, stressing the limitations and difficulties of our study centered on confronting the rate of adaptive evolution at different time scales.
+    Since the effects of mild purifying selection are more pronounced on longer time scales (i.e.~mildly deleterious mutations contribute disproportionately to polymorphism, compared to divergence), $\rateApop$ as computed by MK can be biased by moderately deleterious mutations\cite{eyre-walker_quantifying_2002, ho_time_2005} and by the change in population size through time\cite{eyre-walker_changing_2002}.
+    To overcome this bias, model-based approaches relying on the synonymous and non-synonymous site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), so as to account for the contribution of mild selective effects to standing polymorphism, have been developed\cite{eyre-walker_estimating_2009, tataru_polydfe_2020} and are often used\cite{galtier_adaptive_2016, moutinho_variation_2019}.
+    However, the broad range of $\rateApop$ estimated on sets of genes/sites classified as nearly-neutral suggests that these models are lacking power, even more than the MK statistic, because of the sparsity of the SFS.
     Beside changes in population size biasing the estimation\cite{rousselle_overestimation_2018}, we argue that inferring $\rateApop$ using an underlying DFE model is also highly sensitive to assumptions for the shape of the DFE and the definition of $\rateApop$.
     For example, the value of $\rateApop$ is computed as an integral, where the bounds of this integral is debated by different authors\cite{galtier_adaptive_2016, tataru_polydfev2_2019}.
     It is thus relatively easy to change the definition of $\rateApop$ (fig.~S12-15 and tables~S13-16) or to constrain the underlying DFE (fig.~S12-17 and tables~S13-18) to obtain a wide range of $\rateApop$ on the same dataset.
     Taken together, we argue that comparing $\rateApop$ to 0 is not a robust test for adaptation.
     Instead, $\rateApop$ for a particular genomic region of interest should be compared to other genomic regions for which the nearly-neutral evolution is not rejected, and the difference $\Delta \rateApop$ should be compared to 0, as done in this study.
+    More generally, our empirical analysis emphasizes the limitations of, and the difficulties raised by, the model-based population-genetic approaches.
+    In this respect, further exploring the congruence (or lack thereof) between phylogenetic and population-genetic approaches will represent a useful asset to clarify those delicate problems, given that similar benefits are also expected on the side of phylogenetic approaches, which are far from immune from methodological limitations.
 
     More broadly on a theoretical level, this work leverages a specific overlap between phylogenetic and population genetics, namely that the rate of adaptation $\rateAphy$ in phylogenetic codon models and $\rateApop$ in the MK test should theoretically be directly comparable.
-    This comparison is grounded in the principle that the rate of non-adaptive substitution is approximated by $\pnps$ in the context of population genetics, which is referred to as $\omega_{0}$ in the context of the mutation-selection codon models.
     Based on this theoretical relationship, our study is paving the way for studies and methods augmenting molecular polymorphism data within species with information about divergence data between species\cite{chen_hunting_2021}, and by assessing empirically the relationship between phylogenetic and population genetics\cite{thorne_codon_2012}.
     In this light, mutation-selection models at the phylogenetic scale can play a dual role: pinpointing genes and sites under adaptation ($\rateAphy > 0$), and also seeking the genomic region for which the nearly-neutral theory is not rejected ($\rateAphy \simeq 0$).
 
@@ -432,8 +437,10 @@
     Each Monte-Carlo Markov-Chain (MCMC) is run during $2,000$ points, with a burn-in of $1,000$ points, allowing to compute the mean of $\omega$ and $\omega_{0}$ across the MCMC, as well as the $95$\% posterior credibility interval for genes and sites.
     Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that the lower bound for the credible interval of $\omega$ ($\alpha=0.05$) is above the upper bound of the credible interval of $\omega_{0}$ ($\alpha=0.05$), meaning that the value of their $\omega$ is higher than that of their $\omega_{0}$.
     Because this is a unilateral test ($\omega > \omega_{0}$) and the two credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=0.000625$ for each test.
+    Empirically, the nearly-neutral assumption appears to be rejected for $822$ out $14,509$ genes, while $0.000625 \times 14,509 \simeq 9$ genes are expected  due to the multiple testing, suggesting a $9 / 822 \simeq 1\%$ rate of false positive at the gene level.
+    At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites, while $0.000625 \times 8,895,374 \simeq 5,560$ are expected due to the multiple testing, suggesting a $5,560 / 104,129 \simeq 5\%$ rate of false positive at the site level.
     Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the credible interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the credible interval of  $\omega$, meaning $\omega = \omega_{0}$.
-    Additionaly, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
+    Additionally, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
     Genes and sites that do not fall in any of these categories are considered unclassified.
 
     \subsection*{Polymorphism dataset}

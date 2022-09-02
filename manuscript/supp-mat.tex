@@ -272,7 +272,7 @@
 
     In \textit{Bos}, \textit{Capras}, \textit{Ovis}, \textit{Chlorocebus} and \textit{Homo}, $\dnds$ computed for the set of sites under adaptation (red, $1 > \omega > \omega_{0}$) at the phylogenetic scale is not higher than for the set of sites under a nearly-neutral regime (green, $1 > \omega \simeq \omega_{0}$), showing that the sampling procedure controlling for $\omega$ at the phylogenetic scale is valid.
     However, even though $\dnds$ is not higher (sites are not faster overall), the rate of adaptation at the population-genetic scale ($\rateApop$) for the set of sites supposedly under adaptation is higher than for the set of nearly-neutral sites in \textit{Bos} and \textit{Ovis}.
-    Altogether, these sites have a higher rate of adaptation, while not evolving faster than there nearly-neutral counterpart, showing that the rate of adaptation computed at the phylogenetic scale is able to detect sites under pervasive adaptation, even though these sites are with $\omega < 1$ and thus can not be detected by site-specific $\omega$-based codon models.
+    Altogether, these sites have a higher rate of adaptation, while not evolving faster than there nearly-neutral counterpart, showing that the rate of adaptation computed at the phylogenetic scale is able to detect sites under pervasive adaptation, even though these sites are with $\omega < 1$ and thus cannot be detected by site-specific $\omega$-based codon models.
 
     \pagebreak
 
@@ -328,7 +328,7 @@
     Pooled across many sites, the SFS is thus informative on the underlying $\Spop$ of mutations, given we have a neutral expectation.
     In this configuration, a single $\Spop$ for all sampled mutations is biologically not realistic.
     Accordingly, a distribution of fitness effects of mutations (DFE) is assumed, usually modeled as a continuous distribution\cite{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
-    In this study, we used the software polyDFE\cite{tataru_inference_2017, tataru_polydfe_2020} with model C (continous distribution) and D (discrete distribution).
+    In this study, we used the software polyDFE\cite{tataru_inference_2017, tataru_polydfe_2020} with model C (continuous distribution) and D (discrete distribution).
 
     PolyDFE requires one SFS for non-synonymous mutations and one for synonymous mutations (neutral expectation), as well as the total number of sites on which each SFS has been sampled.
     From the SFS and the number of sites for both synonymous and non-synonymous changes, polyDFE estimates parameters of the DFE ($\phi (\Spop)$) using maximum likelihood.
@@ -381,7 +381,7 @@
         \item At the site level, sets of sites supposedly under a nearly-neutral regime have an average value of $\rateApop^{\mathrm{polyDFE}}$ (average across the replicates) in the range $[0.25,0.42]$ across the populations, while $\rateApop^{\mathrm{polyDFE}}$ for genes under adaptation (at the phylogenetic scale) is in the range $[0.11,0.99]$ across the populations.
     \end{itemize}
     $\rateApop^{\mathrm{polyDFE}}$ computed with polyDFE is higher than $\rateApop$ computed as the \textcite{mcdonald_adaptative_1991} statistic (figure 3 and table 1 in the main manuscript), suggesting that polyDFE has higher sensitivity to detect adaptation at the population-genetic scale.
-    However, the genes and sites supposedly under a nearly-neutral regime have all values of $\rateApop^{\mathrm{polyDFE}}$ greater than 0, suggesting that the higher sensitivity(true positive rate) also results in a lower specificity (true negative rate).
+    However, the genes and sites supposedly under a nearly-neutral regime have all values of $\rateApop^{\mathrm{polyDFE}}$ greater than 0, suggesting that the higher sensitivity (true positive rate) also results in a lower specificity (true negative rate).
     Altogether, the statistical test for the enrichment of $\rateApop$ between the set of adaptive and nearly-neutral genes and sites gives similar results whether computed by polyDFE ($\rateApop^{\mathrm{polyDFE}}$) or as \textcite{mcdonald_adaptative_1991} statistic.
 
     \pagebreak
@@ -451,9 +451,8 @@
         \item At the gene level, $\rateApop^{\mathrm{polyDFE}}$ for nearly-neutral genes is the range $[-0.01,0.27]$, while $\rateApop^{\mathrm{polyDFE}}$ for genes under adaptation (at the phylogenetic scale) is in the range $[0.04,42]$.
         \item At the site level, $\rateApop^{\mathrm{polyDFE}}$ for nearly-neutral sites is the range $[0.0,0.34]$, while $\rateApop^{\mathrm{polyDFE}}$ for sites under adaptation (at the phylogenetic scale) is in the range $[0.40,0.98]$.
     \end{itemize}
-    The estimation of $\rateApop^{\mathrm{polyDFE}}$ computed with polyDFE using polymorphism and divergence data with either a the model C (continous DFE) or D (discrete DFE) are quite different in absolute value.
-    The underlying assumption for the mathematical constrains on the DFE thus have a large impact on the estimation of $\rateApop^{\mathrm{polyDFE}}$ while the true underlying
-    DFE is unknown.
+    The estimation of $\rateApop^{\mathrm{polyDFE}}$ computed with polyDFE using polymorphism and divergence data with either a the model C (continuous DFE) or D (discrete DFE) are quite different in absolute value.
+    The underlying assumption for the mathematical constrains on the DFE thus have a large impact on the estimation of $\rateApop^{\mathrm{polyDFE}}$ while the true underlying DFE is unknown.
 
     \pagebreak
 
