@@ -93,7 +93,7 @@
 \newcommand{\indice}{a}
 \newcommand{\indiceexp}{^{(\indice)}}
 
-\renewcommand{\baselinestretch}{1.5}
+\renewcommand{\baselinestretch}{1.4}
 \renewcommand{\arraystretch}{0.6}
 \linenumbers
 
@@ -108,11 +108,12 @@
     \normalsize
     $^{1}$Université de Lyon, CNRS, LBBE UMR 5558, Villeurbanne, France\\
     $^{2}$École Normale Supérieure de Lyon, Université de Lyon, Lyon, France\\
-    $^{3}$Université de Lausanne, Lausanne, Switzerland\\
+    $^{3}$Department of Computational Biology, Université de Lausanne, Lausanne, Switzerland\\
     $^{4}$Department of Biology, Institute of Biochemistry, and School of Mathematics and Statistics, Carleton University, Ottawa, Canada \\
     \texttt{\href{mailto:thibault.latrille@ens-lyon.org}{thibault.latrille@ens-lyon.org}} \\
 }
 
+%TC:endignore
 \begin{document}
     \maketitle
 
@@ -130,8 +131,10 @@
 
     \keywords{Adaptation \and phylogenetic \and population genetics \and codon models}
 
+    \section*{Significance Statement}
+    A protein evolving faster than a null model of evolution has a lot of chances to be under adaptive evolution. This null model of evolution is however different whether we are considering changes at the phylogenetic scale across different species (e.g. all mammals) or at the population-scale across populations in the same species (e.g. humans). In this study, using novel methods to detect adaptation at the phylogenetic scale, we argue that the detection of adaptation at the phylogenetic and population-genetic scales can be reconciled and compared. Ultimately, we show that proteins and sites detected to be under adaptation at the phylogenetic scale are also under adaptation at the population-genetic scale.
+
     \section*{Introduction}
-%TC:endignore
     Present-day genetic sequences are informative of populations' past evolutionary history and can carry signatures of selection at different scales.
     One main goal of molecular evolution is to disentangle and quantify the intensity of neutral, adaptive and purifying evolution acting on sequences, leveraging variations in sequences between and within species.
     Theoretically, in order to detect adaptive evolution, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model.
@@ -362,7 +365,7 @@
     Of note, in its current implementation, and unlike classical codon models\cite{wong_accuracy_2004, yang_paml_2007}, the mutation-selection approach does not yet provide a proper and well-calibrated statistical test for calling genes or sites under adaptation with a well-controlled frequentist risk.
     This was not a problem in the enrichment analysis conducted in this article, which relies on downstream controls based on random permutations.
     Nevertheless, the encouraging results obtained here give a motivation for developing such a test, which should then have an increased power to detect adaptation, compared to classical codon models relying on the $\omega > 1$ criterion.
-    
+
     At the population-genetic scale, the availability of approaches to detect adaptation\cite{mcdonald_adaptative_1991, messer_frequent_2013} raises the question whether the rate of adaptation calculated at the phylogenetic scale as $\rateAphy$ is congruent with the rate calculated at the population genetics scale by McDonald \& Kreitman (MK)\cite{mcdonald_adaptative_1991} as $\rateApop = \dnds - \pnps$.
     In this light, the set of genes and sites detected to be under adaptation at the phylogenetic scale showed a significant increase in $\rateApop$ such as inferred by population-based method (29 populations across 7 genera).
     Quantitatively, about 30\% to 90\% of the signal detected by the phylogeny-based approach is confirmed by the population-based approach.
@@ -400,10 +403,10 @@
     \section*{Methods}\label{sec:methods}
 
     \subsection*{Phylogenetic dataset}
-    Protein-coding DNA sequences alignments in placental mammals and gene trees are extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database, containing $116$ mammalian reference sequences in v10c\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
-    Genes located on the X, Y and mitochondrial chromosome are discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
+    Protein-coding DNA sequences alignments in placental mammals and their corresponding gene trees were extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database, containing $116$ mammalian reference sequences in v10c\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
+    Genes located on the X, Y and mitochondrial chromosome were discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
     Additionally, sequences from the species for which polymorphism are available, as well as their sister species have been discarded from the analysis to ensure independence between the data used in the phylogenetic and population-genetic method.
-    Altogether, $14,509$ protein-coding DNA sequences alignment have been analyzed containing at most $87$ reference sequences of placental mammals per alignment.
+    Altogether, we analyzed $14,509$ protein-coding DNA sequences alignment containing at most $87$ reference sequences of placental mammals.
 
     \subsection*{Adaptation in phylogeny-based method}
     Classical codon models estimates a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates\cite{muse_likelihood_1994,goldman_codonbased_1994}.
@@ -433,11 +436,11 @@
     In a second step, the average over sites is calculated, giving estimates of $\omega_{0}$ for each protein-coding sequences (fig.~\ref{fig:scatterplot}A, x-axis).
     Under the assumption that the protein is under a nearly-neutral regime, the calculated $\omega_{0}$ (mutation-selection model) and the estimated $\omega$ (site model) should be the same\cite{spielman_relationship_2015}.
 
-    We ran the Bayesian software \href{https://github.com/bayesiancook/bayescode}{BayesCode} on each protein-coding DNA alignment\cite{lartillot_phylobayes_2013, rodrigue_detecting_2017}.
-    Each Monte-Carlo Markov-Chain (MCMC) is run during $2,000$ points, with a burn-in of $1,000$ points, allowing to compute the mean of $\omega$ and $\omega_{0}$ across the MCMC, as well as the $95$\% posterior credibility interval for genes and sites.
+    We ran the Bayesian software \textit{BayesCode} (\url{https://github.com/ThibaultLatrille/bayescode}) on each protein-coding DNA alignment\cite{rodrigue_bayesian_2021}.
+    Each Monte-Carlo Markov-Chain (MCMC) is run during $2,000$ points, with a burn-in of $1,000$ points, to obtain the posterior mean of $\omega$ and $\omega_{0}$ across the MCMC, as well as the $95$\% posterior credibility interval for genes and sites.
     Genes and sites classified under an adaptive regime (in red) are rejecting the nearly-neutral assumption such that the lower bound for the credible interval of $\omega$ ($\alpha=0.05$) is above the upper bound of the credible interval of $\omega_{0}$ ($\alpha=0.05$), meaning that the value of their $\omega$ is higher than that of their $\omega_{0}$.
     Because this is a unilateral test ($\omega > \omega_{0}$) and the two credible interval are independent, the risk is $(\alpha/2)^2=0.025^2=0.000625$ for each test.
-    Empirically, the nearly-neutral assumption appears to be rejected for $822$ out $14,509$ genes, while $0.000625 \times 14,509 \simeq 9$ genes are expected  due to the multiple testing, suggesting a $9 / 822 \simeq 1\%$ rate of false positive at the gene level.
+    Empirically, the nearly-neutral assumption appears to be rejected for $822$ out $14,509$ genes, while $0.000625 \times 14,509 \simeq 9$ genes are expected due to the multiple testing, suggesting a $9 / 822 \simeq 1\%$ rate of false positive at the gene level.
     At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites, while $0.000625 \times 8,895,374 \simeq 5,560$ are expected due to the multiple testing, suggesting a $5,560 / 104,129 \simeq 5\%$ rate of false positive at the site level.
     Genes and sites are classified under a nearly-neutral regime (in green) if the average $\omega$ is within the credible interval of the $\omega_{0}$, and respectively the average $\omega_{0}$ is also within the credible interval of  $\omega$, meaning $\omega = \omega_{0}$.
     Additionally, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.
@@ -445,18 +448,13 @@
 
     \subsection*{Polymorphism dataset}
 
-    In order to compare polymorphism and divergence, each SNP (chromosome, position, strand) in the focal species must be matched to its relative position in the protein-coding DNA alignment.
-    First, genomic positions are converted to relative position in the coding sequence (CDS) using gene annotation files (GTF format) downloaded from Ensembl (\url{ensembl.org}), we verified the SNP match the reference in the CDS (FASTA format) also downloaded from Ensembl.
-    Secondly, relative position in the CDS is converted to position in the multiple sequence alignment (containing gaps) from OrthoMaM database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019} by doing a global pairwise alignment (Biopython pairwise2) between the CDS fasta and the sequence found in the alignment.
+    Each SNP (chromosome, position, strand) in the focal species was matched to its relative position (chromosome, position, strand) in the protein-coding DNA alignment by first converting the genomic positions to relative position in the coding sequence (CDS) using gene annotation files (GTF format) downloaded from Ensembl (\url{ensembl.org}).
+    We then verified that the SNP downloaded from Ensembl were matching the reference in the CDS (FASTA format).
+    Second, the relative position in the CDS was converted to position in the multiple sequence alignment (containing gaps) from OrthoMaM database\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019} by doing a global pairwise alignment, using the Biopython function pairwise2, between the CDS fasta and the sequence found in the alignment.
     This conversion from genomic position to position in the alignment is only possible if the assembly used for SNP calling is the same as the one used in the alignment, the GTF annotations and the FASTA sequences.
-    We retrieved polymorphism from different projects.
-    \textit{Equus caballus} variants called on the EquCab2 assembly in the EVA study PRJEB9799, we considered \textit{Ceratotherium simum simum} as its sister species.
-    \textit{Canis familiars} variants called on the CanFam3.1 assembly in the EVA study PRJEB24066, we considered \textit{Ursus maritimus} as its sister species.
-    \textit{Bos taurus} variants called on the UMD3.1 assembly in the next-gen project, we considered \textit{Bison bison bison} as its sister species.
-    \textit{Ovis aries} variants called on the Oar\_v3.1 assembly in the next-gen project, we considered \textit{Pantholops hodgsonii} as its sister species.
-    \textit{Capra Hircus} variants called on the CHIR1 assembly in the next-gen project, we performed a liftover to the ARS1 assembly and considered \textit{Pantholops hodgsonii} as its sister species.
-    \textit{Chlorocebus sabaeus} variants are called on the ChlSab1.1 assembly in the EVA study PRJEB22989\cite{svardal_ancient_2017}, we considered \textit{Macaca mulatta} as its sister species.
-    \textit{Homo sapiens} variants are called on the GRCh38 assembly in the 1000-genome project\cite{consortium_integrated_2012, the1000genomesprojectconsortium_global_2015}, we considered \textit{Pan troglodytes} as its sister species.
+
+    We retrieved the genetic variants representing the population level polymorphism from the following species and respective available datasets: \textit{Equus caballus} (EquCab2 assembly in the EVA study PRJEB9799\cite{alabri_whole_2020}), \textit{Canis familiars} (CanFam3.1 assembly in the EVA study PRJEB24066\cite{jagannathan_comprehensive_2019}),  \textit{Bos taurus} (UMD3.1 assembly in the NextGen project), \textit{Ovis aries} (Oar\_v3.1 assembly in the NextGen project), \textit{Capra Hircus} (CHIR1 assembly in the NextGen project converted to ARS1 assembly with dbSNP identifiers\cite{sherry_dbsnp_2001}), \textit{Chlorocebus sabaeus} (ChlSab1.1 assembly in the EVA project PRJEB22989\cite{svardal_ancient_2017}), \textit{Homo sapiens} (GRCh38 assembly from the 1000-genome project\cite{consortium_integrated_2012, the1000genomesprojectconsortium_global_2015}).
+
     Variants not inside genes are discarded at the beginning of the analysis.
     Insertions and deletions are not analyzed, and only Single Nucleotide Polymorphisms (SNPs) with only one mutant allele are considered.
     Stop codon mutants are also discarded.
@@ -469,19 +467,17 @@
     The genes and sites classified as under adaptation are concatenated.
     For each population $\pnps$ is computed as the sum of non-synonymous over synonymous polymorphism on the concatenated SFS\@.
     $\dnds$ is computed on the concatenated pairwise alignment between focal and sister species extracted from OrthoMaM, the $\dnds$ count is performed by \textit{yn00}.
+    We considered \textit{Ceratotherium simum simum} as \textit{Equus caballus} sister species; \textit{Ursus maritimus} as \textit{Canis familiars} sister species; \textit{Bison bison bison} as \textit{Bos taurus} sister species; \textit{Pantholops hodgsonii} as \textit{Ovis aries} sister species; \textit{Pantholops hodgsonii} as \textit{Capra Hircus} sister species; \textit{Macaca mulatta} as \textit{Chlorocebus sabaeus} sister species and finally we considered \textit{Pan troglodytes} as \textit{Homo sapiens} sister species.
     Altogether, $\rateApop = \dnds - \pnps$ is thus computed for each population on genes and sites classified as under adaptation.
     The result is compared to the empirical null distribution of $\rateApop$, obtained by randomly sampling ($1,000$ sampling replicates) a subset of genes/sites classified as nearly-neutral.
 
-    Other methods to compute $\rateApop$ such as polyDFE\cite{tataru_polydfe_2020} are also used (eq.~3-20 in supplementary materials), which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation $\rateApop^{\mathrm{polyDFE}}$.
+    Other methods to compute $\rateApop$ such as polyDFE\cite{tataru_polydfe_2020} are also used (eq.~3-20 in supplementary materials), which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation.
     In polyDFE, GammaExpo models the fitness effect of weakly deleterious non-synonymous mutations as distributed according to a negative Gamma and the fitness effect of weakly advantageous mutations are distributed exponentially.
     This method is an extension of the methods introduced by Eyre-Walker and collaborators\cite{eyre-walker_distribution_2006, eyre-walker_estimating_2009}.
     Unfolded SFSs are obtained by polarizing SNPs using the $3$ closest outgroups found in the OrthoMam alignment with est-usfs v2.04\cite{keightley_inferring_2018}.
 
-%TC:ignore
-
     \section{Data availability}\label{sec:data-availability}
     The data underlying this article are available in Github, at \url{https://github.com/ThibaultLatrille/AdaptaPop}, as well as scripts and instructions necessary to reproduce the empirical experiments on the original dataset or with user-specified datasets.
-
 
     \section{Acknowledgements}\label{sec:acknowledgements}
     We gratefully also acknowledge the help of Nicolas Galtier and Julien Joseph for their advice and review concerning this manuscript.
@@ -491,12 +487,13 @@
     Funding: Université de Lausanne.
     French National Research Agency, Grant ANR-15-CE12-0010-01 / DASIRE.
 
+%TC:ignore
     \section{Author information}\label{sec:author-information}
     TL, NR and NL designed the study.
     TL gathered and formatted the data and conducted the analyses with \texttt{BayesCode} using scripts in \texttt{Python} and pipeline in \texttt{Snakemake}.
     TL, NR and NL contributed to the writing of the manuscript.
 
     \printbibliography
-\end{document}
 
 %TC:endignore
+\end{document}
