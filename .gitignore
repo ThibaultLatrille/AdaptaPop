@@ -16,6 +16,8 @@
 /OrthoMam/Experiments.tar.xz
 /Polymorphism/CDS.ANNOT.tar.xz
 /Polymorphism/*/Snakefile
+/Polymorphism.Compress
+/TSV
 /Contrasts/scatterplot
 /Contrasts/pickle
 /Contrasts/polyDFE_*
