@@ -93,7 +93,7 @@
 \newcommand{\indice}{a}
 \newcommand{\indiceexp}{^{(\indice)}}
 
-\renewcommand{\baselinestretch}{1.4}
+\renewcommand{\baselinestretch}{1.25}
 \renewcommand{\arraystretch}{0.6}
 \linenumbers
 
@@ -140,7 +140,7 @@
 
     \section*{Introduction}
     Present-day genetic sequences are informative of populations' past evolutionary history and can carry signatures of selection at different scales.
-    One main goal of molecular evolution is to disentangle and quantify the intensity of neutral, adaptive and purifying evolution acting on sequences, leveraging variations in sequences between and within species.
+    One main goal in the study of molecular evolution is to disentangle and quantify the intensity of neutral, adaptive and purifying evolution acting on sequences, leveraging variations in sequences between and within species.
     Theoretically, in order to detect adaptive evolution, one must have data where part of the sequence is known to be under a neutral regime, which can be used as a null model.
     In the case of protein-coding DNA sequences, synonymous sites are usually taken as proxies for neutral sites, although there are instance where they are indeed under selection\cite{duret_expression_1999, duret_evolution_2002, galtier_codon_2018}.
     Non-synonymous mutations, on the other hand, might be under a mixture of varying degrees of adaptive and purifying selection.
@@ -192,29 +192,7 @@
     Thus, we can uncover sites under adaptation ($\omega>\omega_{0}$) with a mean $\omega$ lower than $1$ ($29,543$ sites in fig.~\ref{fig:scatterplot}C).
     These sites could not have been detected by $\omega$-based codon models relying on the criterion that $\omega>1$.
     At the gene level, only two genes have an estimated $\omega > 1$, such that this distinction is not relevant.
-    \begin{figure*}[htb]
-        \centering
-        \begin{minipage}{0.32\linewidth}
-            \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.025}
-        \end{minipage}
-        \llap{\raisebox{1.15cm}{\scriptsize A\hspace{4.55cm}}}\hfill
-        \begin{minipage}{0.32\linewidth}
-            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.025}
-        \end{minipage}
-        \llap{\raisebox{1.15cm}{\scriptsize B\hspace{4.55cm}}}\hfill
-        \begin{minipage}{0.32\linewidth}
-            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.025}
-        \end{minipage}
-        \llap{\raisebox{1.15cm}{\scriptsize C\hspace{4.55cm}}}\hfill
-        \caption{
-            Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale.
-            $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
-            Scatter plot of $14,509$ genes in panel A, with $95$\% bayesian credible interval ($\alpha=0.05$).
-            Density plot of sites in panel B and C.
-            Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
-            In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.}
-        \label{fig:scatterplot}
-    \end{figure*}
+
     \subsection*{Ontology enrichment tests}
     Next, we investigated whether the genes classified as adaptive ($\omega > \omega_{0}$) showed enrichment in specific ontology terms.
     Thus, we performed $775$ instances of Fisher's exact test to estimate ontology enrichment by contrasting with genes in the control group, not classified as adaptive.
@@ -233,35 +211,10 @@
     For all 29 populations, the $\rateApop$ estimated by the population-genetic method was significantly higher for the putatively adaptive gene-set than for the putatively nearly-neutral gene sets of the same size (at a risk $\alpha=0.05$ corrected for multiple testing, Holm-Bonferroni correction).
     There is thus a good qualitative agreement between the two methods as to what they capture and interpret as positive selection at the gene level.
 
-    \begin{figure*}[htb]
-        \centering
-        \includegraphics[width=0.95\linewidth, page=1]{polymorphism-method}
-        \caption{
-            Integrating divergence and polymorphism for the detection of adaptation.
-            At the phylogenetic level, $\omega$ (classical codon models) and $\omega_{0}$ (mutation-selection codon models) are computed from protein-coding DNA alignments, allowing to classify genes into adaptive (in red) and nearly-neutral (in green) regime.
-            At the population-genetic level, for each population, $\rateApop$ is computed on the concatenate of genes classified as under adaptation.
-            The result is compared to the empirical null distribution of $\rateApop$ in each population, obtained by randomly sampling ($1,000$ replicates) a subset under a nearly-neutral regime.
-        }
-        \label{fig:method}
-    \end{figure*}
-
     The same procedure was applied at a finer scale with sites instead of genes.
     For each population, $\rateApop$ was computed on the concatenate of the $104,129$ sites classified as adaptive by the phylogeny-based method, and compared to the empirical null distribution (fig.~\ref{fig:unfolded-MK}B) and table~\ref{table:unfolded-MK}.
     Out of $29$ populations, $24$ have an $\rateApop$ estimated by the population-genetic method significantly higher for the putatively adaptive site-set than for the putatively nearly-neutral site-sets of the same size taken at random (at a risk $\alpha=0.05$ corrected for multiple testing, Holm-Bonferroni correction).
     Of note, the 5 populations for which the test is not significant are the human populations.
-
-    \begin{figure*}[htb]
-        \centering
-        \includegraphics[width=0.95\linewidth, page=1]{unfolded-MK}
-        \caption{
-            Enrichment of adaptation at the population-genetic scale for $29$ populations across $7$ genera at the gene (panel A) and site (panels B and C) level.
-            For each population, $\rateApop$ is computed on $822$ genes (A) and $104,129$ sites (B) having a high rate of adaptation at the phylogenetic scale ($\omega > \omega_0$ in red).
-            In panel C, the set of 29,543 sites are detected exclusively by mutation-selection codon models with a mean $\omega < 1 $.
-            The result is compared to the empirical null distribution of $\rateApop$, obtained by randomly sampling ($1,000$ replicates) a subset of genes and sites under a nearly-neutral regime (violin plot in green).
-            $^*$ signify that the $p_{\mathrm{v}}$ corrected for multiple comparison (Holm–Bonferroni correction) is lower than the risk $\alpha=0.05$.
-            The acronym of populations, and the quantitative value of $\rateApop$ and $p_{\mathrm{v}}$ are shown in table~\ref{table:unfolded-MK}}
-        \label{fig:unfolded-MK}
-    \end{figure*}
 
     Except for \textit{Equus} and \textit{Humans}, on average, the $\rateApop$ returned by MK is positive even for the putatively nearly-neutral replicates, and significantly so for \textit{Bos} ($\rateApop$ in the range $0.65-0.68$ for genes and site) and \textit{Ovis} ($\rateApop$ in the range $0.66-0.84$ for genes and sites).
     This suggests the presence of a background of positive selection captured by MK methods but not by phylogenetic methods.
@@ -294,69 +247,6 @@
     Depending on the underlying assumptions for the shape of the DFE and the definition of $\rateApop$, we observed a wide range of $\rateApop$ both for the set of adaptive and nearly-neutral genes/sites.
     However, the statistical test for the enrichment of $\rateApop$ between the set of adaptive and nearly-neutral genes/sites gives results in the same direction whether computed by polyDFE or as \textcite{mcdonald_adaptative_1991} statistic, although the confirmation rate and the associated $p_{\mathrm{v}}$ are different.
 
-    \begin{table*}[tb]
-        \centering
-        \begin{adjustbox}{width = 0.95\textwidth}
-            \begin{tabular}{||l|l|r||r|r|r||r|r|r||r|r|r||}
-                \toprule
-                \multicolumn{3}{||c||}{} &
-                \multicolumn{3}{c||}{\textbf{Genes (822)}} &
-                \multicolumn{3}{c||}{\textbf{Sites (104,129)}} &
-                \multicolumn{3}{c||}{\textbf{Sites ($\bm{\omega < 1}$) (29,543)}}
-                \\ \hline
-                \textbf{Population} &
-                \textbf{Species} &
-                $\bm{\pi_{\textrm{S}}}$ &
-                $\bm{\Delta \rateApop}$ &
-                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$    &
-                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$ &
-                $\bm{\Delta \rateApop}$ &
-                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$          &
-                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$ &
-                $\bm{\Delta \rateApop}$ &
-                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$ &
-                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$
-                \\                \midrule
-                Diverse (Equus)                                     & Equus caballus      & $ 0.002$ & $ 0.094$ & $\bm{0.0{^*}}$    & $ 0.928$ & $ 0.399$ & $\bm{0.0{^*}}$ & $ 0.459$ & $ 0.258$ & $\bm{0.0{^*}}$ & $ 0.446$ \\
-                \rowcolor{LIGHTGREY} Diverse (Canis)                & Canis familiaris    & $ 0.004$ & $ 0.058$ & $\bm{0.0{^*}}$                  & $ 0.557$                                                                     & $ 0.406$ & $\bm{0.0{^*}}$ & $ 0.463$ & $ 0.227$ & $\bm{0.0{^*}}$ & $ 0.392$ \\
-                Iran (IRBT)                                         & Bos taurus          & $ 0.008$ & $ 0.028$ & $\bm{ 0.020{^*}}$ & $ 0.278$ & $ 0.237$ & $\bm{0.0{^*}}$ & $ 0.272$ & $ 0.134$ & $ 0.150~~$ & $ 0.231$ \\
-                Uganda (UGBT)                                       & Bos taurus          & $ 0.008$ & $ 0.036$ & $\bm{0.0{^*}}$    & $ 0.355$ & $ 0.222$ & $\bm{0.0{^*}}$ & $ 0.254$ & $ 0.156$ & $\bm{ 0.017{^*}}$ & $ 0.270$ \\
-                \rowcolor{LIGHTGREY} Australia (AUCH)               & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$                  & $ 0.506$                                                                     & $ 0.202$ & $\bm{0.0{^*}}$ & $ 0.230$ & $ 0.168$ & $ 0.143~~$ & $ 0.290$ \\
-                \rowcolor{LIGHTGREY} France (FRCH)                  & Capra hircus        & $ 0.003$ & $ 0.073$ & $\bm{0.0{^*}}$                  & $ 0.709$                                                                     & $ 0.220$                      & $\bm{0.0{^*}}$ & $ 0.250$ & $ 0.236$ & $\bm{ 0.039{^*}}$ & $ 0.407$ \\
-                \rowcolor{LIGHTGREY} Iran (IRCA)                    & Capra aegagrus      & $ 0.004$ & $ 0.049$ & $\bm{0.0{^*}}$                  & $ 0.482$                                                                     & $ 0.242$                      & $\bm{0.0{^*}}$ & $ 0.275$ & $ 0.108$ & $ 0.396~~$ & $ 0.186$ \\
-                \rowcolor{LIGHTGREY} Iran (IRCH)                    & Capra hircus        & $ 0.004$ & $ 0.062$ & $\bm{0.0{^*}}$    & $ 0.610$                                                                     & $ 0.210$                      & $\bm{0.0{^*}}$ & $ 0.239$ & $ 0.217$ & $\bm{ 0.017{^*}}$ & $ 0.375$ \\
-                \rowcolor{LIGHTGREY} Italy (ITCH)                   & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$    & $ 0.511$                                                                     & $ 0.174$                      & $\bm{0.0{^*}}$ & $ 0.199$ & $ 0.134$ & $ 0.308~~$ & $ 0.232$ \\
-                \rowcolor{LIGHTGREY} Morocco (MOCH)                 & Capra hircus        & $ 0.004$ & $ 0.064$ & $\bm{0.0{^*}}$                  & $ 0.626$                                                                     & $ 0.256$                      & $\bm{0.0{^*}}$ & $ 0.292$ & $ 0.201$ & $\bm{0.0{^*}}$ & $ 0.347$ \\
-                Iran (IROA)                                         & Ovis aries          & $ 0.007$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.847$ & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.183$ & $\bm{ 0.017{^*}}$ & $ 0.316$ \\
-                Iran (IROO)                                         & Ovis orientalis     & $ 0.009$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.848$ & $ 0.204$ & $\bm{0.0{^*}}$ & $ 0.233$ & $ 0.176$ & $\bm{0.0{^*}}$ & $ 0.304$ \\
-                Iran (IROV)                                         & Ovis vignei         & $ 0.005$ & $ 0.072$ & $\bm{0.0{^*}}$    & $ 0.697$ & $ 0.194$ & $\bm{0.0{^*}}$ & $ 0.222$ & $ 0.192$ & $\bm{0.0{^*}}$ & $ 0.332$ \\
-                Various (ISGC)                                      & Ovis aries          & $ 0.008$ & $ 0.076$ & $\bm{0.0{^*}}$    & $ 0.742$ & $ 0.171$ & $\bm{0.0{^*}}$ & $ 0.195$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.326$ \\
-                Morocco (MOOA)                                      & Ovis aries          & $ 0.008$ & $ 0.093$ & $\bm{0.0{^*}}$    & $ 0.905$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.216$ & $ 0.193$ & $\bm{0.0{^*}}$ & $ 0.333$ \\
-                \rowcolor{LIGHTGREY} Barbados                       & Chlorocebus sabaeus & $ 0.003$ & $ 0.068$ & $\bm{0.0{^*}}$                  & $ 0.665$                                                                     & $ 0.341$                      & $\bm{0.0{^*}}$ & $ 0.390$ & $ 0.248$ & $\bm{0.0{^*}}$ & $ 0.430$ \\
-                \rowcolor{LIGHTGREY} Central African Republic (CAR) & Chlorocebus sabaeus & $ 0.006$           & $ 0.034$                      & $\bm{0.0{^*}}$ & $ 0.334$ & $ 0.229$ & $\bm{0.0{^*}}$ & $ 0.262$ & $ 0.195$ & $\bm{0.0{^*}}$ & $ 0.338$ \\
-                \rowcolor{LIGHTGREY} Ethiopia                       & Chlorocebus sabaeus & $ 0.005$ & $ 0.044$ & $\bm{0.0{^*}}$                  & $ 0.425$                                                                     & $ 0.231$                      & $\bm{0.0{^*}}$ & $ 0.264$ & $ 0.264$ & $\bm{0.0{^*}}$ & $ 0.457$ \\
-                \rowcolor{LIGHTGREY} Gambia                         & Chlorocebus sabaeus & $ 0.005$ & $ 0.041$ & $\bm{0.0{^*}}$                  & $ 0.403$                                                                     & $ 0.236$                      & $\bm{0.0{^*}}$ & $ 0.270$ & $ 0.217$ & $\bm{0.0{^*}}$ & $ 0.375$ \\
-                \rowcolor{LIGHTGREY} Kenya                          & Chlorocebus sabaeus & $ 0.004$ & $ 0.061$ & $\bm{0.0{^*}}$    & $ 0.598$                                                                     & $ 0.181$                      & $\bm{0.0{^*}}$ & $ 0.207$ & $ 0.152$ & $ 0.150~~$ & $ 0.264$ \\
-                \rowcolor{LIGHTGREY} Nevis                          & Chlorocebus sabaeus & $ 0.003$ & $ 0.029$ & $\bm{ 0.020{^*}}$               & $ 0.279$                                                                     & $ 0.332$                      & $\bm{0.0{^*}}$ & $ 0.380$ & $ 0.237$ & $\bm{ 0.017{^*}}$ & $ 0.410$ \\
-                \rowcolor{LIGHTGREY} South Africa (SA)              & Chlorocebus sabaeus & $ 0.006$ & $ 0.065$ & $\bm{0.0{^*}}$                  & $ 0.633$                                                                     & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.142$ & $ 0.108~~$ & $ 0.246$ \\
-                \rowcolor{LIGHTGREY} Saint Kitts (SK)               & Chlorocebus sabaeus & $ 0.004$ & $ 0.040$ & $\bm{0.0{^*}}$                  & $ 0.388$                                                                     & $ 0.324$ & $\bm{0.0{^*}}$ & $ 0.371$ & $ 0.253$ & $\bm{0.0{^*}}$ & $ 0.439$ \\
-                \rowcolor{LIGHTGREY} Zambia                         & Chlorocebus sabaeus & $ 0.006$ & $ 0.066$ & $\bm{0.0{^*}}$                  & $ 0.642$                                                                     & $ 0.132$                      & $\bm{0.0{^*}}$ & $ 0.151$ & $ 0.131$ & $ 0.150~~$ & $ 0.227$ \\
-                African (AFR)                                       & Homo sapiens        & $ 0.002$ & $ 0.059$ & $\bm{ 0.012{^*}}$ & $ 0.568$ & $-0.010$ & $ 1.000~~$ & $-0.012$ & $ 0.089$ & $ 1.000~~$ & $ 0.155$ \\
-                Ad Mixed American (AMR)                             & Homo sapiens        & $ 0.002$ & $ 0.067$ & $\bm{ 0.006{^*}}$ & $ 0.647$ & $-0.029$ & $ 1.000~~$ & $-0.034$ & $-0.141$ & $ 1.000~~$ & $-0.244$ \\
-                East Asian (EAS)                                    & Homo sapiens        & $ 0.002$ & $ 0.063$ & $\bm{ 0.006{^*}}$ & $ 0.610$ & $-0.096$ & $ 1.000~~$ & $-0.111$ & $-0.296$ & $ 1.000~~$ & $-0.513$ \\
-                European (EUR)                                      & Homo sapiens        & $ 0.002$ & $ 0.061$ & $\bm{ 0.015{^*}}$ & $ 0.590$ & $-0.078$ & $ 1.000~~$ & $-0.089$ & $-0.289$ & $ 1.000~~$ & $-0.500$ \\
-                South Asian (SAS)                                   & Homo sapiens        & $ 0.002$ & $ 0.089$ & $\bm{0.0{^*}}$    & $ 0.866$ & $-0.113$ & $ 1.000~~$ & $-0.130$ & $-0.111$ & $ 1.000~~$ & $-0.193$ \\
-                \bottomrule
-            \end{tabular}
-        \end{adjustbox}
-        \caption{
-            Across $29$ populations (rows), table of quantitative value of $\Delta \rateApop$ between the set classified as adaptive and nearly-neutral shown in fig.~\ref{fig:unfolded-MK}.
-            $p_{\mathrm{v}}^{\mathrm{adj}}$ associated to the test are corrected for multiple comparison (Holm–Bonferroni correction, $^*$ for $p_{\mathrm{v}}^{\mathrm{adj}} < 0.05$).
-            $\frac{\Delta\rateApop}{\rateAphy}$ is the ratio of $\Delta \rateApop$ at the population-genetic level and the phylogenetic level.
-            $\pi_{\textrm{S}}$ is the observed genetic diversity (number of SNPs per site) counted over synonymous sites.
-        }
-        \label{table:unfolded-MK}
-    \end{table*}
     \section*{Discussion}\label{sec:discussion}
 
     Quantifying the rate of adaptation assumes that we can measure the rate of evolution and more importantly its deviation from a null model of evolution disallowing adaptation.
@@ -492,6 +382,7 @@
     Funding: Université de Lausanne.
     Agence Nationale de la Recherche, Grant ANR-15-CE12-0010-01 / DASIRE.
     Agence Nationale de la Recherche, Grant ANR-19-CE12-0019 / HotRec.
+    Natural Sciences and Engineering Research Council of Canada.
 
 %TC:ignore
     \section{Author information}\label{sec:author-information}
@@ -500,6 +391,117 @@
     TL, NR and NL contributed to the writing of the manuscript.
 
     \printbibliography
-
 %TC:endignore
+    \begin{figure*}[htb]
+        \centering
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.025}
+        \end{minipage}
+        \llap{\raisebox{1.15cm}{\scriptsize A\hspace{4.55cm}}}\hfill
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.025}
+        \end{minipage}
+        \llap{\raisebox{1.15cm}{\scriptsize B\hspace{4.55cm}}}\hfill
+        \begin{minipage}{0.32\linewidth}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.025}
+        \end{minipage}
+        \llap{\raisebox{1.15cm}{\scriptsize C\hspace{4.55cm}}}\hfill
+        \caption{
+            Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale.
+            $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
+            Scatter plot of $14,509$ genes in panel A, with $95$\% bayesian credible interval ($\alpha=0.05$).
+            Density plot of sites in panel B and C.
+            Genes or sites are then classified whether they detected as adaptive ($\omega > \omega_{0}$ in red) or nearly-neutral ($\omega \simeq \omega_{0}$ in green).
+            In panel C, the set of sites detected exclusively by mutation-selection codon models have a mean $\omega < 1 $.}
+        \label{fig:scatterplot}
+    \end{figure*}
+
+    \begin{figure*}[htb]
+        \centering
+        \includegraphics[width=0.95\linewidth, page=1]{polymorphism-method}
+        \caption{
+            Integrating divergence and polymorphism for the detection of adaptation.
+            At the phylogenetic level, $\omega$ (classical codon models) and $\omega_{0}$ (mutation-selection codon models) are computed from protein-coding DNA alignments, allowing to classify genes into adaptive (in red) and nearly-neutral (in green) regime.
+            At the population-genetic level, for each population, $\rateApop$ is computed on the concatenate of genes classified as under adaptation.
+            The result is compared to the empirical null distribution of $\rateApop$ in each population, obtained by randomly sampling ($1,000$ replicates) a subset under a nearly-neutral regime.
+        }
+        \label{fig:method}
+    \end{figure*}
+
+    \begin{figure*}[htb]
+        \centering
+        \includegraphics[width=0.95\linewidth, page=1]{unfolded-MK}
+        \caption{
+            Enrichment of adaptation at the population-genetic scale for $29$ populations across $7$ genera at the gene (panel A) and site (panels B and C) level.
+            For each population, $\rateApop$ is computed on $822$ genes (A) and $104,129$ sites (B) having a high rate of adaptation at the phylogenetic scale ($\omega > \omega_0$ in red).
+            In panel C, the set of 29,543 sites are detected exclusively by mutation-selection codon models with a mean $\omega < 1 $.
+            The result is compared to the empirical null distribution of $\rateApop$, obtained by randomly sampling ($1,000$ replicates) a subset of genes and sites under a nearly-neutral regime (violin plot in green).
+            $^*$ signify that the $p_{\mathrm{v}}$ corrected for multiple comparison (Holm–Bonferroni correction) is lower than the risk $\alpha=0.05$.
+            The acronym of populations, and the quantitative value of $\rateApop$ and $p_{\mathrm{v}}$ are shown in table~\ref{table:unfolded-MK}}
+        \label{fig:unfolded-MK}
+    \end{figure*}
+
+    \begin{table*}[tb]
+        \centering
+        \begin{adjustbox}{width = 0.95\textwidth}
+            \begin{tabular}{||l|l|r||r|r|r||r|r|r||r|r|r||}
+                \toprule
+                \multicolumn{3}{||c||}{} &
+                \multicolumn{3}{c||}{\textbf{Genes (822)}} &
+                \multicolumn{3}{c||}{\textbf{Sites (104,129)}} &
+                \multicolumn{3}{c||}{\textbf{Sites ($\bm{\omega < 1}$) (29,543)}}
+                \\ \hline
+                \textbf{Population} &
+                \textbf{Species} &
+                $\bm{\pi_{\textrm{S}}}$ &
+                $\bm{\Delta \rateApop}$ &
+                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$    &
+                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$ &
+                $\bm{\Delta \rateApop}$ &
+                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$          &
+                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$ &
+                $\bm{\Delta \rateApop}$ &
+                $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$ &
+                $\bm{\frac{\Delta\rateApop}{\rateAphy}}$
+                \\                \midrule
+                Diverse (Equus)                                     & Equus caballus      & $ 0.002$ & $ 0.094$ & $\bm{0.0{^*}}$    & $ 0.928$ & $ 0.399$ & $\bm{0.0{^*}}$ & $ 0.459$ & $ 0.258$ & $\bm{0.0{^*}}$ & $ 0.446$ \\
+                \rowcolor{LIGHTGREY} Diverse (Canis)                & Canis familiaris    & $ 0.004$ & $ 0.058$ & $\bm{0.0{^*}}$                  & $ 0.557$                                                                     & $ 0.406$ & $\bm{0.0{^*}}$ & $ 0.463$ & $ 0.227$ & $\bm{0.0{^*}}$ & $ 0.392$ \\
+                Iran (IRBT)                                         & Bos taurus          & $ 0.008$ & $ 0.028$ & $\bm{ 0.020{^*}}$ & $ 0.278$ & $ 0.237$ & $\bm{0.0{^*}}$ & $ 0.272$ & $ 0.134$ & $ 0.150~~$ & $ 0.231$ \\
+                Uganda (UGBT)                                       & Bos taurus          & $ 0.008$ & $ 0.036$ & $\bm{0.0{^*}}$    & $ 0.355$ & $ 0.222$ & $\bm{0.0{^*}}$ & $ 0.254$ & $ 0.156$ & $\bm{ 0.017{^*}}$ & $ 0.270$ \\
+                \rowcolor{LIGHTGREY} Australia (AUCH)               & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$                  & $ 0.506$                                                                     & $ 0.202$ & $\bm{0.0{^*}}$ & $ 0.230$ & $ 0.168$ & $ 0.143~~$ & $ 0.290$ \\
+                \rowcolor{LIGHTGREY} France (FRCH)                  & Capra hircus        & $ 0.003$ & $ 0.073$ & $\bm{0.0{^*}}$                  & $ 0.709$                                                                     & $ 0.220$                      & $\bm{0.0{^*}}$ & $ 0.250$ & $ 0.236$ & $\bm{ 0.039{^*}}$ & $ 0.407$ \\
+                \rowcolor{LIGHTGREY} Iran (IRCA)                    & Capra aegagrus      & $ 0.004$ & $ 0.049$ & $\bm{0.0{^*}}$                  & $ 0.482$                                                                     & $ 0.242$                      & $\bm{0.0{^*}}$ & $ 0.275$ & $ 0.108$ & $ 0.396~~$ & $ 0.186$ \\
+                \rowcolor{LIGHTGREY} Iran (IRCH)                    & Capra hircus        & $ 0.004$ & $ 0.062$ & $\bm{0.0{^*}}$    & $ 0.610$                                                                     & $ 0.210$                      & $\bm{0.0{^*}}$ & $ 0.239$ & $ 0.217$ & $\bm{ 0.017{^*}}$ & $ 0.375$ \\
+                \rowcolor{LIGHTGREY} Italy (ITCH)                   & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$    & $ 0.511$                                                                     & $ 0.174$                      & $\bm{0.0{^*}}$ & $ 0.199$ & $ 0.134$ & $ 0.308~~$ & $ 0.232$ \\
+                \rowcolor{LIGHTGREY} Morocco (MOCH)                 & Capra hircus        & $ 0.004$ & $ 0.064$ & $\bm{0.0{^*}}$                  & $ 0.626$                                                                     & $ 0.256$                      & $\bm{0.0{^*}}$ & $ 0.292$ & $ 0.201$ & $\bm{0.0{^*}}$ & $ 0.347$ \\
+                Iran (IROA)                                         & Ovis aries          & $ 0.007$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.847$ & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.183$ & $\bm{ 0.017{^*}}$ & $ 0.316$ \\
+                Iran (IROO)                                         & Ovis orientalis     & $ 0.009$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.848$ & $ 0.204$ & $\bm{0.0{^*}}$ & $ 0.233$ & $ 0.176$ & $\bm{0.0{^*}}$ & $ 0.304$ \\
+                Iran (IROV)                                         & Ovis vignei         & $ 0.005$ & $ 0.072$ & $\bm{0.0{^*}}$    & $ 0.697$ & $ 0.194$ & $\bm{0.0{^*}}$ & $ 0.222$ & $ 0.192$ & $\bm{0.0{^*}}$ & $ 0.332$ \\
+                Various (ISGC)                                      & Ovis aries          & $ 0.008$ & $ 0.076$ & $\bm{0.0{^*}}$    & $ 0.742$ & $ 0.171$ & $\bm{0.0{^*}}$ & $ 0.195$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.326$ \\
+                Morocco (MOOA)                                      & Ovis aries          & $ 0.008$ & $ 0.093$ & $\bm{0.0{^*}}$    & $ 0.905$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.216$ & $ 0.193$ & $\bm{0.0{^*}}$ & $ 0.333$ \\
+                \rowcolor{LIGHTGREY} Barbados                       & Chlorocebus sabaeus & $ 0.003$ & $ 0.068$ & $\bm{0.0{^*}}$                  & $ 0.665$                                                                     & $ 0.341$                      & $\bm{0.0{^*}}$ & $ 0.390$ & $ 0.248$ & $\bm{0.0{^*}}$ & $ 0.430$ \\
+                \rowcolor{LIGHTGREY} Central African Republic (CAR) & Chlorocebus sabaeus & $ 0.006$           & $ 0.034$                      & $\bm{0.0{^*}}$ & $ 0.334$ & $ 0.229$ & $\bm{0.0{^*}}$ & $ 0.262$ & $ 0.195$ & $\bm{0.0{^*}}$ & $ 0.338$ \\
+                \rowcolor{LIGHTGREY} Ethiopia                       & Chlorocebus sabaeus & $ 0.005$ & $ 0.044$ & $\bm{0.0{^*}}$                  & $ 0.425$                                                                     & $ 0.231$                      & $\bm{0.0{^*}}$ & $ 0.264$ & $ 0.264$ & $\bm{0.0{^*}}$ & $ 0.457$ \\
+                \rowcolor{LIGHTGREY} Gambia                         & Chlorocebus sabaeus & $ 0.005$ & $ 0.041$ & $\bm{0.0{^*}}$                  & $ 0.403$                                                                     & $ 0.236$                      & $\bm{0.0{^*}}$ & $ 0.270$ & $ 0.217$ & $\bm{0.0{^*}}$ & $ 0.375$ \\
+                \rowcolor{LIGHTGREY} Kenya                          & Chlorocebus sabaeus & $ 0.004$ & $ 0.061$ & $\bm{0.0{^*}}$    & $ 0.598$                                                                     & $ 0.181$                      & $\bm{0.0{^*}}$ & $ 0.207$ & $ 0.152$ & $ 0.150~~$ & $ 0.264$ \\
+                \rowcolor{LIGHTGREY} Nevis                          & Chlorocebus sabaeus & $ 0.003$ & $ 0.029$ & $\bm{ 0.020{^*}}$               & $ 0.279$                                                                     & $ 0.332$                      & $\bm{0.0{^*}}$ & $ 0.380$ & $ 0.237$ & $\bm{ 0.017{^*}}$ & $ 0.410$ \\
+                \rowcolor{LIGHTGREY} South Africa (SA)              & Chlorocebus sabaeus & $ 0.006$ & $ 0.065$ & $\bm{0.0{^*}}$                  & $ 0.633$                                                                     & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.142$ & $ 0.108~~$ & $ 0.246$ \\
+                \rowcolor{LIGHTGREY} Saint Kitts (SK)               & Chlorocebus sabaeus & $ 0.004$ & $ 0.040$ & $\bm{0.0{^*}}$                  & $ 0.388$                                                                     & $ 0.324$ & $\bm{0.0{^*}}$ & $ 0.371$ & $ 0.253$ & $\bm{0.0{^*}}$ & $ 0.439$ \\
+                \rowcolor{LIGHTGREY} Zambia                         & Chlorocebus sabaeus & $ 0.006$ & $ 0.066$ & $\bm{0.0{^*}}$                  & $ 0.642$                                                                     & $ 0.132$                      & $\bm{0.0{^*}}$ & $ 0.151$ & $ 0.131$ & $ 0.150~~$ & $ 0.227$ \\
+                African (AFR)                                       & Homo sapiens        & $ 0.002$ & $ 0.059$ & $\bm{ 0.012{^*}}$ & $ 0.568$ & $-0.010$ & $ 1.000~~$ & $-0.012$ & $ 0.089$ & $ 1.000~~$ & $ 0.155$ \\
+                Ad Mixed American (AMR)                             & Homo sapiens        & $ 0.002$ & $ 0.067$ & $\bm{ 0.006{^*}}$ & $ 0.647$ & $-0.029$ & $ 1.000~~$ & $-0.034$ & $-0.141$ & $ 1.000~~$ & $-0.244$ \\
+                East Asian (EAS)                                    & Homo sapiens        & $ 0.002$ & $ 0.063$ & $\bm{ 0.006{^*}}$ & $ 0.610$ & $-0.096$ & $ 1.000~~$ & $-0.111$ & $-0.296$ & $ 1.000~~$ & $-0.513$ \\
+                European (EUR)                                      & Homo sapiens        & $ 0.002$ & $ 0.061$ & $\bm{ 0.015{^*}}$ & $ 0.590$ & $-0.078$ & $ 1.000~~$ & $-0.089$ & $-0.289$ & $ 1.000~~$ & $-0.500$ \\
+                South Asian (SAS)                                   & Homo sapiens        & $ 0.002$ & $ 0.089$ & $\bm{0.0{^*}}$    & $ 0.866$ & $-0.113$ & $ 1.000~~$ & $-0.130$ & $-0.111$ & $ 1.000~~$ & $-0.193$ \\
+                \bottomrule
+            \end{tabular}
+        \end{adjustbox}
+        \caption{
+            Across $29$ populations (rows), table of quantitative value of $\Delta \rateApop$ between the set classified as adaptive and nearly-neutral shown in fig.~\ref{fig:unfolded-MK}.
+            $p_{\mathrm{v}}^{\mathrm{adj}}$ associated to the test are corrected for multiple comparison (Holm–Bonferroni correction, $^*$ for $p_{\mathrm{v}}^{\mathrm{adj}} < 0.05$).
+            $\frac{\Delta\rateApop}{\rateAphy}$ is the ratio of $\Delta \rateApop$ at the population-genetic level and the phylogenetic level.
+            $\pi_{\textrm{S}}$ is the observed genetic diversity (number of SNPs per site) counted over synonymous sites.
+        }
+        \label{table:unfolded-MK}
+    \end{table*}
 \end{document}

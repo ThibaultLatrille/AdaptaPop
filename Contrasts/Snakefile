@@ -37,6 +37,7 @@ for id, row in list(pd.read_csv(config["SAMPLE_LIST"],sep='\t').iterrows()):
     SPECIES_SISTER_K[row['Species']] = row["SisterSpecies"]
     SUBSAMPlE_SFS[row['SampleName']] = row["k"]
     OUTPUT_LIST.append(ROOT + f"/VCF/{row['Species']}.{row['SampleName']}.vcf.gz")
+    OUTPUT_LIST.append(ROOT + f"/TSV/{row['Species']}.{row['SampleName']}.tsv")
     for popu_path in glob(f"{ROOT}/Polymorphism/{row['Species']}/CDS.ANNOT.*.{row['SampleName']}.tsv.gz"):
         POPU_TO_TSV[row['SampleName']] = popu_path
         for model, sfs in product(config['DFE_MODELS'],config['SFS']):
@@ -208,3 +209,16 @@ rule annotate_vcf:
         vcf=ROOT + '/VCF/{species}.{popu}.vcf.gz'
     shell:
         'python3 {input.script} --vcf {input.vcf} --tsv {input.tsv} --folder {input.exp_folder} --output {output.vcf}'
+
+rule MK_summary_stats:
+    input:
+        tsv=lambda wildcards: glob(f'{ROOT}/Polymorphism/{wildcards.species}/CDS.ANNOT.*.{wildcards.popu}.tsv.gz'),
+        pickle=lambda wildcards: f"{FOLDER}/pickle/{wildcards.species}-gene-0.025.pk1.bz2",
+        script=f'{ROOT}/scripts/MK_summary_stats.py'
+    params:
+        tmp_folder=lambda wildcards: f"{ROOT}/TSV/tmp/{wildcards.species}-{wildcards.popu}/",
+        species=lambda wildcards: f"--focal_species {wildcards.species} --sister_species {SPECIES_SISTER_K[wildcards.species]} --subsample {SUBSAMPlE_SFS[wildcards.popu]}"
+    output:
+        tsv=ROOT + '/TSV/{species}.{popu}.tsv'
+    shell:
+        'python3 {input.script} --pickle {input.pickle} --vcf {input.tsv} --output {output.tsv} --tmp_folder {params.tmp_folder} {params.species}'

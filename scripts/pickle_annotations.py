@@ -45,4 +45,4 @@ if __name__ == '__main__':
     filter_set = filter_set.intersection(set(dico_alignments))
 
     with bz2.BZ2File(args.output, "w") as file:
-        cPickle.dump((filter_set, dico_omega_0, dico_omega, dico_alignments), file)
+        cPickle.dump((filter_set, dico_omega_0, dico_omega, dico_alignments, dico_trid), file)

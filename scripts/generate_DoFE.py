@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     polarize_snps = args.sfs == "unfolded"
     pickle_file = bz2.BZ2File(args.pickle, 'rb')
-    filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
+    filter_set, dico_omega_0, dico_omega, dico_alignments, dico_trid = cPickle.load(pickle_file)
     pickle_file.close()
     print("Data loaded")
     adaptive_dico, nn_dico, _ = split_outliers(dico_omega_0, dico_omega, gene_level=gene, filter_set=filter_set,

@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     polarize_snps = args.sfs == "unfolded"
     pickle_file = bz2.BZ2File(args.pickle, 'rb')
-    filter_set, dico_omega_0, dico_omega, dico_alignments = cPickle.load(pickle_file)
+    filter_set, dico_omega_0, dico_omega, dico_alignments, dico_trid = cPickle.load(pickle_file)
     pickle_file.close()
     print("Data loaded")
 
