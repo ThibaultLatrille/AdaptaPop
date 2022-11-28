@@ -12,6 +12,8 @@
 /OrthoMam/Datasets/
 /OrthoMam/Experiments/
 /OrthoMam/bayescode/
+/OrthoMam/CODEML
+/OrthoMam/trees.py
 /OrthoMam/TableOmega.tsv
 /OrthoMam/Experiments.tar.xz
 /Polymorphism/CDS.ANNOT.tar.xz

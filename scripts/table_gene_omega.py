@@ -7,13 +7,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '--div_folder', required=True, type=str, dest="div_folder",
                         help="folder containing OrthoMam results")
-    parser.add_argument('-x', '--xml', required=True, type=str,
-                        dest="xml", metavar="<xml>",
-                        help="The xml folder")
-    parser.add_argument('-s', '--species', required=True, type=str, nargs="+",
-                        dest="species", metavar="<species>",
-                        help="The species name")
-
+    parser.add_argument('-x', '--xml', required=True, type=str, dest="xml", help="The xml folder")
+    parser.add_argument('-s', '--species', required=True, type=str, nargs="+", dest="species", help="The species name")
+    parser.add_argument('-o', '--output', required=True, type=str, dest="output")
     args = parser.parse_args()
 
     ensg_list = sorted([i[:-3] for i in os.listdir(args.div_folder)])
@@ -31,6 +27,7 @@ if __name__ == '__main__':
                 "ω0_lower": [dico_omega_0[k][0] for k in ensg_list],
                 "ω0": [dico_omega_0[k][1] for k in ensg_list],
                 "ω0_upper": [dico_omega_0[k][2] for k in ensg_list],
+                "ωA_phy": [dico_omega[k][1] - dico_omega_0[k][1] for k in ensg_list],
                 "category": [dico_cat[k] if k in dico_cat else "unclassified" for k in ensg_list]}
 
     for sp in args.species:
