@@ -26,14 +26,14 @@ MODELS = {"siteomega": "--omegashift 0.0 --freeomega --omegancat 30 --flatfitnes
           "sitemutsel": "--omegashift 0.0 --ncat 30"}
 POINTS = config['POINTS']
 BURN_IN = config['BURN_IN']
-TEMPLATES = [i.replace(".ctl", "") for i in os.listdir(TEMPLATES_FOLDER)]
+TEMPLATES = [i.replace(".ctl","") for i in os.listdir(TEMPLATES_FOLDER)]
 print(TEMPLATES)
 localrules: all,filter
 
 rule all:
     input:
         f"{FOLDER}/GeneTable.csv.gz",
-        expand(f"{FOLDER}/codeml_vs_bayescode.{{template}}.pdf", template=TEMPLATES)
+        expand(f"{FOLDER}/codeml_vs_bayescode.{{template}}.pdf",template=TEMPLATES)
 
 rule filter:
     input:
@@ -117,7 +117,7 @@ rule codeml:
 
 rule codeml_vs_bayescode:
     input:
-        codeml=expand(rules.codeml.output,CDS=RD_SAMPLE_LIST, template=TEMPLATES),
+        codeml=expand(rules.codeml.output,CDS=RD_SAMPLE_LIST,template=TEMPLATES),
         bayescode=expand(rules.read_bayescode.output,CDS=RD_SAMPLE_LIST,model=["siteomega"],chain=[1]),
         script=f"{ROOT}/scripts/codeml_vs_bayescode.py"
     output:

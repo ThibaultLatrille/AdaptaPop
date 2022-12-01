@@ -21,7 +21,7 @@ def translate_aa(seq):
     return [codontable[seq[i:i + 3]] for i in range(0, len(seq), 3)]
 
 
-def open_fasta(fasta):
+def open_fasta(fasta, all_sites=True):
     # Open a fasta file and return a list of sites with variation
     f = open(fasta, "r")
     seqs, aa_list, sites_with_var = [], [], []
@@ -33,7 +33,7 @@ def open_fasta(fasta):
     assert len(set([len(s) for s in seqs])) == 1
     for i in range(len(seqs[0])):
         column = "".join([s[i] for s in seqs])
-        if column.count('X') + column.count('-') == 0:
+        if ((column.count('X') + column.count('-')) == 0) or all_sites:
             sites_with_var.append(i)
             aa_list.append(seqs[0][i])
     return aa_list, sites_with_var
@@ -62,13 +62,19 @@ def open_rst(file, aa_list):
     return out_file
 
 
+def all_sites(ctl):
+    r = open(ctl, "r").read()
+    return "cleandata = 0" in r
+
+
 def build_codeml_dico(codeml_folder, list_ensg, template):
     print('Loading CODEML results.')
     codeml_w = []
     filter_subset = {}
     for ensg in list_ensg:
+        ctl = f"{codeml_folder}/{ensg}_NT_{template}/{ensg}_NT.ctl"
         fasta = f"{codeml_folder}/{ensg}_NT_{template}/{ensg}_NT.fasta"
-        aa_list, sites_with_var = open_fasta(fasta)
+        aa_list, sites_with_var = open_fasta(fasta, all_sites(ctl))
         rst = f"{codeml_folder}/{ensg}_NT_{template}/rst"
         out_file = open_rst(rst, aa_list)
         if len(out_file) == 0:
