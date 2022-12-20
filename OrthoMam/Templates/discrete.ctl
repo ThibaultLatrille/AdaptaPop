@@ -1,11 +1,11 @@
-        noisy = 3  * 0,1,2,3,9: how much rubbish on the screen
+        noisy = 0  * 0,1,2,3,9: how much rubbish on the screen
       verbose = 0  * 0: concise; 1: detailed, 2: too much
       runmode = 0  * 0: user tree;  1: semi-automatic;  2: automatic
                    * 3: StepwiseAddition; (4,5):PerturbationNNI; -2: pairwise
 
       seqtype = 1  * 1:codons; 2:AAs; 3:codons-->AAs
-    CodonFreq = 1  * 0:1/61 each, 1:F1X4, 2:F3X4, 3:codon table
-
+    CodonFreq = 4  * 0:1/61 each, 1:F1X4, 2:F3X4, 3:codon table
+      estFreq = 0
         clock = 0  * 0:no clock, 1:clock; 2:local clock; 3:CombinedAnalysis
        aaDist = 0  * 0:equal, +:geometric; -:linear, 1-6:G1974,Miyata,c,p,v,a
    aaRatefile = /usr/lib/paml/data/dat/jones.dat  * only used for aa seqs with model=empirical(_F)

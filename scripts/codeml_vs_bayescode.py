@@ -55,10 +55,10 @@ def open_rst(file, aa_list):
             s = line.replace("  ", " ").strip().split(" ")
             if len(s) == 1:
                 break
-            assert s[1] == aa_list[i]
+            if aa_list[i] != s[1]:
+                s[-back] = np.nan
             i += 1
             out_file[int(s[0])] = float(s[-back])
-
     return out_file
 
 
@@ -69,23 +69,63 @@ def all_sites(ctl):
 
 def build_codeml_dico(codeml_folder, list_ensg, template):
     print('Loading CODEML results.')
-    codeml_w = []
+    site_codeml, gene_codeml = [], []
     filter_subset = {}
     for ensg in list_ensg:
         ctl = f"{codeml_folder}/{ensg}_NT_{template}/{ensg}_NT.ctl"
         fasta = f"{codeml_folder}/{ensg}_NT_{template}/{ensg}_NT.fasta"
         aa_list, sites_with_var = open_fasta(fasta, all_sites(ctl))
         rst = f"{codeml_folder}/{ensg}_NT_{template}/rst"
+        if not os.path.exists(rst):
+            continue
         out_file = open_rst(rst, aa_list)
         if len(out_file) == 0:
             continue
         assert len(out_file) == len(sites_with_var)
-        print(f"{ensg} with model {template}: {len(out_file)} sites")
+        print(f"{ensg} with {template} model: {len(out_file)} sites")
         filter_subset[ensg] = sites_with_var
-        codeml_w.extend(out_file.values())
+        site_codeml.extend(out_file.values())
+        gene_codeml.append(np.nanmean(list(out_file.values())))
 
-    print('CODEML results loaded.')
-    return codeml_w, filter_subset
+    print(f'CODEML results loaded for {len(filter_subset)} genes.')
+    return np.array(site_codeml), np.array(gene_codeml), filter_subset
+
+
+def plot_codeml_bayescode(bayescode_w, codeml_w, output, pp, level="sites"):
+    plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
+    plt.subplot(1, 1, 1)
+    plt.ylabel("BayesCode $\\omega$", fontsize=fontsize)
+    plt.xlabel("CODEML $\\omega$", fontsize=fontsize)
+    xmin, xmax = 0, max(max(bayescode_w[:, 1]), max(codeml_w)) + 0.1
+    plt.xlim((xmin, xmax))
+    idf = np.linspace(xmin, xmax, 30)
+    plt.plot(idf, idf, color="black")
+    f = np.isfinite(codeml_w)
+    codeml_w = codeml_w[f]
+    bayescode_w = bayescode_w[f, :]
+    plt.errorbar(codeml_w, bayescode_w[:, 1],
+                 yerr=[bayescode_w[:, 1] - bayescode_w[:, 0], bayescode_w[:, 2] - bayescode_w[:, 1]],
+                 alpha=0.4, label=f"${len(bayescode_w)}$ {level}", c=RED_RGB,
+                 fmt='o', marker=None, mew=0, ecolor=RED_RGB, zorder=10, lw=.5, markersize=3.0)
+    # Regression line
+    outside = len([c for c, b in zip(codeml_w, bayescode_w) if c < b[0] or c > b[2]])
+    s = f"{outside} {level} out of {len(bayescode_w)} ({(100 * outside / len(bayescode_w)):.2f}%)"
+    s += f" are outside the {100 * (1 - float(pp) * 2):.0f}% confidence interval."
+    plt.title(s)
+    model = sm.OLS(list(bayescode_w[:, 1]), sm.add_constant(codeml_w))
+    results = model.fit()
+    b, a = results.params[0:2]
+    plt.plot(idf, a * idf + b, 'r-',
+             label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(float(a), abs(float(b)), results.rsquared,
+                                                                      "+" if float(b) > 0 else "-"))
+    plt.legend(fontsize=fontsize_legend, loc="lower right")
+    plt.ylim((xmin, xmax))
+    plt.xticks(fontsize=fontsize_legend)
+    plt.tight_layout()
+    plt.savefig(f"{output}.pdf", format="pdf")
+    plt.savefig(f"{output}.png", format="png")
+    plt.clf()
+    plt.close('all')
 
 
 def main(codeml_folder, bayescode_folder, pp, output):
@@ -93,37 +133,15 @@ def main(codeml_folder, bayescode_folder, pp, output):
     templates = sorted(set([i.split("_")[-1] for i in list_codeml]))
     for template in templates:
         list_ensg = [i.replace(f"_NT_{template}", "") for i in list_codeml if i.split("_")[-1] == template]
-        codeml_w, filter_subset = build_codeml_dico(codeml_folder, list_ensg, template)
-        _, dico_omega = build_divergence_dico(bayescode_folder, list_ensg, gene_level=False, pp=pp)
-        bayescode_w = filtered_table_omega(dico_omega, filter_subset, gene_level=False)
+        site_codeml, gene_codeml, filter_subset = build_codeml_dico(codeml_folder, list_ensg, template)
 
-        plt.figure(figsize=(1920 / my_dpi, 1080 / my_dpi), dpi=my_dpi)
-        plt.subplot(1, 1, 1)
-        plt.ylabel("BayesCode $\\omega$", fontsize=fontsize)
-        plt.xlabel("CODEML $\\omega$", fontsize=fontsize)
-        xmin, xmax = 0, max(max(bayescode_w[:, 1]), max(codeml_w)) + 0.1
-        plt.xlim((xmin, xmax))
-        idf = np.linspace(xmin, xmax, 30)
-        plt.plot(idf, idf, color="black")
-        plt.errorbar(codeml_w, bayescode_w[:, 1],
-                     yerr=[bayescode_w[:, 1] - bayescode_w[:, 0], bayescode_w[:, 2] - bayescode_w[:, 1]],
-                     alpha=0.4, label=r"${0}$ sites".format(len(bayescode_w)), c=RED_RGB,
-                     fmt='o', marker=None, mew=0, ecolor=RED_RGB, zorder=10, lw=.5, markersize=3.0)
-        # Regression line
-        model = sm.OLS(list(bayescode_w[:, 1]), sm.add_constant(codeml_w))
-        results = model.fit()
-        b, a = results.params[0:2]
-        plt.plot(idf, a * idf + b, 'r-',
-                 label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(float(a), abs(float(b)), results.rsquared,
-                                                                          "+" if float(b) > 0 else "-"))
-        plt.legend(fontsize=fontsize_legend, loc="lower right")
-        plt.ylim((xmin, xmax))
-        plt.xticks(fontsize=fontsize_legend)
-        plt.tight_layout()
-        plt.savefig(f"{output}.{template}.pdf", format="pdf")
-        plt.clf()
-        plt.close('all')
+        _, gene_omega_dico = build_divergence_dico(bayescode_folder, list_ensg, gene_level=True, pp=pp)
+        gene_bayescode = filtered_table_omega(gene_omega_dico, filter_subset, gene_level=True)
+        plot_codeml_bayescode(gene_bayescode, gene_codeml, f"{output}.gene.{template}", pp, level="genes")
 
+        _, site_omega_dico = build_divergence_dico(bayescode_folder, list_ensg, gene_level=False, pp=pp)
+        site_bayescode = filtered_table_omega(site_omega_dico, filter_subset, gene_level=False)
+        plot_codeml_bayescode(site_bayescode, site_codeml, f"{output}.site.{template}", pp, level="sites")
     print('Plot completed')
 
 

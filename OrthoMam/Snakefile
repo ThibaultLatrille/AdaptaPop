@@ -12,27 +12,33 @@ FASTA_FOLDER = f"{FOLDER}/Datasets/omm_NT_fasta.v10c_116"
 TREE_FOLDER = f"{FOLDER}/Datasets/omm_RooTree.v10b_116"
 XML_FOLDER = f"{FOLDER}/Datasets/omm_markers"
 EXP_FOLDER = f"{FOLDER}/Experiments"
-TEMPLATES_FOLDER = f"{FOLDER}/Templates"
-CODEML_FOLDER = f"CODEML"
 mutsel_path = "mutselomega"  # In case you want to specify the path to Bayescode bin folder
 readmutsel_path = "readmutselomega"  # In case you want to specify the path to Bayescode bin folder
 CDS_list = list(sorted([i.replace(".fasta","") for i in os.listdir(FASTA_FOLDER)]))[
            config['CDS_START_LIST']:config['CDS_END_LIST']]
-# random sample without replacement from a list
-# Seed for reproducibility
-random.seed(config['RANDOM_SEED'])
-RD_SAMPLE_LIST = random.sample(CDS_list,config['CODEML_SAMPLES'])
+print(f"{len(CDS_list)} CDS found in {FASTA_FOLDER}.")
 MODELS = {"siteomega": "--omegashift 0.0 --freeomega --omegancat 30 --flatfitness",
           "sitemutsel": "--omegashift 0.0 --ncat 30"}
 POINTS = config['POINTS']
 BURN_IN = config['BURN_IN']
+run_bayescode = 'ONLY_CODEML' not in config or not config['ONLY_CODEML']
+
+# random sample without replacement from a list
+# Seed for reproducibility
+CODEML_FOLDER = f"CODEML"
+TEMPLATES_FOLDER = f"{FOLDER}/Templates"
+random.seed(config['RANDOM_SEED'])
+random.shuffle(CDS_list)
+RD_SAMPLE_LIST = CDS_list[:config['CODEML_SAMPLES']]
+print(f"{len(RD_SAMPLE_LIST)} CDS to process with CODEML.")
 TEMPLATES = [i.replace(".ctl","") for i in os.listdir(TEMPLATES_FOLDER)]
-print(TEMPLATES)
-localrules: all,filter
+print(f"Templates found: {', '.join(TEMPLATES)}.")
+
+localrules: all,filter,inference,control_file,codeml_vs_bayescode,gene_table
 
 rule all:
     input:
-        f"{FOLDER}/GeneTable.csv.gz",
+        f"{FOLDER}/GeneTable.csv.gz" if run_bayescode else [],
         expand(f"{FOLDER}/codeml_vs_bayescode.{{template}}.pdf",template=TEMPLATES)
 
 rule filter:
@@ -113,6 +119,8 @@ rule codeml:
         ctl=rules.control_file.output.ctl,
     output:
         f"{CODEML_FOLDER}/{{CDS}}_{{template}}/{{CDS}}"
+    params:
+        time="2-23:00",mem=1000,threads=1,queue="cpu",name=lambda wildcards: wildcards.CDS,
     shell: "cd {CODEML_FOLDER}/{wildcards.CDS}_{wildcards.template} && echo -ne '\\n' | codeml {wildcards.CDS}.ctl 1> {wildcards.CDS}.stdout 2> {wildcards.CDS}.stderr || true"
 
 rule codeml_vs_bayescode:

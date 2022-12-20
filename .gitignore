@@ -8,6 +8,7 @@
 /manuscript/papers
 .snakemake/
 /Enard
+Legacy.*
 /OrthoMam/Compressed/
 /OrthoMam/Datasets/
 /OrthoMam/Experiments/
@@ -38,7 +39,6 @@ utils.tar.xz
 *.dS
 *.t
 *.ai
-*.ctl
 *.png
 rst
 rst1
@@ -59,3 +59,6 @@ rub
 *.blg
 *.indd
 *.svg
+Thumbs.db
+Thumbs.db:encryptable
+data.zip
