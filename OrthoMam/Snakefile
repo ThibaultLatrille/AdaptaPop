@@ -1,4 +1,5 @@
 import os
+import socket
 import pandas as pd
 import random
 from ete3 import Tree
@@ -74,7 +75,7 @@ rule run_bayescode:
         tree=f"{EXP_FOLDER}/{{CDS}}/placnr.rootree",
     output: touch(f"{EXP_FOLDER}/{{CDS}}/{{model}}_{{chain}}.run")
     params:
-        time="3-23:00",mem=1000,threads=1,queue="normal",name=lambda wildcards: wildcards.CDS,
+        time="3-23:00",mem=1000,threads=1, name=lambda wildcards: wildcards.CDS,
         unzip=lambda wildcards, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
         cmd=lambda wildcards, input: "-a {0} -t {1} -u {2} {3}".format(input.ali,input.tree,POINTS,
             MODELS[wildcards.model]) if not config['RESTART'] else ""
@@ -87,7 +88,7 @@ rule read_bayescode:
     input:
         run=f"{EXP_FOLDER}/{{CDS}}/{{model}}_{{chain}}.run",
     params:
-        time="0-10:00",mem=1000,threads=1,queue="normal",name=lambda wildcards: wildcards.CDS,
+        time="0-10:00",mem=1000,threads=1,name=lambda wildcards: wildcards.CDS,
         nuc=lambda wildcards, input: f"{readmutsel_path} --every 1 --until {POINTS} --burnin {BURN_IN} --nuc {input.run}",
         ss=lambda wildcards, input: f"{readmutsel_path} --every 1 --until {POINTS} --burnin {BURN_IN} --ss {input.run}",
         read=lambda wildcards, input: " && ".join([
@@ -120,7 +121,7 @@ rule codeml:
     output:
         f"{CODEML_FOLDER}/{{CDS}}_{{template}}/{{CDS}}"
     params:
-        time="2-23:00",mem=1000,threads=1,queue="cpu",name=lambda wildcards: wildcards.CDS,
+        time="2-23:00",mem=1000,threads=1,name=lambda wildcards: wildcards.CDS,
     shell: "cd {CODEML_FOLDER}/{wildcards.CDS}_{wildcards.template} && echo -ne '\\n' | codeml {wildcards.CDS}.ctl 1> {wildcards.CDS}.stdout 2> {wildcards.CDS}.stderr || true"
 
 rule codeml_vs_bayescode:
