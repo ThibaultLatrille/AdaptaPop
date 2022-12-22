@@ -112,12 +112,13 @@ def plot_codeml_bayescode(bayescode_w, codeml_w, output, pp, level="sites"):
     s = f"{outside} {level} out of {len(bayescode_w)} ({(100 * outside / len(bayescode_w)):.2f}%)"
     s += f" are outside the {100 * (1 - float(pp) * 2):.0f}% confidence interval."
     plt.title(s)
-    model = sm.OLS(list(bayescode_w[:, 1]), sm.add_constant(codeml_w))
-    results = model.fit()
-    b, a = results.params[0:2]
-    plt.plot(idf, a * idf + b, 'r-',
-             label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(float(a), abs(float(b)), results.rsquared,
-                                                                      "+" if float(b) > 0 else "-"))
+    if len(bayescode_w) > 1:
+        model = sm.OLS(list(bayescode_w[:, 1]), sm.add_constant(codeml_w))
+        results = model.fit()
+        b, a = results.params[0:2]
+        plt.plot(idf, a * idf + b, 'r-',
+                 label=r"$y={0:.3g}x {3} {1:.3g}$ ($r^2={2:.3g})$".format(float(a), abs(float(b)), results.rsquared,
+                                                                          "+" if float(b) > 0 else "-"))
     plt.legend(fontsize=fontsize_legend, loc="lower right")
     plt.ylim((xmin, xmax))
     plt.xticks(fontsize=fontsize_legend)
