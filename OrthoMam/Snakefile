@@ -40,7 +40,7 @@ localrules: all,filter,inference,control_file,codeml_vs_bayescode,gene_table
 rule all:
     input:
         f"{FOLDER}/GeneTable.csv.gz" if run_bayescode else [],
-        expand(f"{FOLDER}/codeml_vs_bayescode.{{template}}.pdf",template=TEMPLATES)
+        expand(f"{FOLDER}/results/codeml_vs_bayescode.{{level}}.{{template}}.png",template=TEMPLATES,level=["gene", "site"]),
 
 rule filter:
     input:
@@ -75,7 +75,7 @@ rule run_bayescode:
         tree=f"{EXP_FOLDER}/{{CDS}}/placnr.rootree",
     output: touch(f"{EXP_FOLDER}/{{CDS}}/{{model}}_{{chain}}.run")
     params:
-        time="3-23:00",mem=1000,threads=1, name=lambda wildcards: wildcards.CDS,
+        time="3-23:00",mem=1000,threads=1,name=lambda wildcards: wildcards.CDS,
         unzip=lambda wildcards, output: "gunzip {0}.chain.gz &&".format(output) if config['RESTART'] else "",
         cmd=lambda wildcards, input: "-a {0} -t {1} -u {2} {3}".format(input.ali,input.tree,POINTS,
             MODELS[wildcards.model]) if not config['RESTART'] else ""
@@ -130,9 +130,10 @@ rule codeml_vs_bayescode:
         bayescode=expand(rules.read_bayescode.output,CDS=RD_SAMPLE_LIST,model=["siteomega"],chain=[1]),
         script=f"{ROOT}/scripts/codeml_vs_bayescode.py"
     output:
-        pdf=f"{FOLDER}/codeml_vs_bayescode.{{template}}.pdf"
+        gene=f"{FOLDER}/results/codeml_vs_bayescode.gene.{{template}}.png",
+        site=f"{FOLDER}/results/codeml_vs_bayescode.site.{{template}}.png"
     shell:
-        "python3 {input.script} --codeml_folder {FOLDER}/{CODEML_FOLDER} --bayescode_folder {EXP_FOLDER} --pp 0.025 -o {FOLDER}/codeml_vs_bayescode"
+        "python3 {input.script} --codeml_folder {FOLDER}/{CODEML_FOLDER} --bayescode_folder {EXP_FOLDER} --pp 0.025 -o {FOLDER}/results/codeml_vs_bayescode"
 
 rule gene_table:
     input:
