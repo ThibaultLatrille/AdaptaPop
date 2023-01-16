@@ -1,0 +1,72 @@
+\documentclass[11pt]{article}
+\usepackage[landscape, margin=1cm]{geometry}
+\usepackage{xcolor, colortbl}
+\definecolor{LIGHTGREY}{gray}{0.9}
+\usepackage{bm}
+\usepackage{booktabs}
+
+
+\begin{document}
+    \begin{table*}[tb]
+        \centering
+        \begin{tabular}{||l|l|r||r|r|r||r|r|r||r|r|r||}
+            \toprule
+            \multicolumn{3}{||c||}{} &
+            \multicolumn{3}{c||}{\textbf{Genes (822)}} &
+            \multicolumn{3}{c||}{\textbf{Sites (104,129)}} &
+            \multicolumn{3}{c||}{\textbf{Sites ($\bm{\omega < 1}$) (29,543)}}
+            \\ \hline
+            \textbf{Population} &
+            \textbf{Species} &
+            $\bm{\pi_{\textrm{S}}}$ &
+            $\bm{\Delta \omega_{\mathrm{A}}}$ &
+            $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$    &
+            $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\omega_{\mathrm{A}}^{\mathrm{phy}}}}$ &
+            $\bm{\Delta \omega_{\mathrm{A}}}$ &
+            $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$          &
+            $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\omega_{\mathrm{A}}^{\mathrm{phy}}}}$ &
+            $\bm{\Delta \omega_{\mathrm{A}}}$ &
+            $\bm{p_{\mathrm{v}}^{\mathrm{adj}}}$ &
+            $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\omega_{\mathrm{A}}^{\mathrm{phy}}}}$
+            \\                \midrule
+            Diverse (Equus)                                     & Equus caballus      & $ 0.002$ & $ 0.094$ & $\bm{0.0{^*}}$    & $ 0.928$ & $ 0.399$ & $\bm{0.0{^*}}$ & $ 0.459$ & $ 0.258$ & $\bm{0.0{^*}}$ & $ 0.446$ \\
+            \rowcolor{LIGHTGREY} Diverse (Canis)                & Canis familiaris    & $ 0.004$ & $ 0.058$ & $\bm{0.0{^*}}$                  & $ 0.557$                                                                     & $ 0.406$ & $\bm{0.0{^*}}$ & $ 0.463$ & $ 0.227$ & $\bm{0.0{^*}}$ & $ 0.392$ \\
+            Iran (IRBT)                                         & Bos taurus          & $ 0.008$ & $ 0.028$ & $\bm{ 0.020{^*}}$ & $ 0.278$ & $ 0.237$ & $\bm{0.0{^*}}$ & $ 0.272$ & $ 0.134$ & $ 0.150~~$ & $ 0.231$ \\
+            Uganda (UGBT)                                       & Bos taurus          & $ 0.008$ & $ 0.036$ & $\bm{0.0{^*}}$    & $ 0.355$ & $ 0.222$ & $\bm{0.0{^*}}$ & $ 0.254$ & $ 0.156$ & $\bm{ 0.017{^*}}$ & $ 0.270$ \\
+            \rowcolor{LIGHTGREY} Australia (AUCH)               & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$                  & $ 0.506$                                                                     & $ 0.202$ & $\bm{0.0{^*}}$ & $ 0.230$ & $ 0.168$ & $ 0.143~~$ & $ 0.290$ \\
+            \rowcolor{LIGHTGREY} France (FRCH)                  & Capra hircus        & $ 0.003$ & $ 0.073$ & $\bm{0.0{^*}}$                  & $ 0.709$                                                                     & $ 0.220$                      & $\bm{0.0{^*}}$ & $ 0.250$ & $ 0.236$ & $\bm{ 0.039{^*}}$ & $ 0.407$ \\
+            \rowcolor{LIGHTGREY} Iran (IRCA)                    & Capra aegagrus      & $ 0.004$ & $ 0.049$ & $\bm{0.0{^*}}$                  & $ 0.482$                                                                     & $ 0.242$                      & $\bm{0.0{^*}}$ & $ 0.275$ & $ 0.108$ & $ 0.396~~$ & $ 0.186$ \\
+            \rowcolor{LIGHTGREY} Iran (IRCH)                    & Capra hircus        & $ 0.004$ & $ 0.062$ & $\bm{0.0{^*}}$    & $ 0.610$                                                                     & $ 0.210$                      & $\bm{0.0{^*}}$ & $ 0.239$ & $ 0.217$ & $\bm{ 0.017{^*}}$ & $ 0.375$ \\
+            \rowcolor{LIGHTGREY} Italy (ITCH)                   & Capra hircus        & $ 0.003$ & $ 0.052$ & $\bm{0.0{^*}}$    & $ 0.511$                                                                     & $ 0.174$                      & $\bm{0.0{^*}}$ & $ 0.199$ & $ 0.134$ & $ 0.308~~$ & $ 0.232$ \\
+            \rowcolor{LIGHTGREY} Morocco (MOCH)                 & Capra hircus        & $ 0.004$ & $ 0.064$ & $\bm{0.0{^*}}$                  & $ 0.626$                                                                     & $ 0.256$                      & $\bm{0.0{^*}}$ & $ 0.292$ & $ 0.201$ & $\bm{0.0{^*}}$ & $ 0.347$ \\
+            Iran (IROA)                                         & Ovis aries          & $ 0.007$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.847$ & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.183$ & $\bm{ 0.017{^*}}$ & $ 0.316$ \\
+            Iran (IROO)                                         & Ovis orientalis     & $ 0.009$ & $ 0.087$ & $\bm{0.0{^*}}$    & $ 0.848$ & $ 0.204$ & $\bm{0.0{^*}}$ & $ 0.233$ & $ 0.176$ & $\bm{0.0{^*}}$ & $ 0.304$ \\
+            Iran (IROV)                                         & Ovis vignei         & $ 0.005$ & $ 0.072$ & $\bm{0.0{^*}}$    & $ 0.697$ & $ 0.194$ & $\bm{0.0{^*}}$ & $ 0.222$ & $ 0.192$ & $\bm{0.0{^*}}$ & $ 0.332$ \\
+            Various (ISGC)                                      & Ovis aries          & $ 0.008$ & $ 0.076$ & $\bm{0.0{^*}}$    & $ 0.742$ & $ 0.171$ & $\bm{0.0{^*}}$ & $ 0.195$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.326$ \\
+            Morocco (MOOA)                                      & Ovis aries          & $ 0.008$ & $ 0.093$ & $\bm{0.0{^*}}$    & $ 0.905$ & $ 0.189$ & $\bm{0.0{^*}}$ & $ 0.216$ & $ 0.193$ & $\bm{0.0{^*}}$ & $ 0.333$ \\
+            \rowcolor{LIGHTGREY} Barbados                       & Chlorocebus sabaeus & $ 0.003$ & $ 0.068$ & $\bm{0.0{^*}}$                  & $ 0.665$                                                                     & $ 0.341$                      & $\bm{0.0{^*}}$ & $ 0.390$ & $ 0.248$ & $\bm{0.0{^*}}$ & $ 0.430$ \\
+            \rowcolor{LIGHTGREY} Central African Republic (CAR) & Chlorocebus sabaeus & $ 0.006$           & $ 0.034$                      & $\bm{0.0{^*}}$ & $ 0.334$ & $ 0.229$ & $\bm{0.0{^*}}$ & $ 0.262$ & $ 0.195$ & $\bm{0.0{^*}}$ & $ 0.338$ \\
+            \rowcolor{LIGHTGREY} Ethiopia                       & Chlorocebus sabaeus & $ 0.005$ & $ 0.044$ & $\bm{0.0{^*}}$                  & $ 0.425$                                                                     & $ 0.231$                      & $\bm{0.0{^*}}$ & $ 0.264$ & $ 0.264$ & $\bm{0.0{^*}}$ & $ 0.457$ \\
+            \rowcolor{LIGHTGREY} Gambia                         & Chlorocebus sabaeus & $ 0.005$ & $ 0.041$ & $\bm{0.0{^*}}$                  & $ 0.403$                                                                     & $ 0.236$                      & $\bm{0.0{^*}}$ & $ 0.270$ & $ 0.217$ & $\bm{0.0{^*}}$ & $ 0.375$ \\
+            \rowcolor{LIGHTGREY} Kenya                          & Chlorocebus sabaeus & $ 0.004$ & $ 0.061$ & $\bm{0.0{^*}}$    & $ 0.598$                                                                     & $ 0.181$                      & $\bm{0.0{^*}}$ & $ 0.207$ & $ 0.152$ & $ 0.150~~$ & $ 0.264$ \\
+            \rowcolor{LIGHTGREY} Nevis                          & Chlorocebus sabaeus & $ 0.003$ & $ 0.029$ & $\bm{ 0.020{^*}}$               & $ 0.279$                                                                     & $ 0.332$                      & $\bm{0.0{^*}}$ & $ 0.380$ & $ 0.237$ & $\bm{ 0.017{^*}}$ & $ 0.410$ \\
+            \rowcolor{LIGHTGREY} South Africa (SA)              & Chlorocebus sabaeus & $ 0.006$ & $ 0.065$ & $\bm{0.0{^*}}$                  & $ 0.633$                                                                     & $ 0.199$ & $\bm{0.0{^*}}$ & $ 0.228$ & $ 0.142$ & $ 0.108~~$ & $ 0.246$ \\
+            \rowcolor{LIGHTGREY} Saint Kitts (SK)               & Chlorocebus sabaeus & $ 0.004$ & $ 0.040$ & $\bm{0.0{^*}}$                  & $ 0.388$                                                                     & $ 0.324$ & $\bm{0.0{^*}}$ & $ 0.371$ & $ 0.253$ & $\bm{0.0{^*}}$ & $ 0.439$ \\
+            \rowcolor{LIGHTGREY} Zambia                         & Chlorocebus sabaeus & $ 0.006$ & $ 0.066$ & $\bm{0.0{^*}}$                  & $ 0.642$                                                                     & $ 0.132$                      & $\bm{0.0{^*}}$ & $ 0.151$ & $ 0.131$ & $ 0.150~~$ & $ 0.227$ \\
+            African (AFR)                                       & Homo sapiens        & $ 0.002$ & $ 0.059$ & $\bm{ 0.012{^*}}$ & $ 0.568$ & $-0.010$ & $ 1.000~~$ & $-0.012$ & $ 0.089$ & $ 1.000~~$ & $ 0.155$ \\
+            Ad Mixed American (AMR)                             & Homo sapiens        & $ 0.002$ & $ 0.067$ & $\bm{ 0.006{^*}}$ & $ 0.647$ & $-0.029$ & $ 1.000~~$ & $-0.034$ & $-0.141$ & $ 1.000~~$ & $-0.244$ \\
+            East Asian (EAS)                                    & Homo sapiens        & $ 0.002$ & $ 0.063$ & $\bm{ 0.006{^*}}$ & $ 0.610$ & $-0.096$ & $ 1.000~~$ & $-0.111$ & $-0.296$ & $ 1.000~~$ & $-0.513$ \\
+            European (EUR)                                      & Homo sapiens        & $ 0.002$ & $ 0.061$ & $\bm{ 0.015{^*}}$ & $ 0.590$ & $-0.078$ & $ 1.000~~$ & $-0.089$ & $-0.289$ & $ 1.000~~$ & $-0.500$ \\
+            South Asian (SAS)                                   & Homo sapiens        & $ 0.002$ & $ 0.089$ & $\bm{0.0{^*}}$    & $ 0.866$ & $-0.113$ & $ 1.000~~$ & $-0.130$ & $-0.111$ & $ 1.000~~$ & $-0.193$ \\
+            \bottomrule
+        \end{tabular}
+        \caption{
+            \textbf{
+            Across 29 populations (rows), table of quantitative value of $\bm{\Delta \omega_{\mathrm{A}} }$ between the set classified as adaptive and nearly-neutral shown in fig.~3.
+            $\bm{p_{\mathrm{v}}^{\mathrm{adj}} }$ associated to the test are corrected for multiple comparison (Holm–Bonferroni correction, $\bm{^*}$ for $\bm{p_{\mathrm{v}}^{\mathrm{adj}} < 0.05}$).
+            $\bm{\frac{\Delta\omega_{\mathrm{A}}}{\omega_{\mathrm{A}}^{\mathrm{phy}}}}$ is the ratio of $\bm{\Delta \omega_{\mathrm{A}}}$ at the population-genetic level and the phylogenetic level.
+            $\bm{\pi_{\textrm{S}}}$ is the observed genetic diversity (number of SNPs per site) counted over synonymous sites.}
+        }
+        \label{table:unfolded-MK}
+    \end{table*}
+\end{document}

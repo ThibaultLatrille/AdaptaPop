@@ -1,4 +1,7 @@
 %! BibTeX Compiler = biber
+%DIF LATEXDIFF DIFFERENCE FILE
+%DIF DEL main-biorxiv.tex    Fri Dec  2 16:24:48 2022
+%DIF ADD main-revision.tex   Fri Jan 13 15:41:04 2023
 %TC:ignore
 \documentclass{article}
 
@@ -25,7 +28,11 @@
 \PassOptionsToPackage{naturalnames}{hyperref}
 
 \usepackage{biorxiv}
-\usepackage[backend=biber,eprint=false,isbn=false,url=false,intitle=true,style=nature,date=year]{biblatex}
+%DIF 28c28
+%DIF < \usepackage[backend=biber,isbn=false,url=false,intitle=true,style=nature]{biblatex}
+%DIF -------
+\usepackage[backend=biber,eprint=false,isbn=false,url=false,intitle=true,style=nature,date=year]{biblatex} %DIF > 
+%DIF -------
 \addbibresource{codon_models.bib}
 
 \usepackage{url}
@@ -114,11 +121,93 @@
 }
 
 %TC:endignore
+%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF
+%DIF UNDERLINE PREAMBLE %DIF PREAMBLE
+\RequirePackage[normalem]{ulem} %DIF PREAMBLE
+\RequirePackage{color}\definecolor{RED}{rgb}{1,0,0}\definecolor{BLUE}{rgb}{0,0,1} %DIF PREAMBLE
+\providecommand{\DIFaddtex}[1]{{\protect\color{blue}\uwave{#1}}} %DIF PREAMBLE
+\providecommand{\DIFdeltex}[1]{{\protect\color{red}\sout{#1}}}                      %DIF PREAMBLE
+%DIF SAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddbegin}{} %DIF PREAMBLE
+\providecommand{\DIFaddend}{} %DIF PREAMBLE
+\providecommand{\DIFdelbegin}{} %DIF PREAMBLE
+\providecommand{\DIFdelend}{} %DIF PREAMBLE
+\providecommand{\DIFmodbegin}{} %DIF PREAMBLE
+\providecommand{\DIFmodend}{} %DIF PREAMBLE
+%DIF FLOATSAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}} %DIF PREAMBLE
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}} %DIF PREAMBLE
+\providecommand{\DIFaddbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFaddendFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelendFL}{} %DIF PREAMBLE
+%DIF HYPERREF PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{\texorpdfstring{\DIFaddtex{#1}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{\DIFdeltex{#1}}{}} %DIF PREAMBLE
+\newcommand{\DIFscaledelfig}{0.5}
+%DIF HIGHLIGHTGRAPHICS PREAMBLE %DIF PREAMBLE
+\RequirePackage{settobox} %DIF PREAMBLE
+\RequirePackage{letltxmacro} %DIF PREAMBLE
+\newsavebox{\DIFdelgraphicsbox} %DIF PREAMBLE
+\newlength{\DIFdelgraphicswidth} %DIF PREAMBLE
+\newlength{\DIFdelgraphicsheight} %DIF PREAMBLE
+% store original definition of \includegraphics %DIF PREAMBLE
+\LetLtxMacro{\DIFOincludegraphics}{\includegraphics} %DIF PREAMBLE
+\newcommand{\DIFaddincludegraphics}[2][]{{\color{blue}\fbox{\DIFOincludegraphics[#1]{#2}}}} %DIF PREAMBLE
+\newcommand{\DIFdelincludegraphics}[2][]{% %DIF PREAMBLE
+\sbox{\DIFdelgraphicsbox}{\DIFOincludegraphics[#1]{#2}}% %DIF PREAMBLE
+\settoboxwidth{\DIFdelgraphicswidth}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\settoboxtotalheight{\DIFdelgraphicsheight}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\scalebox{\DIFscaledelfig}{% %DIF PREAMBLE
+\parbox[b]{\DIFdelgraphicswidth}{\usebox{\DIFdelgraphicsbox}\\[-\baselineskip] \rule{\DIFdelgraphicswidth}{0em}}\llap{\resizebox{\DIFdelgraphicswidth}{\DIFdelgraphicsheight}{% %DIF PREAMBLE
+\setlength{\unitlength}{\DIFdelgraphicswidth}% %DIF PREAMBLE
+\begin{picture}(1,1)% %DIF PREAMBLE
+\thicklines\linethickness{2pt} %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\framebox(1,1){}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\line( 1,1){1}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,1){\line(1,-1){1}}}% %DIF PREAMBLE
+\end{picture}% %DIF PREAMBLE
+}\hspace*{3pt}}} %DIF PREAMBLE
+} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbegin}{\DIFaddbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddend}{\DIFaddend} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbegin}{\DIFdelbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelend}{\DIFdelend} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbegin}{\DIFOaddbegin \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbegin}{\DIFOdelbegin \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbeginFL}{\DIFaddbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddendFL}{\DIFaddendFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbeginFL}{\DIFdelbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelendFL}{\DIFdelendFL} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbeginFL}{\DIFOaddbeginFL \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbeginFL}{\DIFOdelbeginFL \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+%DIF LISTINGS PREAMBLE %DIF PREAMBLE
+\RequirePackage{listings} %DIF PREAMBLE
+\RequirePackage{color} %DIF PREAMBLE
+\lstdefinelanguage{DIFcode}{ %DIF PREAMBLE
+%DIF DIFCODE_UNDERLINE %DIF PREAMBLE
+  moredelim=[il][\color{red}\sout]{\%DIF\ <\ }, %DIF PREAMBLE
+  moredelim=[il][\color{blue}\uwave]{\%DIF\ >\ } %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstdefinestyle{DIFverbatimstyle}{ %DIF PREAMBLE
+	language=DIFcode, %DIF PREAMBLE
+	basicstyle=\ttfamily, %DIF PREAMBLE
+	columns=fullflexible, %DIF PREAMBLE
+	keepspaces=true %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle,showspaces=true}}{} %DIF PREAMBLE
+%DIF END PREAMBLE EXTENSION ADDED BY LATEXDIFF
+
 \begin{document}
     \maketitle
 
     \begin{abstract}
-        Adaptation in protein-coding sequences can be detected from multiple sequence alignments across species, or alternatively by leveraging polymorphism data within a population.
+        Adaptation in protein-coding sequences can be detected from multiple sequence alignments across species, or alternatively by leveraging polymorphism data \DIFdelbegin \DIFdel{inside }\DIFdelend \DIFaddbegin \DIFadd{within }\DIFaddend a population.
         Across species, quantification of the adaptive rate relies on phylogenetic codon models, classically formulated in terms of the ratio of non-synonymous over synonymous substitution rates.
         Evidence of an accelerated non-synonymous substitution rate is considered a signature of pervasive adaptation.
         However, because of the background of purifying selection, these models are potentially limited in their sensitivity.
@@ -152,12 +241,18 @@
     Under a strict neutral model (i.e.~assuming non-synonymous mutations are either neutral or strongly selected), the ratios of non-synonymous polymorphisms over synonymous polymorphisms ($\pnps$) and of non-synonymous substitutions over synonymous substitutions ($\dnds$) are expected to be equal.
     If, in addition, strongly advantageous mutations occur, they are fixed rapidly in the population, thus contributing solely to divergence but not to polymorphism.
     As a result, the positive difference between $\dnds$ and $\pnps$ gives an estimate of the adaptive rate $\rateApop = \dnds-\pnps$\cite{smith_adaptive_2002}.
-    This simple argument is not strictly valid in the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\cite{mcdonald_adaptative_1991, eyre-walker_quantifying_2002}.
+    This simple argument is not strictly valid in the presence of moderately deleterious non-synonymous mutations, which can segregate at substantial frequency in the population without reaching fixation, thus contributing solely to polymorphism, and not to divergence, potentially resulting on an underestimation of the rate of adaptive evolution\DIFdelbegin \DIFdel{\mbox{%DIFAUXCMD
+\cite{eyre-walker_quantifying_2002}}\hspace{0pt}%DIFAUXCMD
+}\DIFdelend \DIFaddbegin \DIFadd{\mbox{%DIFAUXCMD
+\cite{mcdonald_adaptative_1991, eyre-walker_quantifying_2002}}\hspace{0pt}%DIFAUXCMD
+}\DIFaddend .
     Subsequent developments have tried to correct for this effect by relying on an explicit nearly-neutral model\cite{eyre-walker_estimating_2009, galtier_adaptive_2016}, so as to estimate the rate of evolution expected in the absence of adaptation (called $\omega_0$) based on polymorphism, and then to compare it with the rate of evolution, $\omega=\dnds$, to get an estimate of the rate of adaptation as $\rateApop = \omega-\omega_0$.
 
     In their current formulation, phylogeny-based methods rely on the ratio of non-synonymous substitutions over synonymous substitutions, called $\omega$\cite{muse_likelihood_1994,goldman_codonbased_1994}.
-    Since this ratio is a contrast between the rates before and after the action of selection on the protein, it thus provides an estimate of the strength of selection exerted at the amino-acid level, whether synonymous changes are driven solely by mutation or by both mutation and selection\cite{yang_mutationselection_2008}.
-    In this context, an excess in non-synonymous substitutions, leading to $\omega>1$, indicates that the protein is undergoing recurrent positive selection for amino-acids changes, meaning that the protein is putatively under adaptive evolution.
+    \DIFdelbegin \DIFdel{Assuming synonymous mutations are neutral, $\omega>1$ signals }\DIFdelend \DIFaddbegin \DIFadd{Since this ratio is a contrast between the rates before and after the action of selection on the protein, it thus provides an estimate of the strength of selection exerted at the amino-acid level, whether synonymous changes are driven solely by mutation or by both mutation and selection\mbox{%DIFAUXCMD
+\cite{yang_mutationselection_2008}}\hspace{0pt}%DIFAUXCMD
+.
+    In this context, }\DIFaddend an excess in \DIFdelbegin \DIFdel{the rate of }\DIFdelend non-synonymous substitutions\DIFdelbegin \DIFdel{compared to the neutral expectation, indicating }\DIFdelend \DIFaddbegin \DIFadd{, leading to $\omega>1$, indicates that the protein is undergoing recurrent positive selection for amino-acids changes, meaning }\DIFaddend that the protein is \DIFaddbegin \DIFadd{putatively }\DIFaddend under adaptive evolution.
     Conversely, a deficit in non-synonymous substitutions, leading to $\omega<1$, means the protein is under purifying selection.
     In practice, proteins are typically under a mix of adaptive and purifying selection dominated by the latter, thus typically leading to an $\omega<1$ even in the presence of positive selection.
     At a finer scale, site models can detect a specific site ($i$) of the sequence with a $\omega^{(i)}>1$\cite{yang_codonsubstitution_2000, kosiol_patterns_2008}.
@@ -183,19 +278,22 @@
     We derived a two-step approach (see methods), which we applied to a set of alignments of orthologous genes at the scale of placental mammals.
     The $\dnds$ estimated by the site model ($\omega$) is plotted against the $\dnds$ predicted by the nearly-neutral mutation-selection model ($\omega_{0}$) for genes (scatter plot in fig.~\ref{fig:scatterplot}A) and sites (density plot in fig.~\ref{fig:scatterplot}B).
     An excess of $\omega$ relative to $\omega_{0}$ is a typical signature of ongoing positive selection\cite{bloom_identification_2017, rodrigue_detecting_2017}.
-    For such comparison to be valid, both models estimating $\omega$ and $\omega_{0}$ should have assumptions as similar as possible regarding the underlying mutation process, modeled as a Muse \& Gaut\cite{muse_likelihood_1994, spielman_relationship_2015}.
+    \DIFdelbegin \DIFdel{Accordingly, genes, or sites, }\DIFdelend \DIFaddbegin \DIFadd{For such comparison to be valid, both models estimating $\omega$ and $\omega_{0}$ should have assumptions as similar as possible regarding the underlying mutation process, modeled as a Muse \& Gaut\mbox{%DIFAUXCMD
+\cite{muse_likelihood_1994, spielman_relationship_2015}}\hspace{0pt}%DIFAUXCMD
+.
     As a control, we validated our Bayesian estimates of $\omega$ against their maximum-likelihood counterpart (methods and fig.~S1).
+}
 
-    Given these validations, an excess of $\omega$ compared to $\omega_{0}$ can be retrieved as a ratio ($\omega / \omega_{0} > 1$) or as a difference ($\omega - \omega_{0}>0$).
+    \DIFadd{Given these validations, an excess of $\omega$ compared to $\omega_{0}$ can be retrieved as a ratio ($\omega / \omega_{0} > 1$) or as a difference ($\omega - \omega_{0}>0$).
     However, since $\omega_{0}$ can be close to $0$ for genes ans sites strongly constrained (fig.~\ref{fig:scatterplot}), ratios can be particularly large and mathematically undefined, ultimately leading to artifacts.
     Moreover, comparing the posterior credibility intervals of $\omega$ and $\omega_{0}$ as a difference rather than a ratio is more intuitive and visual (fig.~\ref{fig:scatterplot}A).
-    Altogether, genes or sites were considered to be under an adaptive regime (in red) if the value of their $\omega$ is higher than that of their $\omega_{0}$, with non-overlapping $95\%$ posterior credibility intervals.
+    Altogether, genes or sites }\DIFaddend were considered to be under an adaptive regime (in red) if the value of their $\omega$ is higher than that of their $\omega_{0}$, with non-overlapping $95\%$ posterior credibility intervals.
     This procedure retrieved $822$ out $14,509$ genes, which are putatively under a long-term evolutionary Red-Queen regime.
     At the site level, the nearly-neutral assumption appears to be rejected for $104,129$ out of $8,895,374$ sites.
     Of note, this selection procedure is not meant as a routine statistical test, but only as an enrichment procedure, for the needs of the subsequent analysis shown below.
     In practice, this selection is likely to be conservative and to have a rate of false discovery of the order of 1\% at the gene-level, and 5\% at the site-level (see methods).
 
-    Remarkably, selection based on $\omega>\omega_{0}$ is more sensitive than based on the commonly used criterion of $\omega>1$, since $\omega_{0}$ is always lower than $1$ by definition\cite{spielman_relationship_2015}.
+    \DIFdelbegin \DIFdel{Of note}\DIFdelend \DIFaddbegin \DIFadd{Remarkably}\DIFaddend , selection based on $\omega>\omega_{0}$ is more sensitive than based on the commonly used criterion of $\omega>1$, since $\omega_{0}$ is always lower than $1$ by definition\cite{spielman_relationship_2015}.
     Thus, we can uncover sites under adaptation ($\omega>\omega_{0}$) with a mean $\omega$ lower than $1$ ($29,543$ sites in fig.~\ref{fig:scatterplot}C).
     These sites could not have been detected by $\omega$-based codon models relying on the criterion that $\omega>1$.
     At the gene level, only two genes have an estimated $\omega > 1$, such that this distinction is not relevant.
@@ -203,8 +301,8 @@
     \subsection*{Ontology enrichment tests}
     Next, we investigated whether the genes classified as adaptive ($\omega > \omega_{0}$) showed enrichment in specific ontology terms.
     Thus, we performed $775$ instances of Fisher's exact test to estimate ontology enrichment by contrasting with genes in the control group, not classified as adaptive.
-    $42$ ontologies are observed with a p-value ($p_{\mathrm{v}}$) corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (table~S1).
-    At a finer scale, we weighted genes by their proportion of sites considered under adaptation with a $\omega$-based site model ($\omega > 1$, table~S2) or with a mutation-selection model ($\omega > \omega_{0}$, table~S3).
+    $42$ ontologies are observed with a p-value ($p_{\mathrm{v}}$) corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (\DIFdelbegin \DIFdel{see }\DIFdelend table~S1).
+    At a finer scale, we weighted genes by their proportion of sites considered under adaptation with a $\omega$-based site model ($\omega > 1$, \DIFdelbegin \DIFdel{see }\DIFdelend table~S2) or with a mutation-selection model ($\omega > \omega_{0}$, \DIFdelbegin \DIFdel{see }\DIFdelend table~S3).
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes (Mann-Whitney U test).
     The statistical test based on the the first criterion ($\omega>1$) is correlated with ontologies related to immune processes, while the statistical test based on the the second criterion ($\omega > \omega_{0}$) is also correlated with ontologies related to the external membrane and cellular adhesion.
 
@@ -213,7 +311,7 @@
     To do so, population genomic data were collected for 29 populations across 7 genera.
     For each population, $\rateApop$ as proposed by McDonald \& Kreitman (MK)\cite{mcdonald_adaptative_1991} was computed on the concatenate of the 822 genes classified as adaptive by the phylogeny-based method (red dots in fig.~\ref{fig:method} and~\ref{fig:unfolded-MK}).
     This result was compared to a null distribution obtained by computing $\rateApop$ over sets of 822 genes that were randomly sampled ($1,000$ replicates) among the genes classifed as nearly-neutral according to the mutation-selection model (green violins in fig.~\ref{fig:method} and~\ref{fig:unfolded-MK}).
-    Importantly, the terminal lineages over which the population-genetic method was applied were not included in the phylogenetic analysis, such as to avoid fallacy and circularity in the estimation of $\rateApop$ and $\rateAphy$.
+    Importantly, the terminal lineages over which the population-genetic method was applied were not included in the phylogenetic analysis\DIFaddbegin \DIFadd{, such as to avoid fallacy and circularity in the estimation of $\rateApop$ and $\rateAphy$}\DIFaddend .
     As a result, the two methods are working on entirely non-overlapping compartments of the evolutionary history across mammals.
     For all 29 populations, the $\rateApop$ estimated by the population-genetic method was significantly higher for the putatively adaptive gene-set than for the putatively nearly-neutral gene sets of the same size (at a risk $\alpha=0.05$ corrected for multiple testing, Holm-Bonferroni correction).
     There is thus a good qualitative agreement between the two methods as to what they capture and interpret as positive selection at the gene level.
@@ -221,10 +319,11 @@
     The same procedure was applied at a finer scale with sites instead of genes.
     For each population, $\rateApop$ was computed on the concatenate of the $104,129$ sites classified as adaptive by the phylogeny-based method, and compared to the empirical null distribution (fig.~\ref{fig:unfolded-MK}B) and table~\ref{table:unfolded-MK}.
     Out of $29$ populations, $24$ have an $\rateApop$ estimated by the population-genetic method significantly higher for the putatively adaptive site-set than for the putatively nearly-neutral site-sets of the same size taken at random (at a risk $\alpha=0.05$ corrected for multiple testing, Holm-Bonferroni correction).
-    In particular, the five populations for which the test is not significant are the human populations.
-    Coincidentally, this is the species with the lowest genetic diversity, resulting in under-powered statistical tests due to less SNPs available per loci.
+    \DIFdelbegin \DIFdel{Of note, the 5 }\DIFdelend \DIFaddbegin \DIFadd{In particular, the five }\DIFaddend populations for which the test is not significant are the human populations.
+    \DIFaddbegin \DIFadd{Coincidentally, this is the species with the lowest genetic diversity, resulting in under-powered statistical tests due to less SNPs available per loci.
     This statistical effect is combined with the biological effect of increased genetic drift, owing to the small effective population size in ancestral human populations, resulting in less efficient selection.
     Altogether, we argue that finding evidence for positive selection in human populations is statistically more challenging due to both less efficient selection and less data available.
+}\DIFaddend 
 
     Except for \textit{Equus} and \textit{Humans}, on average, the $\rateApop$ returned by MK is positive even for the putatively nearly-neutral replicates, and significantly so for \textit{Bos} ($\rateApop$ in the range $0.65-0.68$ for genes and site) and \textit{Ovis} ($\rateApop$ in the range $0.66-0.84$ for genes and sites).
     This suggests the presence of a background of positive selection captured by MK methods but not by phylogenetic methods.
@@ -250,10 +349,10 @@
     In other words, the approach can detect a long-term evolutionary Red-Queen even for a site with $\omega < 1$ that is still under adaptation at the population-genetic scale.
 
     Because genes and sites classified as adaptive have a higher $\omega$ than genes/sites classified as nearly-neutral, $\rateApop$ could simply be higher for genes with higher $\omega$ due to this confounding factor.
-    Thus we performed additional experiments where $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes (fig.~S3-7 and tables~S5-9).
-    Additionally, we performed the same experiments with a more stringent risk $\alpha=0.005$ (10 times greater) to classify genes and sites as adaptive (fig.~S8-10 and tables~S9-10).
+    Thus we performed additional experiments where $\omega$ is controlled to be the same in the nearly-neutral replicate and the adaptive set of genes (fig.~\DIFdelbegin \DIFdel{S2-6 }\DIFdelend \DIFaddbegin \DIFadd{S3-7 }\DIFaddend and tables~S5-9).
+    Additionally, we performed the same experiments with a more stringent risk $\alpha=0.005$ (10 times greater) to classify genes and sites as adaptive (fig.~\DIFdelbegin \DIFdel{S7-9 }\DIFdelend \DIFaddbegin \DIFadd{S8-10 }\DIFaddend and tables~S9-10).
     Our result are robust to both controlling for $\omega$ and with a different threshold to classify genes and sites as adaptive.
-    Finally, we computed $\rateApop$ using the software polyDFE\cite{tataru_polydfe_2020}, which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation (fig.~S11-18 and tables~S11-18).
+    Finally, we computed $\rateApop$ using the software polyDFE\cite{tataru_polydfe_2020}, which relies on the synonymous and non-synonymous unfolded site-frequency spectra (SFS) to estimate the distribution of fitness effects of mutations (DFE), and the rate of adaptation (fig.~\DIFdelbegin \DIFdel{S10-17 }\DIFdelend \DIFaddbegin \DIFadd{S11-18 }\DIFaddend and tables~S11-18).
     Depending on the underlying assumptions for the shape of the DFE and the definition of $\rateApop$, we observed a wide range of $\rateApop$ both for the set of adaptive and nearly-neutral genes/sites.
     However, the statistical test for the enrichment of $\rateApop$ between the set of adaptive and nearly-neutral genes/sites gives results in the same direction whether computed by polyDFE or as \textcite{mcdonald_adaptative_1991} statistic, although the confirmation rate and the associated $p_{\mathrm{v}}$ are different.
 
@@ -262,12 +361,20 @@
     Quantifying the rate of adaptation assumes that we can measure the rate of evolution and more importantly its deviation from a null model of evolution disallowing adaptation.
     For phylogenetic codon models, this null model of evolution is usually assumed to be neutral evolution and the rate of evolution computed as the ratio of non-synonymous over synonymous substitution rates ($\omega$) is thus compared to 1.
     We first showed that, at the phylogenetic scale, $\omega$ can be compared to it's expectation under the mutation-selection model ($\omega_{0}$), a nearly-neutral model instead of a neutral model of evolution, giving a quantitative estimate of the rate of adaptation as $\rateAphy = \omega - \omega_{0}$.
-    Moreover, because $\omega_{0}$ is by definition lower than 1\cite{spielman_relationship_2015}, detecting adaptation as $\omega > \omega_{0}$ instead of $\omega > 1$ is always a more sensitive statistical test.
+    \DIFaddbegin \DIFadd{Moreover, because $\omega_{0}$ is by definition lower than 1\mbox{%DIFAUXCMD
+\cite{spielman_relationship_2015}}\hspace{0pt}%DIFAUXCMD
+, detecting adaptation as $\omega > \omega_{0}$ instead of $\omega > 1$ is always a more sensitive statistical test.
     We thus argue that mutation-selection provides both a theoretical and practical improvement over the current method of testing to detect adaptation.
-    The application of this approach exome-wide across placental mammals suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
-    Enrichment in ontologies related to immune processes is expected, as found by previous studies\cite{kosiol_patterns_2008}.
-    However, we also detect an enrichment in ontologies related to the external membrane and cell adhesion.
-    Genes pertaining to these ontologies might be under adaptation as a consequence of being the target of viruses and parasites\cite{enard_viruses_2016, ebel_high_2017}.
+    }\DIFaddend The application of this approach exome-wide across placental mammals suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
+    Enrichment \DIFdelbegin \DIFdel{of }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend ontologies related to immune processes is expected, as found by \DIFdelbegin \DIFdel{many studies\mbox{%DIFAUXCMD
+\cite{kosiol_patterns_2008, enard_viruses_2016, ebel_high_2017}}\hspace{0pt}%DIFAUXCMD
+}\DIFdelend \DIFaddbegin \DIFadd{previous studies\mbox{%DIFAUXCMD
+\cite{kosiol_patterns_2008}}\hspace{0pt}%DIFAUXCMD
+}\DIFaddend .
+    However, we also detect an enrichment \DIFdelbegin \DIFdel{with }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend ontologies related to the external membrane and cell adhesion\DIFdelbegin \DIFdel{, which are }\DIFdelend \DIFaddbegin \DIFadd{.
+    Genes pertaining to these ontologies might be under adaptation as a consequence of being }\DIFaddend the target of \DIFdelbegin \DIFdel{virus and parasites}\DIFdelend \DIFaddbegin \DIFadd{viruses and parasites\mbox{%DIFAUXCMD
+\cite{enard_viruses_2016, ebel_high_2017}}\hspace{0pt}%DIFAUXCMD
+}\DIFaddend .
     Altogether, the mutation-selection method effectively detects adaptation regardless of the background of purifying selection, and returns reasonable candidates for adaptive evolution.
     Of note, in its current implementation, and unlike classical codon models\cite{wong_accuracy_2004, yang_paml_2007}, the mutation-selection approach does not yet provide a proper and well-calibrated statistical test for calling genes or sites under adaptation with a well-controlled frequentist risk.
     This was not a problem in the enrichment analysis conducted in this article, which relies on downstream controls based on random permutations.
@@ -284,19 +391,32 @@
     We thus showed empirically that the mutation-selection codon model provides a null (nearly-neutral) model from which we can disentangle purifying and adaptive evolution.
     However, our procedure still has some limitations.
 
-    First, synonymous mutations are considered neutral in our implementation of mutation-selection codon models.
-    In other words, we assumed no synonymous codon usage bias (CUB), or a weak effect as it is suggested in mammals\cite{plotkin_synonymous_2011}.
-    However, a strong CUB can influence the comparison between $\omega$ and $\omega_0$\cite{spielman_relationship_2015}.
-    In our mutation-selection codon model, in addition to model selection for amino-acids at the site level, modeling CUB is possible by introducing another layer of selection for synonymous codons at the gene level\cite{yang_mutationselection_2008, rodrigue_mechanistic_2010}.
-    Such a model could be used to detect adaptation in a more general context for which CUB cannot be overlooked (e.g.~\textit{Drosophila}).
+    \DIFaddbegin \DIFadd{First, synonymous mutations are considered neutral in our implementation of mutation-selection codon models.
+    In other words, we assumed no synonymous codon usage bias (CUB), or a weak effect as it is suggested in mammals\mbox{%DIFAUXCMD
+\cite{plotkin_synonymous_2011}}\hspace{0pt}%DIFAUXCMD
+.
+    However, a strong CUB can influence the comparison between $\omega$ and $\omega_0$\mbox{%DIFAUXCMD
+\cite{spielman_relationship_2015}}\hspace{0pt}%DIFAUXCMD
+.
+    In our mutation-selection codon model, in addition to model selection for amino-acids at the site level, modeling CUB is possible by introducing another layer of selection for synonymous codons at the gene level\mbox{%DIFAUXCMD
+\cite{yang_mutationselection_2008, rodrigue_mechanistic_2010}}\hspace{0pt}%DIFAUXCMD
+.
+    Such a model could be used to detect adaptation in a more general context for which CUB cannot be overlooked (e.g.~}\textit{\DIFadd{Drosophila}}\DIFadd{).
     Further work will thus be required to relax the assumption that synonymous mutations are neutral and to assess the sensitivity of $\rateAphy$ to CUB.
-    Second, Mutation-selection codon models assume a constant effective population size while it has been established that its fluctuations has a major effect on selection dynamics\cite{lanfear_population_2014, platt_protein_2018}.
+    Second, }\DIFaddend Mutation-selection codon models assume a constant effective population size while it has been established that its fluctuations has a major effect on selection dynamics\cite{lanfear_population_2014, platt_protein_2018}.
     Estimating changes in effective population size in a mutation-selection framework is possible\cite{latrille_inferring_2021}, although too computational intensive in its current implementation to be performed genome-wide.
-    Third, epistasis is not modeled while it can have a large effect on the response of the rate of evolution with change in population size\cite{latrille_quantifying_2021}.
+    \DIFdelbegin \DIFdel{Second}\DIFdelend \DIFaddbegin \DIFadd{Third}\DIFaddend , epistasis is not modeled while it can have a large effect on the response of the rate of evolution with change in population size\cite{latrille_quantifying_2021}.
     More generally, pervasive epistasis generates an entrenchment of the amino acids\cite{goldstein_evolutionary_2004, goldstein_nonadaptive_2015, goldstein_sequence_2017}, resulting in a slowing down of the rate evolution\cite{rodrigue_detecting_2017, patel_epistasis_2022} or a standstill\cite{youssef_evolution_2022}.
-    Consequently, our estimation of the predicted rate of evolution computed at mutation-selection balance ($\omega_0$) is over-estimated given that epistasis is not taken into account in our model.
+    Consequently, our estimation of the predicted rate of evolution computed at mutation-selection balance ($\omega_0$) is over-estimated given that epistasis is not taken into account \DIFdelbegin \DIFdel{, such that $\rateAphy = \omega - \omega_{0}$ is thus under-estimated.
+    Altogether, we argue that our estimate of $\rateAphy$ is conservative and could be increased by modeling epistasis (altough indirectly) within the }\DIFdelend \DIFaddbegin \DIFadd{in our model.
     Such an over-estimated $\omega_0$ results in an underestimated rate of adaptation $\rateAphy = \omega - \omega_0$, ultimately leading to a conservative test of adaptation which could theoretically be improved.
-    Accurately modeling the underlying fitness landscape is thus a direction for future research in mutation-selection models to improve the estimation of $\rateAphy$, by means of relaxing model assumptions\cite{goldstein_sequence_2017} or by leveraging empirically determined fitness landscapes\cite{bloom_identification_2017, schrempf_scalable_2020}.
+    Accurately modeling the underlying fitness landscape is thus a direction for future research in }\DIFaddend mutation-selection \DIFdelbegin \DIFdel{framework\mbox{%DIFAUXCMD
+\cite{goldstein_sequence_2017} }\hspace{0pt}%DIFAUXCMD
+}\DIFdelend \DIFaddbegin \DIFadd{models to improve the estimation of $\rateAphy$, by means of relaxing model assumptions\mbox{%DIFAUXCMD
+\cite{goldstein_sequence_2017} }\hspace{0pt}%DIFAUXCMD
+or by leveraging empirically determined fitness landscapes\mbox{%DIFAUXCMD
+\cite{bloom_identification_2017, schrempf_scalable_2020}}\hspace{0pt}%DIFAUXCMD
+}\DIFaddend .
 
     On the other hand, at the population-genetic scale, the greatest limitation to detecting adaptation is the lack of power determined by the genetic diversity since polymorphisms are rare and estimation of $\pnps$ requires to pool many sites for which SNPs are available.
     Since the effects of mild purifying selection are more pronounced on longer time scales (i.e.~mildly deleterious mutations contribute disproportionately to polymorphism, compared to divergence), $\rateApop$ as computed by MK can be biased by moderately deleterious mutations\cite{eyre-walker_quantifying_2002, ho_time_2005} and by the change in population size through time\cite{eyre-walker_changing_2002}.
@@ -304,7 +424,7 @@
     However, the broad range of $\rateApop$ estimated on sets of genes/sites classified as nearly-neutral suggests that these models are lacking power, even more than the MK statistic, because of the sparsity of the SFS.
     Beside changes in population size biasing the estimation\cite{rousselle_overestimation_2018}, we argue that inferring $\rateApop$ using an underlying DFE model is also highly sensitive to assumptions for the shape of the DFE and the definition of $\rateApop$.
     For example, the value of $\rateApop$ is computed as an integral, where the bounds of this integral is debated by different authors\cite{galtier_adaptive_2016, tataru_polydfev2_2019}.
-    It is thus relatively easy to change the definition of $\rateApop$ (fig.~S13-16 and tables~S13-16) or to constrain the underlying DFE (fig.~S13-18 and tables~S13-18) to obtain a wide range of $\rateApop$ on the same dataset.
+    It is thus relatively easy to change the definition of $\rateApop$ (fig.~\DIFdelbegin \DIFdel{S12-15 }\DIFdelend \DIFaddbegin \DIFadd{S13-16 }\DIFaddend and tables~S13-16) or to constrain the underlying DFE (fig.~\DIFdelbegin \DIFdel{S12-17 }\DIFdelend \DIFaddbegin \DIFadd{S13-18 }\DIFaddend and tables~S13-18) to obtain a wide range of $\rateApop$ on the same dataset.
     Taken together, we argue that comparing $\rateApop$ to 0 is not a robust test for adaptation.
     Instead, $\rateApop$ for a particular genomic region of interest should be compared to other genomic regions for which the nearly-neutral evolution is not rejected, and the difference $\Delta \rateApop$ should be compared to 0, as done in this study.
     More generally, our empirical analysis emphasizes the limitations of, and the difficulties raised by, the model-based population-genetic approaches.
@@ -319,19 +439,24 @@
     \subsection*{Phylogenetic dataset}
     Protein-coding DNA sequences alignments in placental mammals and their corresponding gene trees were extracted from the \href{https://www.orthomam.univ-montp2.fr}{OrthoMaM} database, containing $116$ mammalian reference sequences in v10c\cite{ranwez_orthomam_2007, douzery_orthomam_2014, scornavacca_orthomam_2019}.
     Genes located on the X, Y and mitochondrial chromosome were discarded from the analysis, since the number of polymorphism, necessary in population-based method, is expected to be different on these sequences.
-    Additionally, sequences from the species for which polymorphism are available, as well as their sister species have been discarded from the analysis to ensure independence between the data used in the phylogenetic and population-genetic method, such as to avoid fallacy and circularity in the estimation of $\rateApop$ and $\rateAphy$.
+    Additionally, sequences from the species for which polymorphism are available, as well as their sister species have been discarded from the analysis to ensure independence between the data used in the phylogenetic and population-genetic method\DIFaddbegin \DIFadd{, such as to avoid fallacy and circularity in the estimation of $\rateApop$ and $\rateAphy$}\DIFaddend .
     Altogether, we analyzed $14,509$ protein-coding DNA sequences alignment containing at most $87$ reference sequences of placental mammals.
 
     \subsection*{Adaptation in phylogeny-based method}
     Classical codon models estimates a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates\cite{muse_likelihood_1994,goldman_codonbased_1994}.
     In the so-called site models, $\omega$ is allowed to vary across sites\cite{yang_codonsubstitution_2000, huelsenbeck_dirichlet_2006}.
-    In \textit{Bayescode}, site-specific $\omega^{(i)}$ (fig.~\ref{fig:scatterplot}B, y-axis) as independent and identically distributed random effects from a gamma distribution\cite{lartillot_phylobayes_2013}.
-    Therefore, this corresponds to a continuous version of the M5 model of \textcite{yang_codonsubstitution_2000}.
-    In a second step, the average over sites is calculated, giving estimates of $\omega$ for each protein-coding sequence (fig.~\ref{fig:scatterplot}A, y-axis).
-    To assess the sensitivity of our estimate of $\omega$ to the prior as implemented in \textit{BayesCode}, we ran \textit{CODEML} site model (F1x4 MG, 8 discrete categories of $\omega$) from the PAML software\cite{yang_paml_2007} on a sample of 100 random genes.
-    Both $\omega$ estimates from \textit{BayesCode} and \textit{CODEML} are strongly correlated at the site level ($r^2=0.985$, slope of $0.92$ in fig.~S1) and the gene level ($r^2=0.991$, slope of $0.9$ in fig.~S2).
+    In \textit{Bayescode}, site-specific $\omega^{(i)}$ (fig.~\ref{fig:scatterplot}B, y-axis) \DIFdelbegin \DIFdel{are independent identically distributed }\DIFdelend \DIFaddbegin \DIFadd{as independent and identically distributed random effects }\DIFaddend from a gamma distribution\cite{lartillot_phylobayes_2013}.
+    \DIFaddbegin \DIFadd{Therefore, this corresponds to a continuous version of the M5 model of \mbox{%DIFAUXCMD
+\textcite{yang_codonsubstitution_2000}}\hspace{0pt}%DIFAUXCMD
+.
+    }\DIFaddend In a second step, the average over sites is calculated, giving estimates of $\omega$ for each protein-coding sequence (fig.~\ref{fig:scatterplot}A, y-axis).
+    \DIFaddbegin \DIFadd{To assess the sensitivity of our estimate of $\omega$ to the prior as implemented in }\textit{\DIFadd{BayesCode}}\DIFadd{, we ran }\textit{\DIFadd{CODEML}} \DIFadd{site model (F1x4 MG, 8 discrete categories of $\omega$) from the PAML software\mbox{%DIFAUXCMD
+\cite{yang_paml_2007} }\hspace{0pt}%DIFAUXCMD
+on a sample of 100 random genes.
+    Both $\omega$ estimates from }\textit{\DIFadd{BayesCode}} \DIFadd{and }\textit{\DIFadd{CODEML}} \DIFadd{are strongly correlated at the site level ($r^2=0.985$, slope of $0.92$ in fig.~S1) and the gene level ($r^2=0.991$, slope of $0.9$ in fig.~S2).
+}\DIFaddend 
 
-    In contrast to $\omega$-based codon models, mutation-selection models assume that the protein-coding sequence is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino acid at each site\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
+    In contrast \DIFaddbegin \DIFadd{to $\omega$-based codon models}\DIFaddend , mutation-selection models assume that the protein-coding sequence is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino acid at each site\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
     Mathematically, the rate of non-synonymous substitution from codon $a$ to codon $b$ ($q_{a \mapsto b}^{(i)}$) at site $i$ of the sequence is equal to the rate of mutation from the underlying DNA change ($\mu_{a \mapsto b}$) multiplied by the scaled probability of fixation of the mutation ($\proba_{a \mapsto b}^{(i)}$).
     Crucially, the probability of fixation depends on the difference of scaled fitness between the amino acid encoded by the mutated codon ($F_b^{(i)}$) and the fitness of the amino acid encoded by the original codon ($F_a^{(i)}$) of site $i$\cite{wright_evolution_1931, fisher_genetical_1930}.
     Altogether, the rate of substitution from codon $a$ to $b$ at a given site $i$ is:
@@ -394,7 +519,8 @@
     Unfolded SFSs are obtained by polarizing SNPs using the $3$ closest outgroups found in the OrthoMam alignment with est-usfs v2.04\cite{keightley_inferring_2018}.
 
     \section{Data availability}\label{sec:data-availability}
-    The data underlying this article are available at \url{https://doi.org/10.5281/zenodo.7107234}.
+    The data underlying this article are available at \DIFdelbegin %DIFDELCMD < \url{10.5281/zenodo.7107234}%%%
+\DIFdelend \DIFaddbegin \url{https://doi.org/10.5281/zenodo.7107234}\DIFaddend .
     Scripts and instructions necessary to reproduce the empirical experiments on the original dataset or with user-specified datasets is available at \url{https://github.com/ThibaultLatrille/AdaptaPop}.
 
     \section{Acknowledgements}\label{sec:acknowledgements}
@@ -402,7 +528,7 @@
     This work was performed using the computing facilities of the CC LBBE/PRABI.
     This study makes use of data generated by the NextGen Consortium.
     The European Union’s Seventh Framework Programme (FP7/2010-2014) provided funding for the project under grant agreement no 244356 - “NextGen”.
-    \textbf{Funding:} Université de Lausanne.
+    \DIFdelbegin \DIFdel{Funding: }\DIFdelend \DIFaddbegin \textbf{\DIFadd{Funding:}} \DIFaddend Université de Lausanne.
     Agence Nationale de la Recherche, Grant ANR-15-CE12-0010-01 / DASIRE.
     Agence Nationale de la Recherche, Grant ANR-19-CE12-0019 / HotRec.
     Natural Sciences and Engineering Research Council of Canada.
@@ -417,8 +543,21 @@
 %TC:endignore
     \begin{figure*}[htb]
         \centering
-        \includegraphics[width=0.95\linewidth, page=1]{figure1}
-        \caption{
+        \DIFdelbeginFL %DIFDELCMD < \begin{minipage}{0.32\linewidth}
+%DIFDELCMD <             \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.025}
+%DIFDELCMD <         \end{minipage}
+%DIFDELCMD <         \llap{\raisebox{1.15cm}{\scriptsize A\hspace{4.55cm}}}\hfill
+%DIFDELCMD <         \begin{minipage}{0.32\linewidth}
+%DIFDELCMD <             \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSel-0.025}
+%DIFDELCMD <         \end{minipage}
+%DIFDELCMD <         \llap{\raisebox{1.15cm}{\scriptsize B\hspace{4.55cm}}}\hfill
+%DIFDELCMD <         \begin{minipage}{0.32\linewidth}
+%DIFDELCMD <             \includegraphics[width=\linewidth, page=1]{scatterplot-site-MutSelExclu-0.025}
+%DIFDELCMD <         \end{minipage}
+%DIFDELCMD <         \llap{\raisebox{1.15cm}{\scriptsize C\hspace{4.55cm}}}\hfill
+%DIFDELCMD <         %%%
+\DIFdelendFL \DIFaddbeginFL \includegraphics[width=0.95\linewidth, page=1]{figure1}
+        \DIFaddendFL \caption{
             Detection of protein-coding sequences ongoing adaptation at the phylogenetic scale.
             $\omega$ estimated by the site model against $\omega_{0}$ calculated by the mutation-selection model.
             Scatter plot of $14,509$ genes in panel A, with $95$\% bayesian credible interval ($\alpha=0.05$).

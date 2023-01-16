@@ -57,7 +57,7 @@
 \renewcommand{\thefigure}{S\arabic{figure}}
 
 \usepackage{xfrac, nicefrac}
-\usepackage[backend=biber,isbn=false,url=false,intitle=true,style=nature]{biblatex}
+\usepackage[backend=biber,eprint=false,isbn=false,url=false,intitle=true,style=nature,date=year]{biblatex}
 \addbibresource{codon_models.bib}
 \pdfinclusioncopyfonts=1
 
@@ -139,6 +139,21 @@
         readmutselomega --every 1 --until 2000 --burnin 1000 -c 0.025 my_genename
         \end{verbatim}
     \end{scriptsize}
+
+    \begin{center}
+        \captionof{figure}{~}
+        \begin{minipage}{0.49\linewidth}
+            \includegraphics[width=\linewidth, page=1]{codeml_vs_bayescode.site.M3ncatG8.png}
+        \end{minipage}
+        \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
+        \begin{minipage}{0.49\linewidth}
+            \includegraphics[width=\linewidth, page=1]{codeml_vs_bayescode.gene.M3ncatG8.png}
+        \end{minipage}
+        \llap{\raisebox{1.2cm}{\scriptsize B\hspace{4.7cm}}}\hfill
+    \end{center}
+    Panel A: site-specific $\omega$ posterior mean as given by BayesCode (y-axis) with 95\% posterior credibility intervals (light blue) as a function of  $\omega$ estimates given by CODEML (x-axis) for 41.829 sites across 100 random genes.
+    Panel B: gene-specific $\omega$ posterior mean as given by BayesCode (y-axis) with 95\% posterior credibility intervals  as a function of $\omega$ estimates given by CODEML (x-axis) for 100 random genes.
+    Linear regression is shown in the green solid line, and the identity (y=x) in black solid line.
 
     \subsection{Site-specific mutation-selection codon models}
 
@@ -290,7 +305,7 @@
     \begin{center}
         \captionof{figure}{~}
         \begin{minipage}{0.32\linewidth}
-            \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025}
+            \includegraphics[width=\linewidth, page=1]{scatterplot-gene-MutSel-0.0025.png}
         \end{minipage}
         \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
         \begin{minipage}{0.32\linewidth}
@@ -455,7 +470,8 @@
     The underlying assumption for the mathematical constrains on the DFE thus have a large impact on the estimation of $\rateApop^{\mathrm{polyDFE}}$ while the true underlying DFE is unknown.
 
     \pagebreak
-
-    \printbibliography
+    
+    \section{References}
+    \printbibliography[heading=none]
 
 \end{document}
