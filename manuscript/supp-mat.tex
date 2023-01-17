@@ -95,7 +95,7 @@
 \author{
     \large
     \textbf{T. {Latrille}$^{1,2,3}$, N. {Rodrigue}$^{4}$, N. {Lartillot}$^{1}$}\\
-    \footnotesize $^{1}$Université de Lyon, CNRS, LBBE UMR 5558, Villeurbanne, France\\
+    \footnotesize $^{1}$Université de Lyon, Université Lyon 1, CNRS, VetAgro Sup, Laboratoire de Biométrie et Biologie Evolutive, UMR5558, Villeurbanne, France\\
     \footnotesize $^{2}$École Normale Supérieure de Lyon, Université de Lyon, Lyon, France\\
     \footnotesize $^{3}$Université de Lausanne, Lausanne, Switzerland\\
     \footnotesize $^{4}$Department of Biology, Carleton University, Ottawa, Canada \\
@@ -127,7 +127,7 @@
         q_{a \mapsto b}^{(i)}= - \sum\limits_{b \neq a, b = 1}^{61} q_{a \mapsto b}^{(i)}.
     \end{equation}
 
-    In BayesCode (\url{https://github.com/ThibaultLatrille/bayescode}), $\omega$-based site-specific codon models are obtained by running \textit{mutselomega} with the options:
+    In \textit{BayesCode} (\url{https://github.com/ThibaultLatrille/BayesCode}), $\omega$-based site-specific codon models are obtained by running \textit{mutselomega} with the options:
     \begin{scriptsize}
         \begin{verbatim}
         mutselomega --omegashift 0.0 --freeomega --omegancat 30 --flatfitness -a my_alignment.phy -t my_tree.newick -u 2000 my_genename
@@ -145,19 +145,19 @@
         \begin{minipage}{0.49\linewidth}
             \includegraphics[width=\linewidth, page=1]{codeml_vs_bayescode.site.M3ncatG8.png}
         \end{minipage}
-        \llap{\raisebox{1.2cm}{\scriptsize A\hspace{4.7cm}}}\hfill
+        \llap{\raisebox{1.9cm}{\scriptsize A\hspace{7.2cm}}}\hfill
         \begin{minipage}{0.49\linewidth}
             \includegraphics[width=\linewidth, page=1]{codeml_vs_bayescode.gene.M3ncatG8.png}
         \end{minipage}
-        \llap{\raisebox{1.2cm}{\scriptsize B\hspace{4.7cm}}}\hfill
+        \llap{\raisebox{1.9cm}{\scriptsize B\hspace{7.2cm}}}\hfill
     \end{center}
-    Panel A: site-specific $\omega$ posterior mean as given by BayesCode (y-axis) with 95\% posterior credibility intervals (light blue) as a function of  $\omega$ estimates given by CODEML (x-axis) for 41.829 sites across 100 random genes.
-    Panel B: gene-specific $\omega$ posterior mean as given by BayesCode (y-axis) with 95\% posterior credibility intervals  as a function of $\omega$ estimates given by CODEML (x-axis) for 100 random genes.
+    Panel A: site-specific $\omega$ posterior mean as given by \textit{BayesCode} (y-axis) with 95\% posterior credibility intervals (light blue) as a function of  $\omega$ estimates given by CODEML (x-axis) for 41.829 sites across 100 random genes.
+    Panel B: gene-specific $\omega$ posterior mean as given by \textit{BayesCode} (y-axis) with 95\% posterior credibility intervals  as a function of $\omega$ estimates given by CODEML (x-axis) for 100 random genes.
     Linear regression is shown in the green solid line, and the identity (y=x) in black solid line.
 
     \subsection{Site-specific mutation-selection codon models}
 
-    In BayesCode (\url{https://github.com/ThibaultLatrille/bayescode}), mutation-selection codon models are obtained by running \textit{mutselomega} for 2000 points of MCMC with the options:
+    In \textit{BayesCode} (\url{https://github.com/ThibaultLatrille/bayescode}), mutation-selection codon models are obtained by running \textit{mutselomega} for 2000 points of MCMC with the options:
     \begin{scriptsize}
         \begin{verbatim}
         mutselomega ---omegashift 0.0 --ncat 30 -a my_alignment.phy -t my_tree.newick -u 2000 my_genename
@@ -329,7 +329,7 @@
 
     With a threshold of $\alpha=0.005$ more stringent than as shown in the main manuscript ($\alpha=0.05$), the rate of false positive is mechanically lower both at the site and gene level.
     However, the statistical power to test for enrichment of adaptation is not necessarily higher since we are working with fewer data.
-    We thus obtain high values of $\rateApop$ for the set of genes and sites supposedly under adaptation at the phylogenetic scale, which also leads to higher $\Delta \rateApop$ when compared to the the set of genes and sites supposedly under a nearly-neutral regime.
+    We thus obtain high values of $\rateApop$ for the set of genes and sites supposedly under adaptation at the phylogenetic scale, which also leads to higher $\Delta \rateApop$ when compared to the set of genes and sites supposedly under a nearly-neutral regime.
     Since we have more variance due to less data (violin plots are more extended for the set of nearly-neutral replicates), this higher value of the statistic $\Delta \rateApop$
     does not translate to lower $p_{\mathrm{v}}^{\mathrm{adj}}$.
     We thus have to find a compromise between having large enough dataset to perform reliable computation of $\rateApop$ and having a very low rate of false positive for sites and genes under adaptation at the phylogenetic scale.

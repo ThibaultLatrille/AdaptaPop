@@ -14,8 +14,8 @@ The pipeline consist of three main steps, each with its own folder and Snakemake
 - [II. Divergence](https://github.com/ThibaultLatrille/AdaptaPop#ii-divergence---run-bayescode-on-orthomam)
 - [III. Contrast polymorphism and divergence](https://github.com/ThibaultLatrille/AdaptaPop#iii-run-global-analysis-contrasting-polymorphism-and-divergence)
 
-Section I and II are independent from each other and can be run in parallel, while section III depends on the results of I and II.
-Alternatively, the results of each section can be downloaded at https://doi.org/10.5281/zenodo.7107234.
+Section I and II are independent of each other and can be run in parallel, while section III depends on the results of I and II.
+Alternatively, the results of each section can be downloaded at https://doi.org/10.5281/zenodo.7107233.
 
 If problems and/or questions are encountered, feel free to [open issues](https://github.com/ThibaultLatrille/AdaptaPop/issues).
 
@@ -30,10 +30,10 @@ cd AdaptaPop
 
 ### General dependencies
 
-Install python3 packages
+Install python3 (>=3.9) and python3 packages
 ```
 sudo apt install -qq -y python3-dev python3-pip
-pip3 install snakemake scipy numpy matplotlib pandas ete3 bio statsmodels --user
+pip3 install --user snakemake numpy==1.23 scipy matplotlib pandas ete3 bio statsmodels seaborn rpy2 
 ```
 
 ### I. Polymorphism - Download and filter .vcf files 
@@ -53,33 +53,26 @@ for FOLDER in ./*/ do
 done
 ```
 
-Alternatively, you can download the filtered .vcf files at https://doi.org/10.5281/zenodo.7107234 (`Polymorphism.zip`) and unzip them in the folder `Polymorphism`.
+Alternatively, you can download the filtered .vcf files at https://doi.org/10.5281/zenodo.7107233 (`Polymorphism.zip`) and unzip them in the folder `Polymorphism`.
 
 ### II. Divergence - Run BayesCode on OrthoMam
-This section is independent from the previous one ([I. Polymorphism](https://github.com/ThibaultLatrille/AdaptaPop#i-polymorphism---download-and-filter-vcf-files)).
+This section is independent of the previous one ([I. Polymorphism](https://github.com/ThibaultLatrille/AdaptaPop#i-polymorphism---download-and-filter-vcf-files)).
 
-To run on OrthoMam (mammalian orthologs), you must download the alignments and trees at https://doi.org/10.5281/zenodo.7107234 (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The input data will be already filtered and ready to be used in the folder `OrthoMam/Datasets`.
+To run on OrthoMam (mammalian orthologs), you must download the alignments and trees at https://doi.org/10.5281/zenodo.7107233 (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The input data will be already filtered and ready to be used in the folder `OrthoMam/Datasets`.
 
+Install *BayesCode* from https://github.com/ThibaultLatrille/bayescode (see instructions there).
 
 ```
 cd Orthomam
 ```
 
-Install the compiling toolchains:
-```
-sudo apt install -qq -y make cmake clang openmpi-bin openmpi-common libopenmpi-dev
-```
-Clone and compile the C++ code for *BayesCode*
-```
-git clone https://github.com/ThibaultLatrille/bayescode && cd bayescode && git checkout dev && make release && cd ..
-```
 Run using snakemake, this requires access to large computation facilities:
 ```
 snakemake -j 128
 ```
 Or use the script `snakeslurm.sh` if run on a cluster (slurm) to submit the jobs.
 
-Alternatively, you can download the results of BayesCode on OrthoMam at https://doi.org/10.5281/zenodo.7107234 (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The results will be located in the folder `OrthoMam/Experiments`.
+Alternatively, you can download the results of BayesCode on OrthoMam at https://doi.org/10.5281/zenodo.7107233 (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The results will be located in the folder `OrthoMam/Experiments`.
 Moreover, you can use this pipeline as a stand-alone to run `BayesCode` on your own set of alignments and trees by changing the `Snakefile` and/or the `config.yaml`.
 
 ### III. Run global analysis contrasting polymorphism and divergence
@@ -98,7 +91,7 @@ snakemake -j 128
 ```
 Or use the script `snakeslurm.sh` if run on a cluster (slurm) to submit the jobs.
 
-Alternatively, results of this section can be downloaded at https://doi.org/10.5281/zenodo.7107234 (`VCF.zip`). The archive file `VCF.zip` contains a vcf file for every population. Each vcf file contains SNPs for which is was possible to infer the ancestral and derived codon, hence to also predict its selection coefficient based on the difference in fitness between amino-acid estimated at the mammalian scale.
+Alternatively, at the gene level, the rate of adaptation at the phylogenetic scale and at the population scale (McDonald & Kreitman) can be downloaded at https://doi.org/10.5281/zenodo.7107234 (`GeneTable.tsv` and `MK_statistics.gz`).
 
 ## 3. Add features or debug in the python scripts
 You made modifications to one of the python script, a notebook, this README.md, or you added new features.

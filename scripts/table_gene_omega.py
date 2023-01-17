@@ -35,4 +35,4 @@ if __name__ == '__main__':
         dict_ensg = {v: k for k, v in dict_tr_id.items()}
         dico_out["TR_ID_" + sp] = [dict_ensg[k] if k in dict_ensg else "Null" for k in ensg_list]
 
-    pd.DataFrame(dico_out).to_csv("GeneTable.csv.gz", index=False, compression="gzip")
+    pd.DataFrame(dico_out).to_csv(args.output, index=False, sep="\t")

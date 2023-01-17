@@ -140,6 +140,6 @@ rule gene_table:
         bayescode=expand(rules.read_bayescode.output,CDS=CDS_list,model=MODELS,chain=config['CHAINS']),
         script=f"{ROOT}/scripts/table_gene_omega.py"
     output:
-        csv=f"{FOLDER}/GeneTable.csv.gz"
+        tsv=f"{FOLDER}/GeneTable.tsv"
     shell:
-        "python3 {input.script} --div_folder {EXP_FOLDER} --xml {XML_FOLDER} --species Homo_sapiens Chlorocebus_sabaeus Bos_taurus Equus_caballus Ovis_aries Capra_hircus Canis_familiaris --output {output.csv}"
+        "python3 {input.script} --div_folder {EXP_FOLDER} --xml {XML_FOLDER} --species Homo_sapiens Chlorocebus_sabaeus Bos_taurus Equus_caballus Ovis_aries Capra_hircus Canis_familiaris --output {output.tsv}"

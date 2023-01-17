@@ -1,7 +1,7 @@
 %! BibTeX Compiler = biber
 %DIF LATEXDIFF DIFFERENCE FILE
 %DIF DEL main-biorxiv.tex    Fri Dec  2 16:24:48 2022
-%DIF ADD main-revision.tex   Fri Jan 13 15:41:04 2023
+%DIF ADD main-revision.tex   Tue Jan 17 11:26:05 2023
 %TC:ignore
 \documentclass{article}
 
@@ -113,7 +113,7 @@
     \large
     \textbf{T. {Latrille}$^{1,2,3}$, N. {Rodrigue}$^{4}$, N. {Lartillot}$^{1}$}\\
     \normalsize
-    $^{1}$Université de Lyon, CNRS, LBBE UMR 5558, Villeurbanne, France\\
+    $^{1}$Université de Lyon, \DIFdelbegin \DIFdel{CNRS, LBBE UMR 5558}\DIFdelend \DIFaddbegin \DIFadd{Université Lyon 1, CNRS, VetAgro Sup, Laboratoire de Biométrie et Biologie Evolutive, UMR5558}\DIFaddend , Villeurbanne, France\\
     $^{2}$École Normale Supérieure de Lyon, Université de Lyon, Lyon, France\\
     $^{3}$Department of Computational Biology, Université de Lausanne, Lausanne, Switzerland\\
     $^{4}$Department of Biology, Institute of Biochemistry, and School of Mathematics and Statistics, Carleton University, Ottawa, Canada \\
@@ -304,11 +304,11 @@
     $42$ ontologies are observed with a p-value ($p_{\mathrm{v}}$) corrected for multiple comparison (Holm–Bonferroni correction, $p_{\mathrm{v}}^{\mathrm{adj}}$) lower than the risk $\alpha=0.05$ (\DIFdelbegin \DIFdel{see }\DIFdelend table~S1).
     At a finer scale, we weighted genes by their proportion of sites considered under adaptation with a $\omega$-based site model ($\omega > 1$, \DIFdelbegin \DIFdel{see }\DIFdelend table~S2) or with a mutation-selection model ($\omega > \omega_{0}$, \DIFdelbegin \DIFdel{see }\DIFdelend table~S3).
     For each ontology, the proportion of sites under adaptation is compared between the set of genes sharing this given ontology and the rest of the genes (Mann-Whitney U test).
-    The statistical test based on the the first criterion ($\omega>1$) is correlated with ontologies related to immune processes, while the statistical test based on the the second criterion ($\omega > \omega_{0}$) is also correlated with ontologies related to the external membrane and cellular adhesion.
+    The statistical test based on the \DIFdelbegin \DIFdel{the }\DIFdelend first criterion ($\omega>1$) is correlated with ontologies related to immune processes, while the statistical test based on the the second criterion ($\omega > \omega_{0}$) is also correlated with ontologies related to the external membrane and cellular adhesion.
 
     \subsection*{Congruence between phylogeny- and population-based methods}
     Finally, we investigated whether the phylogeny-based and the population-based methods give congruent results in terms of detection of adaptive evolution (fig.~\ref{fig:method}).
-    To do so, population genomic data were collected for 29 populations across 7 genera.
+    To do so, population genomic data were collected for 29 populations across 7 genera \DIFaddbegin \DIFadd{(fig.~S2)}\DIFaddend .
     For each population, $\rateApop$ as proposed by McDonald \& Kreitman (MK)\cite{mcdonald_adaptative_1991} was computed on the concatenate of the 822 genes classified as adaptive by the phylogeny-based method (red dots in fig.~\ref{fig:method} and~\ref{fig:unfolded-MK}).
     This result was compared to a null distribution obtained by computing $\rateApop$ over sets of 822 genes that were randomly sampled ($1,000$ replicates) among the genes classifed as nearly-neutral according to the mutation-selection model (green violins in fig.~\ref{fig:method} and~\ref{fig:unfolded-MK}).
     Importantly, the terminal lineages over which the population-genetic method was applied were not included in the phylogenetic analysis\DIFaddbegin \DIFadd{, such as to avoid fallacy and circularity in the estimation of $\rateApop$ and $\rateAphy$}\DIFaddend .
@@ -366,9 +366,9 @@
 , detecting adaptation as $\omega > \omega_{0}$ instead of $\omega > 1$ is always a more sensitive statistical test.
     We thus argue that mutation-selection provides both a theoretical and practical improvement over the current method of testing to detect adaptation.
     }\DIFaddend The application of this approach exome-wide across placental mammals suggests that $822$ out of $14,509$ proteins are under a long-term evolutionary Red-Queen, with ontology terms related to immune processes and the external membrane of cells.
-    Enrichment \DIFdelbegin \DIFdel{of }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend ontologies related to immune processes is expected, as found by \DIFdelbegin \DIFdel{many studies\mbox{%DIFAUXCMD
+    Enrichment \DIFdelbegin \DIFdel{of }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend ontologies related to immune processes is expected, as found \DIFdelbegin \DIFdel{by many studies\mbox{%DIFAUXCMD
 \cite{kosiol_patterns_2008, enard_viruses_2016, ebel_high_2017}}\hspace{0pt}%DIFAUXCMD
-}\DIFdelend \DIFaddbegin \DIFadd{previous studies\mbox{%DIFAUXCMD
+}\DIFdelend \DIFaddbegin \DIFadd{in previous studies\mbox{%DIFAUXCMD
 \cite{kosiol_patterns_2008}}\hspace{0pt}%DIFAUXCMD
 }\DIFaddend .
     However, we also detect an enrichment \DIFdelbegin \DIFdel{with }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend ontologies related to the external membrane and cell adhesion\DIFdelbegin \DIFdel{, which are }\DIFdelend \DIFaddbegin \DIFadd{.
@@ -391,7 +391,7 @@
     We thus showed empirically that the mutation-selection codon model provides a null (nearly-neutral) model from which we can disentangle purifying and adaptive evolution.
     However, our procedure still has some limitations.
 
-    \DIFaddbegin \DIFadd{First, synonymous mutations are considered neutral in our implementation of mutation-selection codon models.
+    \DIFdelbegin \DIFdel{Mutation-selection }\DIFdelend \DIFaddbegin \DIFadd{First, synonymous mutations are considered neutral in our implementation of mutation-selection codon models.
     In other words, we assumed no synonymous codon usage bias (CUB), or a weak effect as it is suggested in mammals\mbox{%DIFAUXCMD
 \cite{plotkin_synonymous_2011}}\hspace{0pt}%DIFAUXCMD
 .
@@ -403,7 +403,7 @@
 .
     Such a model could be used to detect adaptation in a more general context for which CUB cannot be overlooked (e.g.~}\textit{\DIFadd{Drosophila}}\DIFadd{).
     Further work will thus be required to relax the assumption that synonymous mutations are neutral and to assess the sensitivity of $\rateAphy$ to CUB.
-    Second, }\DIFaddend Mutation-selection codon models assume a constant effective population size while it has been established that its fluctuations has a major effect on selection dynamics\cite{lanfear_population_2014, platt_protein_2018}.
+    Second, mutation-selection }\DIFaddend codon models assume a constant effective population size while it has been established that its fluctuations has a major effect on selection dynamics\cite{lanfear_population_2014, platt_protein_2018}.
     Estimating changes in effective population size in a mutation-selection framework is possible\cite{latrille_inferring_2021}, although too computational intensive in its current implementation to be performed genome-wide.
     \DIFdelbegin \DIFdel{Second}\DIFdelend \DIFaddbegin \DIFadd{Third}\DIFaddend , epistasis is not modeled while it can have a large effect on the response of the rate of evolution with change in population size\cite{latrille_quantifying_2021}.
     More generally, pervasive epistasis generates an entrenchment of the amino acids\cite{goldstein_evolutionary_2004, goldstein_nonadaptive_2015, goldstein_sequence_2017}, resulting in a slowing down of the rate evolution\cite{rodrigue_detecting_2017, patel_epistasis_2022} or a standstill\cite{youssef_evolution_2022}.
@@ -445,7 +445,7 @@ or by leveraging empirically determined fitness landscapes\mbox{%DIFAUXCMD
     \subsection*{Adaptation in phylogeny-based method}
     Classical codon models estimates a parameter $\omega=\dnds$, namely the ratio of the non-synonymous over the synonymous substitution rates\cite{muse_likelihood_1994,goldman_codonbased_1994}.
     In the so-called site models, $\omega$ is allowed to vary across sites\cite{yang_codonsubstitution_2000, huelsenbeck_dirichlet_2006}.
-    In \textit{Bayescode}, site-specific $\omega^{(i)}$ (fig.~\ref{fig:scatterplot}B, y-axis) \DIFdelbegin \DIFdel{are independent identically distributed }\DIFdelend \DIFaddbegin \DIFadd{as independent and identically distributed random effects }\DIFaddend from a gamma distribution\cite{lartillot_phylobayes_2013}.
+    In \textit{Bayescode}, site-specific $\omega^{(i)}$ (fig.~\ref{fig:scatterplot}B, y-axis) are \DIFdelbegin \DIFdel{independent identically distributed }\DIFdelend \DIFaddbegin \DIFadd{modeled as independent and identically distributed random effects }\DIFaddend from a gamma distribution\cite{lartillot_phylobayes_2013}.
     \DIFaddbegin \DIFadd{Therefore, this corresponds to a continuous version of the M5 model of \mbox{%DIFAUXCMD
 \textcite{yang_codonsubstitution_2000}}\hspace{0pt}%DIFAUXCMD
 .
@@ -453,7 +453,7 @@ or by leveraging empirically determined fitness landscapes\mbox{%DIFAUXCMD
     \DIFaddbegin \DIFadd{To assess the sensitivity of our estimate of $\omega$ to the prior as implemented in }\textit{\DIFadd{BayesCode}}\DIFadd{, we ran }\textit{\DIFadd{CODEML}} \DIFadd{site model (F1x4 MG, 8 discrete categories of $\omega$) from the PAML software\mbox{%DIFAUXCMD
 \cite{yang_paml_2007} }\hspace{0pt}%DIFAUXCMD
 on a sample of 100 random genes.
-    Both $\omega$ estimates from }\textit{\DIFadd{BayesCode}} \DIFadd{and }\textit{\DIFadd{CODEML}} \DIFadd{are strongly correlated at the site level ($r^2=0.985$, slope of $0.92$ in fig.~S1) and the gene level ($r^2=0.991$, slope of $0.9$ in fig.~S2).
+    Both $\omega$ estimates from }\textit{\DIFadd{BayesCode}} \DIFadd{and }\textit{\DIFadd{CODEML}} \DIFadd{are strongly correlated at the site level ($r^2=0.985$, slope of $0.92$ in fig.~S1.A) and at the gene level ($r^2=0.991$, slope of $0.9$ in fig.~S1.B).
 }\DIFaddend 
 
     In contrast \DIFaddbegin \DIFadd{to $\omega$-based codon models}\DIFaddend , mutation-selection models assume that the protein-coding sequence is at mutation-selection balance under a fixed fitness landscape, which is itself characterized by a fitness vector over the $20$ amino acid at each site\cite{yang_mutationselection_2008, halpern_evolutionary_1998, rodrigue_mechanistic_2010}.
@@ -520,7 +520,7 @@ on a sample of 100 random genes.
 
     \section{Data availability}\label{sec:data-availability}
     The data underlying this article are available at \DIFdelbegin %DIFDELCMD < \url{10.5281/zenodo.7107234}%%%
-\DIFdelend \DIFaddbegin \url{https://doi.org/10.5281/zenodo.7107234}\DIFaddend .
+\DIFdelend \DIFaddbegin \url{https://doi.org/10.5281/zenodo.7107233}\DIFaddend .
     Scripts and instructions necessary to reproduce the empirical experiments on the original dataset or with user-specified datasets is available at \url{https://github.com/ThibaultLatrille/AdaptaPop}.
 
     \section{Acknowledgements}\label{sec:acknowledgements}
@@ -528,7 +528,7 @@ on a sample of 100 random genes.
     This work was performed using the computing facilities of the CC LBBE/PRABI.
     This study makes use of data generated by the NextGen Consortium.
     The European Union’s Seventh Framework Programme (FP7/2010-2014) provided funding for the project under grant agreement no 244356 - “NextGen”.
-    \DIFdelbegin \DIFdel{Funding: }\DIFdelend \DIFaddbegin \textbf{\DIFadd{Funding:}} \DIFaddend Université de Lausanne.
+    Funding: Université de Lausanne.
     Agence Nationale de la Recherche, Grant ANR-15-CE12-0010-01 / DASIRE.
     Agence Nationale de la Recherche, Grant ANR-19-CE12-0019 / HotRec.
     Natural Sciences and Engineering Research Council of Canada.
