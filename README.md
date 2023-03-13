@@ -1,5 +1,8 @@
 **Genes and sites under adaptation at the phylogenetic scale also exhibit adaptation at the population-genetic scale**\
 Thibault Latrille, Nicolas Rodrigue, Nicolas Lartillot,\
+_Proceedings of the National Academy of Sciences_,
+Volume 120, Issue 11, March 2023, Pages e2214977120,\
+https://doi.org/10.1073/pnas.2214977120
 
 **Compiled binaries and instructions for BayesCode are available at https://github.com/ThibaultLatrille/bayescode**
 
