@@ -2,9 +2,9 @@
 Thibault Latrille, Nicolas Rodrigue, Nicolas Lartillot,\
 _Proceedings of the National Academy of Sciences_,
 Volume 120, Issue 11, March 2023, Pages e2214977120,\
-doi: [10.1073/pnas.2214977120](https://doi.org/10.1073/pnas.2214977120)
+[doi.org/10.1073/pnas.2214977120](https://doi.org/10.1073/pnas.2214977120)
 
-**Compiled binaries and instructions for BayesCode are available at [ThibaultLatrille/bayescode](https://github.com/ThibaultLatrille/bayescode)**
+**Compiled binaries and instructions for BayesCode are available at [github.com/ThibaultLatrille/bayescode](https://github.com/ThibaultLatrille/bayescode)**
 
 # AdaptaPop
 
@@ -18,7 +18,7 @@ The pipeline consist of three main steps, each with its own folder and Snakemake
 - [III. Contrast polymorphism and divergence](https://github.com/ThibaultLatrille/AdaptaPop#iii-run-global-analysis-contrasting-polymorphism-and-divergence)
 
 Section I and II are independent of each other and can be run in parallel, while section III depends on the results of I and II.
-Alternatively, the results of each section can be downloaded at: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458)
+Alternatively, the results of each section are available on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458))
 
 If problems and/or questions are encountered, feel free to [open issues](https://github.com/ThibaultLatrille/AdaptaPop/issues).
 
@@ -41,7 +41,7 @@ pip3 install --user snakemake numpy==1.23 scipy matplotlib pandas ete3 bio stats
 
 ### I. Polymorphism - Download and filter .vcf files 
 
-Install bedtools (https://bedtools.readthedocs.io/en/latest/content/installation.html)
+Install bedtools [bedtools.readthedocs.io/en/latest/content/installation.html](https://bedtools.readthedocs.io/en/latest/content/installation.html)
 ```
 sudo apt install bedtools
 ```
@@ -56,12 +56,12 @@ for FOLDER in ./*/ do
 done
 ```
 
-Alternatively, you can download the filtered .vcf files at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458) (`Polymorphism.zip`) and unzip them in the folder `Polymorphism`.
+Alternatively, you can download the filtered .vcf files on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458), file `Polymorphism.zip`) and unzip them in the folder `Polymorphism`.
 
 ### II. Divergence - Run BayesCode on OrthoMam
 This section is independent of the previous one ([I. Polymorphism](https://github.com/ThibaultLatrille/AdaptaPop#i-polymorphism---download-and-filter-vcf-files)).
 
-To run on OrthoMam (mammalian orthologs), you must download the alignments and trees at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458) (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The input data will be already filtered and ready to be used in the folder `OrthoMam/Datasets`.
+To run on OrthoMam (mammalian orthologs), you must download the alignments and trees on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458), file `OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The input data will be already filtered and ready to be used in the folder `OrthoMam/Datasets`.
 
 Install *BayesCode* from https://github.com/ThibaultLatrille/bayescode (see instructions there).
 
@@ -75,7 +75,7 @@ snakemake -j 128
 ```
 Or use the script `snakeslurm.sh` if run on a cluster (slurm) to submit the jobs.
 
-Alternatively, you can download the results of BayesCode on OrthoMam at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458) (`OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The results will be located in the folder `OrthoMam/Experiments`.
+Alternatively, you can download the OrthoMam results of BayesCode on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458), file `OrthoMam.zip`) and unzip them in the folder `OrthoMam`. The results will be located in the folder `OrthoMam/Experiments`.
 Moreover, you can use this pipeline as a stand-alone to run `BayesCode` on your own set of alignments and trees by changing the `Snakefile` and/or the `config.yaml`.
 
 ### III. Run global analysis contrasting polymorphism and divergence
@@ -94,7 +94,7 @@ snakemake -j 128
 ```
 Or use the script `snakeslurm.sh` if run on a cluster (slurm) to submit the jobs.
 
-Alternatively, at the gene level, the rate of adaptation at the phylogenetic scale and at the population scale (McDonald & Kreitman) can be downloaded at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458) (`GeneTable.tsv` and `MK_statistics.gz`).
+Alternatively, at the gene level, the rate of adaptation at the phylogenetic scale and at the population scale (McDonald & Kreitman) can be downloaded on Zenodo ([![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7543458.svg)](https://doi.org/10.5281/zenodo.7543458), files `GeneTable.tsv` and `MK_statistics.gz`).
 
 ## 3. Add features or debug in the python scripts
 You made modifications to one of the python script, a notebook, this README.md, or you added new features.
