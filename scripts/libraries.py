@@ -229,7 +229,8 @@ def build_divergence_dico(folder, ensg_list, gene_level=True, pp="0.025"):
             sitemutsel_path = sitemutsel_path.replace("_null_", "__")
             siteomega_path = siteomega_path.replace("_null_", "__")
 
-        assert os.path.isfile(siteomega_path) and os.path.isfile(sitemutsel_path)
+        assert os.path.isfile(siteomega_path) and os.path.isfile(sitemutsel_path), "{0} or {1} not found".format(
+            sitemutsel_path, siteomega_path)
 
         if gene_level:
             dico_omega_0[engs] = pd.read_csv(sitemutsel_path, sep="\t", nrows=1).values[:, 1:][0]
@@ -244,7 +245,7 @@ def build_divergence_dico(folder, ensg_list, gene_level=True, pp="0.025"):
 def is_adaptive(omega, omega_0, method):
     return (method == "Classical" and (1.0 < omega.low)) or (
             method == "MutSel" and (omega_0.up < omega.low)) or (
-                   method == "MutSelExclu" and (omega_0.up < omega.low and omega.mean <= 1.0))
+            method == "MutSelExclu" and (omega_0.up < omega.low and omega.mean <= 1.0))
 
 
 def split_outliers(dico_omega_0, dico_omega, gene_level=True, filter_set=False, method="MutSel"):

@@ -1,5 +1,4 @@
 import os
-import socket
 import pandas as pd
 import random
 from ete3 import Tree
@@ -13,8 +12,26 @@ FASTA_FOLDER = f"{FOLDER}/Datasets/omm_NT_fasta.v10c_116"
 TREE_FOLDER = f"{FOLDER}/Datasets/omm_RooTree.v10b_116"
 XML_FOLDER = f"{FOLDER}/Datasets/omm_markers"
 EXP_FOLDER = f"{FOLDER}/Experiments"
-mutsel_path = "mutselomega"  # In case you want to specify the path to Bayescode bin folder
-readmutsel_path = "readmutselomega"  # In case you want to specify the path to Bayescode bin folder
+
+bayescode_path = {}
+for executable in ["mutselomega", "readmutselomega"]:
+    exec_path = ""
+    for b in ["BayesCode", "bayescode", "Bayescode", "bayesCode", "BAYESCODe", "BayesCODE"]:
+        exec_path = os.path.join(ROOT, f'utils/{b}/bin/{executable}')
+        if os.path.exists(exec_path):
+            break
+    if not os.path.exists(exec_path):
+        # Find executable in the path using whereis. If not found, raise an error.
+        split = os.popen(f'whereis {executable}').read().split()
+        if len(split) > 1:
+            exec_path = split[1].strip()
+        else:
+            raise FileNotFoundError(f'{executable} not found. Please install BayesCode and add it to your path.')
+    bayescode_path[executable] = exec_path
+    print(f"Found {executable} at {exec_path}")
+
+mutsel_path = bayescode_path["mutselomega"]  # In case you want to specify the path to Bayescode bin folder
+readmutsel_path = bayescode_path["readmutselomega"]  # In case you want to specify the path to Bayescode bin folder
 CDS_list = list(sorted([i.replace(".fasta","") for i in os.listdir(FASTA_FOLDER)]))[
            config['CDS_START_LIST']:config['CDS_END_LIST']]
 print(f"{len(CDS_list)} CDS found in {FASTA_FOLDER}.")
@@ -140,6 +157,6 @@ rule gene_table:
         bayescode=expand(rules.read_bayescode.output,CDS=CDS_list,model=MODELS,chain=config['CHAINS']),
         script=f"{ROOT}/scripts/table_gene_omega.py"
     output:
-        tsv=f"{FOLDER}/GeneTable.tsv"
+        tsv=f"{FOLDER}/GeneTable.csv.gz"
     shell:
         "python3 {input.script} --div_folder {EXP_FOLDER} --xml {XML_FOLDER} --species Homo_sapiens Chlorocebus_sabaeus Bos_taurus Equus_caballus Ovis_aries Capra_hircus Canis_familiaris --output {output.tsv}"

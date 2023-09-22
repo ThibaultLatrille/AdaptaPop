@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', required=True, type=str, dest="output")
     args = parser.parse_args()
 
-    ensg_list = sorted([i[:-3] for i in os.listdir(args.div_folder)])
+    ensg_list = sorted([i[:-3] for i in os.listdir(args.div_folder) if i.startswith("ENSG")])
     dico_omega_0, dico_omega = build_divergence_dico(args.div_folder, ensg_list, gene_level=True)
     adap, nn, _ = split_outliers(dico_omega_0, dico_omega, gene_level=True)
     dico_cat = dict()
@@ -35,4 +35,4 @@ if __name__ == '__main__':
         dict_ensg = {v: k for k, v in dict_tr_id.items()}
         dico_out["TR_ID_" + sp] = [dict_ensg[k] if k in dict_ensg else "Null" for k in ensg_list]
 
-    pd.DataFrame(dico_out).to_csv(args.output, index=False, sep="\t")
+    pd.DataFrame(dico_out).to_csv(args.output, index=False, sep=",")
